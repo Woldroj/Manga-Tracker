@@ -1,142 +1,213 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Manga Tracker</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg: #0f172a; --card: #1e293b; --accent: #f1f5f9; --accent-2: #3b82f6;
-      --muted: #94a3b8; --danger: #ef4444; --shadow: rgba(0,0,0,0.3);
-    }
-    *{box-sizing:border-box} html,body{margin:0;padding:0;font-family:'Inter',sans-serif;background:var(--bg);color:var(--accent)}
-    .app{max-width:1100px;margin:40px auto;padding:20px}
-    header{text-align:center;margin-bottom:30px} header h1{font-size:38px;font-weight:700;margin-bottom:6px} header p{font-size:16px;color:var(--muted);margin:0}
-    .controls{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:15px} .controls input,.controls button{padding:8px 12px;border-radius:8px;border:none;font-size:14px} .controls input{background:var(--card);color:var(--accent)}
-    .controls button{cursor:pointer;transition:0.2s} .btn.primary{background:var(--accent-2);color:#fff} .btn.primary:hover{background:#2563eb}
-    .btn.ghost{background:transparent;border:1px solid var(--accent-2);color:var(--accent-2)} .btn.ghost:hover{background:var(--accent-2);color:var(--bg)}
-    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:18px;margin-top:25px}
-    .card{background:var(--card);border-radius:14px;overflow:hidden;box-shadow:0 8px 20px var(--shadow);display:flex;flex-direction:column;transition:transform 0.2s,box-shadow 0.2s}
-    .card:hover{transform:translateY(-4px);box-shadow:0 12px 24px var(--shadow)}
-    .card .thumb{width:100%;height:140px;background:linear-gradient(135deg,#3b82f6,#2563eb);display:flex;align-items:center;justify-content:center;overflow:hidden}
-    .card .thumb img{width:100%;height:100%;object-fit:cover;transition:transform 0.3s} .card:hover .thumb img{transform:scale(1.05)}
-    .card .meta{padding:12px;display:flex;flex-direction:column;gap:4px} .card .title{font-size:18px;font-weight:700;margin:0}
-    .card .genre{font-size:13px;color:var(--muted)} .card .last{font-size:14px;margin-top:6px}
-    .card .actions{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-top:1px solid rgba(255,255,255,0.1)}
-    .card .link{color:var(--accent-2);text-decoration:none;font-size:13px} .card .small{font-size:12px;padding:6px 10px;border-radius:8px;border:none;cursor:pointer;transition:0.2s}
-    .card .small:hover{background:var(--accent-2);color:#fff}
-    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.6);padding:20px;z-index:999}
-    .modal.open{display:flex} .panel{width:100%;max-width:560px;background:var(--card);border-radius:14px;padding:20px}
-    .form-row{display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap} .form-row .col{flex:1}
-    label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}
-    input[type=text],select,input[type=url],textarea{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.2);font-size:14px;background:var(--bg);color:var(--accent)}
-    textarea{resize:vertical;min-height:70px} .uploader{display:flex;gap:8px;align-items:center}
-    .uploader input[type=file]{display:none} .fakefile{padding:8px 10px;border-radius:8px;border:1px dashed rgba(255,255,255,0.3);cursor:pointer;font-size:13px;color:var(--muted)}
-    #preview img{max-width:120px;border-radius:8px;margin-top:6px}
-    @media(max-width:520px){.form-row{flex-direction:column}.controls{flex-direction:column;align-items:center}.controls input,.controls button{width:90%}}
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Manga Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0f172a; --card: #1e293b; --accent: #f1f5f9; --accent-2: #3b82f6;
+  --muted: #94a3b8; --danger: #ef4444; --shadow: rgba(0,0,0,0.3);
+}
+*{box-sizing:border-box} html,body{margin:0;padding:0;font-family:'Inter',sans-serif;background:var(--bg);color:var(--accent)}
+.app{max-width:1100px;margin:40px auto;padding:20px}
+header{text-align:center;margin-bottom:30px} header h1{font-size:38px;font-weight:700;margin-bottom:6px} header p{font-size:16px;color:var(--muted);margin:0}
+.controls{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:15px} .controls input,.controls button,.controls select{padding:8px 12px;border-radius:8px;border:none;font-size:14px} .controls input,.controls select{background:var(--card);color:var(--accent)}
+.controls button{cursor:pointer;transition:0.2s} .btn.primary{background:var(--accent-2);color:#fff} .btn.primary:hover{background:#2563eb}
+.btn.ghost{background:transparent;border:1px solid var(--accent-2);color:var(--accent-2)} .btn.ghost:hover{background:var(--accent-2);color:var(--bg)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:18px;margin-top:25px}
+.card{background:var(--card);border-radius:14px;overflow:hidden;box-shadow:0 8px 20px var(--shadow);display:flex;flex-direction:column;transition:transform 0.2s,box-shadow 0.2s}
+.card:hover{transform:translateY(-4px);box-shadow:0 12px 24px var(--shadow)}
+.card .thumb{width:100%;height:140px;background:linear-gradient(135deg,#3b82f6,#2563eb);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.card .thumb img{width:100%;height:100%;object-fit:cover;transition:transform 0.3s} .card:hover .thumb img{transform:scale(1.05)}
+.card .meta{padding:12px;display:flex;flex-direction:column;gap:4px} .card .title{font-size:18px;font-weight:700;margin:0}
+.card .genre{font-size:13px;color:var(--muted)} .card .last{font-size:14px;margin-top:6px} .card .type{font-size:12px;color:var(--accent-2);font-weight:600}
+.card .actions{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-top:1px solid rgba(255,255,255,0.1)}
+.card .link{color:var(--accent-2);text-decoration:none;font-size:13px} .card .small{font-size:12px;padding:6px 10px;border-radius:8px;border:none;cursor:pointer;transition:0.2s}
+.card .small:hover{background:var(--accent-2);color:#fff}
+.modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.6);padding:20px;z-index:999}
+.modal.open{display:flex} .panel{width:100%;max-width:560px;background:var(--card);border-radius:14px;padding:20px}
+.form-row{display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap} .form-row .col{flex:1}
+label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}
+input[type=text],select,input[type=url],textarea{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.2);font-size:14px;background:var(--bg);color:var(--accent)}
+textarea{resize:vertical;min-height:70px} .uploader{display:flex;gap:8px;align-items:center}
+.uploader input[type=file]{display:none} .fakefile{padding:8px 10px;border-radius:8px;border:1px dashed rgba(255,255,255,0.3);cursor:pointer;font-size:13px;color:var(--muted)}
+#preview img{max-width:120px;border-radius:8px;margin-top:6px}
+@media(max-width:520px){.form-row{flex-direction:column}.controls{flex-direction:column;align-items:center}.controls input,.controls button,.controls select{width:90%}}
+</style>
 </head>
 <body>
 <div class="app">
-  <header>
-    <h1>Manga Tracker</h1>
-    <p>Registra tus mangas y capítulos leídos</p>
-    <div class="controls" id="auth-controls">
-      <input type="text" id="username" placeholder="Nombre de usuario">
-      <input type="email" id="email" placeholder="Email">
-      <input type="password" id="password" placeholder="Contraseña">
-      <button id="btn-login" class="btn primary">Login / Register</button>
-    </div>
-    <div class="controls" id="user-controls" style="display:none">
-      <span id="user-display" style="font-weight:600;font-size:16px;"></span>
-      <button id="btn-logout" class="btn ghost">Cerrar sesión</button>
-      <button id="btn-add" class="btn primary">＋ Añadir manga</button>
-    </div>
-  </header>
-  <main>
-    <section class="grid" id="grid"></section>
-    <p id="empty" style="color:var(--muted);text-align:center;">No hay mangas. Pulsa <strong>＋ Añadir manga</strong> para crear uno.</p>
-  </main>
+<header>
+  <h1>Manga Tracker</h1>
+  <p>Registra tus mangas, animes y series</p>
+  <div class="controls" id="auth-controls">
+    <input type="text" id="username" placeholder="Nombre de usuario">
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="password" placeholder="Contraseña">
+    <button id="btn-login" class="btn primary">Login / Register</button>
+  </div>
+  <div class="controls" id="user-controls" style="display:none">
+    <span id="user-display" style="font-weight:600;font-size:16px;"></span>
+    <button id="btn-logout" class="btn ghost">Cerrar sesión</button>
+    <button id="btn-add" class="btn primary">＋ Añadir</button>
+  </div>
+</header>
+<main>
+  <section class="grid" id="grid"></section>
+  <p id="empty" style="color:var(--muted);text-align:center;">No hay elementos. Pulsa <strong>＋ Añadir</strong> para crear uno.</p>
+</main>
 </div>
+
 <div class="modal" id="modal">
   <div class="panel">
-    <h3 id="form-title">Añadir manga</h3>
+    <h3 id="form-title">Añadir</h3>
     <div>
       <div class="form-row">
-        <div class="col"><label for="title">Título</label><input id="title" type="text" placeholder="Ej: One Piece"></div>
-        <div class="col"><label for="genre">Género</label><select id="genre"><option>Acción</option><option>Aventura</option><option>Comedia</option><option>Drama</option><option>Fantasía</option><option>Romance</option><option>Erótico</option><option>Seinen</option><option>Shonen</option><option>Otro</option></select></div>
+        <div class="col">
+          <label for="type">Tipo</label>
+          <select id="type">
+            <option>Manga</option>
+            <option>Anime</option>
+            <option>Serie</option>
+          </select>
+        </div>
+        <div class="col">
+          <label for="genre">Categoría</label>
+          <select id="genre"></select>
+        </div>
       </div>
       <div class="form-row">
-        <div class="col"><label for="last">Último capítulo visto</label><input id="last" type="text" placeholder="Ej: 120"></div>
-        <div class="col"><label for="url">Enlace al manga</label><input id="url" type="url" placeholder="https://..."></div>
+        <div class="col"><label for="title">Título</label><input id="title" type="text" placeholder="Ej: One Piece"></div>
+        <div class="col"><label for="last">Último capítulo / episodio</label><input id="last" type="text" placeholder="Ej: 120"></div>
+      </div>
+      <div class="form-row">
+        <div class="col"><label for="url">Enlace</label><input id="url" type="url" placeholder="https://..."></div>
       </div>
       <div style="margin-bottom:12px;"><label for="notes">Notas (opcional)</label><textarea id="notes" placeholder="Comentarios, estado..."></textarea></div>
-      <div style="margin-bottom:10px;"><label>Imagen</label><div class="uploader"><label class="fakefile" id="fakefile">Seleccionar imagen</label><input id="file" type="file" accept="image/*"><input id="imgurl" type="url" placeholder="Pegar URL de imagen (opcional)"></div><div id="preview"></div></div>
-      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:10px;"><button id="btn-cancel" class="btn">Cancelar</button><button id="btn-save" class="btn primary">Guardar</button></div>
+      <div style="margin-bottom:10px;">
+        <label>Imagen</label>
+        <div class="uploader">
+          <label class="fakefile" id="fakefile">Seleccionar imagen</label>
+          <input id="file" type="file" accept="image/*">
+          <input id="imgurl" type="url" placeholder="Pegar URL de imagen (opcional)">
+        </div>
+        <div id="preview"></div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:10px;">
+        <button id="btn-cancel" class="btn">Cancelar</button>
+        <button id="btn-save" class="btn primary">Guardar</button>
+      </div>
     </div>
   </div>
 </div>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-auth.js";
 import { getFirestore, collection, addDoc, getDocs, doc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-firestore.js";
 
-const firebaseConfig = { apiKey: "AIzaSyBjGHgNC4CHglfh75yMxXYcLMij8aywcQc", authDomain: "mangatracker-63f14.firebaseapp.com", projectId: "mangatracker-63f14", storageBucket: "mangatracker-63f14.firebasestorage.app", messagingSenderId: "612200334218", appId: "1:612200334218:web:1cd7349bbc61b71ad7fe73", measurementId: "G-1VY5WJG76J" };
+const firebaseConfig = { apiKey:"AIzaSyBjGHgNC4CHglfh75yMxXYcLMij8aywcQc", authDomain:"mangatracker-63f14.firebaseapp.com", projectId:"mangatracker-63f14", storageBucket:"mangatracker-63f14.firebasestorage.app", messagingSenderId:"612200334218", appId:"1:612200334218:web:1cd7349bbc61b71ad7fe73" };
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-let currentUser=null; const grid=document.getElementById('grid'); const empty=document.getElementById('empty');
+let currentUser=null; let editId=null;
+
+const grid=document.getElementById('grid'); const empty=document.getElementById('empty');
 const authControls=document.getElementById('auth-controls'); const userControls=document.getElementById('user-controls'); const userDisplay=document.getElementById('user-display');
 const btnLogin=document.getElementById('btn-login'); const btnLogout=document.getElementById('btn-logout'); const btnAdd=document.getElementById('btn-add');
 const modal=document.getElementById('modal'); const btnCancel=document.getElementById('btn-cancel'); const btnSave=document.getElementById('btn-save');
-const fields=['title','genre','last','url','notes','imgurl']; const fileInput=document.getElementById('file'); const fakefile=document.getElementById('fakefile'); const preview=document.getElementById('preview');
-let editId=null;
+const fileInput=document.getElementById('file'); const fakefile=document.getElementById('fakefile'); const preview=document.getElementById('preview');
+
+const typeSelect = document.getElementById('type'); const genreSelect = document.getElementById('genre');
+
+const fields=['title','genre','last','url','notes','type','imgurl'];
+
+const categories = {
+  Manga:['Shonen','Shojo','Seinen','Josei','Fantasía','Romance','Acción','Comedia','Otro'],
+  Anime:['Shonen','Shojo','Seinen','Josei','Fantasía','Romance','Acción','Comedia','Slice of Life','Isekai','Otro'],
+  Serie:['Drama','Comedia','Thriller','Ciencia Ficción','Fantasía','Misterio','Otro']
+};
+
+function updateGenres(){
+  const list = categories[typeSelect.value];
+  genreSelect.innerHTML='';
+  list.forEach(c=>{
+    const o = document.createElement('option'); o.value=o.textContent=c;
+    genreSelect.appendChild(o);
+  });
+}
+
+updateGenres();
+typeSelect.addEventListener('change',updateGenres);
 
 btnLogin.addEventListener('click',async()=>{
-  const email=document.getElementById('email').value; const password=document.getElementById('password').value; const username=document.getElementById('username').value.trim()||'Usuario';
+  const email=document.getElementById('email').value;
+  const password=document.getElementById('password').value;
+  const username=document.getElementById('username').value.trim()||'Usuario';
   try{ const userCredential=await signInWithEmailAndPassword(auth,email,password); if(!userCredential.user.displayName) await updateProfile(userCredential.user,{displayName:username}); }
   catch{ const userCredential=await createUserWithEmailAndPassword(auth,email,password); await updateProfile(userCredential.user,{displayName:username}); }
 });
+
 btnLogout.addEventListener('click',()=>signOut(auth)); btnAdd.addEventListener('click',()=>openForm()); btnCancel.addEventListener('click',()=>closeForm());
+
 fakefile.addEventListener('click',()=>fileInput.click());
 fileInput.addEventListener('change',()=>{const f=fileInput.files[0]; if(!f)return; const reader=new FileReader(); reader.onload=()=>{ preview.innerHTML='<img src="'+reader.result+'" style="max-width:120px;border-radius:6px">'; preview.dataset.image=reader.result; document.getElementById('imgurl').value=''; }; reader.readAsDataURL(f); });
 document.getElementById('imgurl').addEventListener('change',e=>{const v=e.target.value.trim(); preview.dataset.image=v; preview.innerHTML=v?'<img src="'+v+'" style="max-width:120px;border-radius:6px">':''; });
 
 onAuthStateChanged(auth,user=>{
   currentUser=user;
-  if(user){ authControls.style.display='none'; userControls.style.display='flex'; userDisplay.textContent=user.displayName||'Usuario'; loadMangas(); }
+  if(user){ authControls.style.display='none'; userControls.style.display='flex'; userDisplay.textContent=user.displayName||'Usuario'; loadItems(); }
   else{ authControls.style.display='flex'; userControls.style.display='none'; grid.innerHTML=''; empty.style.display='block'; }
 });
 
-async function loadMangas(){
-  grid.innerHTML=''; const col=collection(db,'users',currentUser.uid,'mangas'); const snapshot=await getDocs(col);
-  const items=snapshot.docs.map(d=>({id:d.id,...d.data()})); if(items.length===0){ empty.style.display='block'; return; } empty.style.display='none';
+async function loadItems(){
+  if(!currentUser) return; grid.innerHTML=''; const col=collection(db,'users',currentUser.uid,'items'); const snapshot=await getDocs(col);
+  const items=snapshot.docs.map(d=>({id:d.id,...d.data()}));
+  if(items.length===0){ empty.style.display='block'; return; } empty.style.display='none';
   items.forEach(it=>{
     const card=document.createElement('article'); card.className='card';
-    card.innerHTML=`<div class="thumb">${it.image?'<img src="'+it.image+'">':''}</div><div class="meta"><div class="title">${it.title}</div><div class="genre">${it.genre}</div><div class="last">Últ. capítulo: <strong>${it.last}</strong></div></div><div class="actions"><a class="link" href="${it.url}" target="_blank">Ir a ver →</a><button class="small btn" data-action="edit" data-id="${it.id}">Editar</button><button class="small btn" data-action="del" data-id="${it.id}" style="background:transparent;border:1px solid rgba(255,255,255,0.2);">Borrar</button></div>`;
+    card.innerHTML=`<div class="thumb">${it.image?'<img src="'+it.image+'">':''}</div><div class="meta"><div class="title">${it.title}</div><div class="type">${it.type}</div><div class="genre">${it.genre}</div><div class="last">Últ.: <strong>${it.last}</strong></div></div><div class="actions"><a class="link" href="${it.url}" target="_blank">Ir a ver →</a><button class="small btn" data-action="edit" data-id="${it.id}">Editar</button><button class="small btn" data-action="del" data-id="${it.id}" style="background:transparent;border:1px solid rgba(255,255,255,0.2);">Borrar</button></div>`;
     grid.appendChild(card);
   });
-  grid.querySelectorAll('button').forEach(b=>{ const action=b.dataset.action; const id=b.dataset.id; if(action==='edit') b.addEventListener('click',()=>openForm(id)); if(action==='del') b.addEventListener('click',()=>deleteManga(id)); });
+  grid.querySelectorAll('button').forEach(b=>{ const action=b.dataset.action; const id=b.dataset.id; if(action==='edit') b.addEventListener('click',()=>openForm(id)); if(action==='del') b.addEventListener('click',()=>deleteItem(id)); });
 }
 
-function openForm(id=null){ editId=id; document.getElementById('form-title').textContent=id?'Editar manga':'Añadir manga'; fields.forEach(f=>document.getElementById(f).value=''); preview.innerHTML=''; preview.dataset.image='';
-  if(id){ getDocs(collection(db,'users',currentUser.uid,'mangas')).then(snapshot=>{ const d=snapshot.docs.find(doc=>doc.id===id).data(); document.getElementById('title').value=d.title; document.getElementById('genre').value=d.genre; document.getElementById('last').value=d.last; document.getElementById('url').value=d.url; document.getElementById('notes').value=d.notes||''; if(d.image){preview.innerHTML='<img src="'+d.image+'" style="max-width:120px;border-radius:6px">'; preview.dataset.image=d.image;} }); }
+function openForm(id=null){
+  editId=id;
+  document.getElementById('form-title').textContent=id?'Editar':'Añadir';
+  fields.forEach(f=>document.getElementById(f).value='');
+  preview.innerHTML=''; preview.dataset.image='';
+  if(id){
+    getDocs(collection(db,'users',currentUser.uid,'items')).then(snapshot=>{
+      const d=snapshot.docs.find(doc=>doc.id===id)?.data(); if(!d) return;
+      document.getElementById('title').value=d.title;
+      document.getElementById('genre').value=d.genre;
+      document.getElementById('last').value=d.last;
+      document.getElementById('url').value=d.url;
+      document.getElementById('notes').value=d.notes||'';
+      document.getElementById('type').value=d.type;
+      updateGenres();
+      if(d.image){preview.innerHTML='<img src="'+d.image+'" style="max-width:120px;border-radius:6px">'; preview.dataset.image=d.image;}
+    });
+  }
   modal.classList.add('open');
 }
+
 function closeForm(){ modal.classList.remove('open'); fileInput.value=''; editId=null; }
 
 btnSave.addEventListener('click',async()=>{
   if(!currentUser){ alert('Debes iniciar sesión antes de guardar.'); return; }
   const data={}; fields.forEach(f=>data[f]=document.getElementById(f).value); data.image=preview.dataset.image||'';
-  const col=collection(db,'users',currentUser.uid,'mangas');
-  if(editId){ await setDoc(doc(db,'users',currentUser.uid,'mangas',editId),data); }
+  const col=collection(db,'users',currentUser.uid,'items');
+  if(editId){ await setDoc(doc(db,'users',currentUser.uid,'items',editId),data); }
   else{ await addDoc(col,data); }
-  closeForm(); loadMangas();
+  closeForm(); loadItems();
 });
 
-async function deleteManga(id){ if(confirm('¿Eliminar este manga?')){ await deleteDoc(doc(db,'users',currentUser.uid,'mangas',id)); loadMangas(); }}
+async function deleteItem(id){ if(confirm('¿Eliminar este elemento?')){ await deleteDoc(doc(db,'users',currentUser.uid,'items',id)); loadItems(); }}
 </script>
 </body>
 </html>
