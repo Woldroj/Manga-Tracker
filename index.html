@@ -126,7 +126,40 @@ const categories={Manga:['Acción','Aventura','Comedia','Drama','Fantasía','Rom
 function updateGenres(){genreSelect.innerHTML='';categories[typeSelect.value].forEach(c=>{const o=document.createElement('option');o.value=o.textContent=c;genreSelect.appendChild(o);});}
 updateGenres(); typeSelect.addEventListener('change',updateGenres);
 
-btnLogin.addEventListener('click',async()=>{const email=document.getElementById('email').value; const password=document.getElementById('password').value; const username=document.getElementById('username').value.trim()||'Usuario'; try{const userCredential=await signInWithEmailAndPassword(auth,email,password); if(!userCredential.user.displayName) await updateProfile(userCredential.user,{displayName:username});}catch{const userCredential=await createUserWithEmailAndPassword(auth,email,password); await updateProfile(userCredential.user,{displayName:username});}});
+// NUEVA LÓGICA DE LOGIN / REGISTRO
+btnLogin.addEventListener('click', async () => {
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value.trim();
+  const username = document.getElementById('username').value.trim() || 'Usuario';
+
+  if (!email || !password) {
+    alert('Debes ingresar email y contraseña.');
+    return;
+  }
+
+  try {
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    if (!userCredential.user.displayName) {
+      await updateProfile(userCredential.user, { displayName: username });
+    }
+  } catch (error) {
+    if (error.code === 'auth/user-not-found') {
+      try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        await updateProfile(userCredential.user, { displayName: username });
+      } catch (err) {
+        alert('Error al crear la cuenta: ' + err.message);
+      }
+    } else if (error.code === 'auth/wrong-password') {
+      alert('Contraseña incorrecta.');
+    } else if (error.code === 'auth/invalid-email') {
+      alert('Email inválido.');
+    } else {
+      alert('Error: ' + error.message);
+    }
+  }
+});
+
 btnLogout.addEventListener('click',()=>signOut(auth)); btnAdd.addEventListener('click',()=>openForm()); btnCancel.addEventListener('click',()=>closeForm());
 
 fakefile.addEventListener('click',()=>fileInput.click());
@@ -145,10 +178,5 @@ for(const t in sections){document.getElementById(t.toLowerCase()+'-section').sty
 document.getElementById('empty').style.display=hasItems?'none':'block';
 ['Manga','Anime','Serie'].forEach(t=>{sections[t].querySelectorAll('button').forEach(b=>{const action=b.dataset.action,id=b.dataset.id;if(action==='edit') b.addEventListener('click',()=>openForm(id)); if(action==='del') b.addEventListener('click',()=>deleteItem(id));});});}
 
-function openForm(id=null){editId=id; document.getElementById('form-title').textContent=id?'Editar':'Añadir'; fields.forEach(f=>document.getElementById(f).value=''); preview.innerHTML=''; preview.dataset.image=''; if(id){getDocs(collection(db,'users',currentUser.uid,'items')).then(snapshot=>{ const d=snapshot.docs.find(doc=>doc.id===id).data(); document.getElementById('title').value=d.title; document.getElementById('genre').value=d.genre; document.getElementById('last').value=d.last; document.getElementById('url').value=d.url; document.getElementById('notes').value=d.notes||''; document.getElementById('type').value=d.type; updateGenres(); if(d.image){preview.innerHTML='<img src="'+d.image+'" style="max-width:120px;border-radius:6px">'; preview.dataset.image=d.image;}});}
-modal.classList.add('open');}
-function closeForm(){modal.classList.remove('open'); fileInput.value=''; editId=null;}
-
-btnSave.addEventListener('click',async()=>{console.log('Guardar pulsado'); if(!currentUser){alert('Debes iniciar sesión antes de guardar.');return;} const data={}; fields.forEach(f=>data[f]=document.getElementById(f).value); data.image=preview.dataset.image||''; const col=collection(db,'users',currentUser.uid,'items'); if(editId){await setDoc(doc(db,'users',currentUser.uid,'items',editId),data);}else{await addDoc(col,data);} closeForm(); loadItems();});
-
-async function deleteItem(id){if(confirm('¿Eliminar este elemento?')){await deleteDoc(doc(db,'users',currentUser.uid,'items',id)); loadItems();}}
+function openForm(id=null){editId=id; document.getElementById('form-title').textContent=id?'Editar':'Añadir'; fields.forEach(f=>document.getElementById(f).value=''); preview.innerHTML=''; preview.dataset.image=''; if(id){getDocs(collection(db,'users',currentUser.uid,'items')).then(snapshot=>{ const d=snapshot.docs.find(doc=>doc.id===id).data(); document.getElementById('title').value=d.title; document.getElementById('genre').value=d.genre; document.getElementById('last').value=d.last; document.getElementById('url').value=d.url; document.getElementById('notes').value=d.notes||''; document.getElementById('type').value=d.type; updateGenres(); if(d.image){preview.innerHTML='<img src="'+d.image+'" style="max-width:120px;border-radius:6px">'; preview.dataset.image=d.image;}});} modal.classList.add('open');}
+function closeForm(){modal.classList.remove('open');}
