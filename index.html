@@ -204,7 +204,7 @@
       if(user){
         authControls.style.display='none';
         userControls.style.display='flex';
-        userDisplay.textContent=user.displayName || user.email;
+        userDisplay.textContent=user.displayName || 'Usuario';
         loadMangas();
       }else{
         authControls.style.display='flex';
