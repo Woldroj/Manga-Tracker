@@ -120,7 +120,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.1.0/firebas
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-auth.js";
 import { getFirestore, collection, addDoc, getDocs, doc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-firestore.js";
 
-const firebaseConfig = { /* tu config */ };
+const firebaseConfig = { apiKey: "AIzaSyBjGHgNC4CHglfh75yMxXYcLMij8aywcQc", authDomain: "mangatracker-63f14.firebaseapp.com", projectId: "mangatracker-63f14", storageBucket: "mangatracker-63f14.firebasestorage.app", messagingSenderId: "612200334218", appId: "1:612200334218:web:1cd7349bbc61b71ad7fe73", measurementId: "G-1VY5WJG76J" };
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
