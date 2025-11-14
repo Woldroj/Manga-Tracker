@@ -176,8 +176,7 @@ btnChangeName.addEventListener("click", async () => {      // 👈 CAMBIO
   try {
     await updateProfile(auth.currentUser, { displayName: newName }); // 👈 CAMBIO
     userDisplay.textContent = newName;                   // 👈 CAMBIO
-    inputNewName.value = "";                             // 👈 CAMBIO
-    alert("Nombre actualizado correctamente");           // 👈 CAMBIO
+    inputNewName.value = "";                             // 👈 CAMBIO          // 👈 CAMBIO
   } catch (err) {
     console.error(err);
     alert("Error al actualizar el nombre.");
