@@ -75,7 +75,12 @@ h2.tipo-header::after {
     </div>
     <div class="controls" id="user-controls" style="display:none">
       <!-- CAMBIO: ahora el nombre es un span + icono lápiz SVG en vez del input y botón --> <!-- 🔥 CAMBIO -->
-      <span id="user-display" style="font-weight:600;font-size:16px;display:inline-flex;align-items:center;gap:8px;"></span> <!-- 🔥 CAMBIO -->
+      <span id="user-display" style="font-weight:600;font-size:16px;display:inline-flex;align-items:center;gap:8px;"></span>
+      <button id="btn-edit-name" title="Editar nombre" style="background:transparent;border:none;color:var(--accent-2);cursor:pointer;padding:4px;display:inline-flex;align-items:center;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1.003 1.003 0 0 0 0-1.41l-2.34-2.34a1.003 1.003 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" fill="currentColor"/>
+        </svg>
+      </button> <!-- 🔥 CAMBIO --> <!-- 🔥 CAMBIO -->
       <button id="btn-logout" class="btn ghost">Cerrar sesión</button>
       <button id="btn-add" class="btn primary">＋ Añadir</button>
 
@@ -83,13 +88,6 @@ h2.tipo-header::after {
       <input id="new-username" type="text" placeholder="Nuevo nombre" style="display:none;"> <!-- 🔥 CAMBIO -->
       <button id="btn-change-name" class="btn ghost" style="display:none">Cambiar nombre</button> <!-- 🔥 CAMBIO -->
 
-      <!-- ICONO LÁPIZ SVG (click lo convierte en editable) --> <!-- 🔥 CAMBIO -->
-      <button id="btn-edit-name" title="Editar nombre" style="background:transparent;border:none;color:var(--accent-2);cursor:pointer;padding:4px;display:inline-flex;align-items:center;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1.003 1.003 0 0 0 0-1.41l-2.34-2.34a1.003 1.003 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" fill="currentColor"/>
-        </svg>
-      </button> <!-- 🔥 CAMBIO -->
-      <!-- FIN CAMBIO -->
     </div>
   </header>
   <main>
