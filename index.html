@@ -245,7 +245,7 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, getDocs, doc, setDoc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-firestore.js"; // 🔥 CAMBIO: import updateDoc to update single fields
+import { getFirestore, collection, addDoc, getDocs, doc, setDoc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-firestore.js";
 
 const firebaseConfig = { apiKey: "AIzaSyBjGHgNC4CHglfh75yMxXYcLMij8aywcQc", authDomain: "mangatracker-63f14.firebaseapp.com", projectId: "mangatracker-63f14", storageBucket: "mangatracker-63f14.firebasestorage.app", messagingSenderId: "612200334218", appId: "1:612200334218:web:1cd7349bbc61b71ad7fe73", measurementId: "G-1VY5WJG76J" };
 const app = initializeApp(firebaseConfig);
@@ -293,6 +293,9 @@ function updateGenres(){
 updateGenres(); 
 typeSelect.addEventListener('change',updateGenres);
 
+
+// --------------------- LOGIN & REGISTER ----------------------------------
+
 btnLogin.addEventListener('click',async()=>{
   const email=document.getElementById('email').value; 
   const password=document.getElementById('password').value; 
@@ -306,61 +309,77 @@ btnLogin.addEventListener('click',async()=>{
     await updateProfile(userCredential.user,{displayName:username}); 
   }
 });
+
 btnLogout.addEventListener('click',()=>signOut(auth));
 
 
-btnChangeName.style.display = 'none'; 
-inputNewName.style.display = 'none'; 
-
+// --------------------- CAMBIO NOMBRE PERFIL ----------------------------------
 
 btnEditName.addEventListener('click', () => { 
   if (!currentUser) return alert('Inicia sesión para editar tu nombre'); 
   userDisplay.contentEditable = 'true';
-  userDisplay.focus(); 
+  userDisplay.focus();
+
+  const range = document.createRange();
+  range.selectNodeContents(userDisplay);
+  range.collapse(false);
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+});
+
+userDisplay.addEventListener('keydown', async (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    userDisplay.blur();
+  }
+});
+
+userDisplay.addEventListener('blur', async () => {
+  if (!currentUser) return;
+
+  const newName = userDisplay.textContent.trim();
+  if (!newName) {
+    userDisplay.textContent = currentUser.displayName || 'Usuario';
+    userDisplay.contentEditable = 'false';
+    return;
+  }
+
+  try {
+    await updateProfile(auth.currentUser, { displayName: newName });
+    userDisplay.textContent = newName;
+  } catch (err) {
+    console.error(err);
+    alert('Error al actualizar el nombre');
+  } finally {
+    userDisplay.contentEditable = 'false';
+  }
+});
 
 
-  const range = document.createRange(); 
-  range.selectNodeContents(userDisplay); 
-  range.collapse(false); 
-  const sel = window.getSelection(); 
-  sel.removeAllRanges(); 
-  sel.addRange(range); 
-}); // 🔥 CAMBIO
-
-// CAMBIO: guarda el nombre al perder foco o al pulsar Enter // 🔥 CAMBIO
-userDisplay.addEventListener('keydown', async (e) => { // 🔥 CAMBIO
-  if (e.key === 'Enter') { // 🔥 CAMBIO
-    e.preventDefault(); // 🔥 CAMBIO
-    userDisplay.blur(); // 🔥 CAMBIO -> disparará el blur handler que guarda
-  } // 🔥 CAMBIO
-}); // 🔥 CAMBIO
-
-userDisplay.addEventListener('blur', async () => { // 🔥 CAMBIO
-  if (!currentUser) return; // 🔥 CAMBIO
-  const newName = userDisplay.textContent.trim(); // 🔥 CAMBIO
-  if (!newName) { // 🔥 CAMBIO
-    userDisplay.textContent = currentUser.displayName || 'Usuario'; // 🔥 CAMBIO
-    userDisplay.contentEditable = 'false'; // 🔥 CAMBIO
-    return; // 🔥 CAMBIO
-  } // 🔥 CAMBIO
-
-  try { // 🔥 CAMBIO
-    await updateProfile(auth.currentUser, { displayName: newName }); // 🔥 CAMBIO
-    userDisplay.textContent = newName; // 🔥 CAMBIO
-  } catch (err) { // 🔥 CAMBIO
-    console.error(err); // 🔥 CAMBIO
-    alert('Error al actualizar el nombre'); // 🔥 CAMBIO
-  } finally { // 🔥 CAMBIO
-    userDisplay.contentEditable = 'false'; // 🔥 CAMBIO
-  } // 🔥 CAMBIO
-}); // 🔥 CAMBIO
-
-btnAdd.addEventListener('click',()=>openForm()); 
-btnCancel.addEventListener('click',()=>closeForm());
+// --------------------- UPLOAD IMAGEN ----------------------------------
 
 fakefile.addEventListener('click',()=>fileInput.click());
-fileInput.addEventListener('change',()=>{const f=fileInput.files[0]; if(!f)return; const reader=new FileReader(); reader.onload=()=>{ preview.innerHTML='<img src="'+reader.result+'" style="max-width:120px;border-radius:6px">'; preview.dataset.image=reader.result; document.getElementById('imgurl').value=''; }; reader.readAsDataURL(f); });
-document.getElementById('imgurl').addEventListener('change',e=>{const v=e.target.value.trim(); preview.dataset.image=v; preview.innerHTML=v?'<img src="'+v+'" style="max-width:120px;border-radius:6px">':''; });
+fileInput.addEventListener('change',()=>{
+  const f=fileInput.files[0]; 
+  if(!f)return; 
+  const reader=new FileReader(); 
+  reader.onload=()=>{
+    preview.innerHTML='<img src="'+reader.result+'" style="max-width:120px;border-radius:6px">';
+    preview.dataset.image=reader.result; 
+    document.getElementById('imgurl').value='';
+  }; 
+  reader.readAsDataURL(f); 
+});
+
+document.getElementById('imgurl').addEventListener('change',e=>{
+  const v=e.target.value.trim(); 
+  preview.dataset.image=v; 
+  preview.innerHTML=v?'<img src="'+v+'" style="max-width:120px;border-radius:6px">':'';
+});
+
+
+// --------------------- AUTH STATE ----------------------------------
 
 onAuthStateChanged(auth,user=>{
   currentUser=user; 
@@ -378,15 +397,20 @@ onAuthStateChanged(auth,user=>{
   }
 });
 
+
+// --------------------- CARGAR TARJETAS ----------------------------------
+
 async function loadMangas(){
   grid.innerHTML='';
   const col=collection(db,'users',currentUser.uid,'mangas');
   const snapshot=await getDocs(col);
   const items=snapshot.docs.map(d=>({id:d.id,...d.data()}));
+  
   if(items.length===0){ empty.style.display='block'; return; } 
   empty.style.display='none';
 
   const tipos = ['Manga','Anime','Serie'];
+
   tipos.forEach(tipo=>{
     const itemsTipo = items.filter(it=>it.type === tipo);
     if(itemsTipo.length === 0) return;
@@ -401,137 +425,126 @@ async function loadMangas(){
       const card=document.createElement('article');
       card.className='card';
 
-      // CAMBIO: data-id en la tarjeta para referencia fácil y evitar closures problemáticos // 🔥 CAMBIO
-      card.dataset.itemId = it.id; // 🔥 CAMBIO
+      card.dataset.itemId = it.id;
 
-      card.innerHTML=`<div class="thumb">${it.imgurl?'<img src="'+it.imgurl+'">':''}</div>
+      card.innerHTML=`
+        <div class="thumb">${it.imgurl?'<img src="'+it.imgurl+'">':''}</div>
         <div class="meta">
           <div class="title">${it.title}</div>
           <div class="genre">${it.genre}</div>
           <div class="last">Últ.: <strong>${it.last}</strong></div>
-          <div class="small-toast" style="display:none;"></div> <!-- 🔥 CAMBIO: espacio para mensajes puntuales -->
+          <div class="small-toast" style="display:none;"></div>
         </div>
         <div class="actions">
           <a class="link" href="${it.url || '#'}" target="_blank">Ir a ver →</a>
           <button class="small btn" data-action="edit" data-id="${it.id}">Editar</button>
           <button class="small btn" data-action="del" data-id="${it.id}" style="background:transparent;border:1px solid rgba(255,255,255,0.2);">Borrar</button>
         </div>`;
+
       grid.appendChild(card);
 
-      // CAMBIO: manejador de click en la tarjeta (suma 1 o varios con SHIFT) // 🔥 CAMBIO
+
+      // ------------------ CLICK normal (sumar 1 o varios con SHIFT) ------------------
+
       card.addEventListener('click', async (e) => {
-        // Opción A: solo sumamos si no se ha hecho click en un botón o enlace dentro de la tarjeta
-        if (e.target.closest('button') || e.target.closest('a')) return; // 🔥 CAMBIO: evita interferir con botones
-        if (!currentUser) { alert('Debes iniciar sesión para actualizar el capítulo'); return; } // 🔥 CAMBIO
 
-        const id = card.dataset.itemId; // 🔥 CAMBIO
-        // Buscar el item actual en la lista (para tener el último valor)
-        const currentItem = items.find(x => x.id === id); // 🔥 CAMBIO
-        if (!currentItem) return; // 🔥 CAMBIO
+        if (e.target.closest('button') || e.target.closest('a')) return;
 
-        let delta = 1; // 🔥 CAMBIO por defecto +1
+        if (!currentUser) { alert('Debes iniciar sesión para actualizar el capítulo'); return; }
+
+        const id = card.dataset.itemId;
+        const currentItem = items.find(x => x.id === id);
+        if (!currentItem) return;
+
+        let delta = 1;
         if (e.shiftKey) {
-          // prompt para sumar varios
-          const resp = prompt('¿Cuántos episodios quieres sumar? (número entero)');
+          const resp = prompt('¿Cuántos episodios quieres sumar?');
           if (!resp) return;
+
           const n = parseInt(resp);
-          if (!Number.isInteger(n) || n <= 0) { alert('Número inválido'); return; }
-          delta = n; // 🔥 CAMBIO
+          if (!Number.isInteger(n) || n <= 0) return alert('Número inválido');
+
+          delta = n;
         }
 
-        // calcular nuevo valor
-        const oldLast = Number(currentItem.last) || 0; // 🔥 CAMBIO
-        const newLast = oldLast + delta; // 🔥 CAMBIO
+        const oldLast = Number(currentItem.last) || 0;
+        const newLast = oldLast + delta;
 
         try {
-          // Actualizar sólo el campo 'last' sin sobreescribir otros datos
-          await updateDoc(doc(db,'users',currentUser.uid,'mangas',id), { last: String(newLast) }); // 🔥 CAMBIO
-          // actualizar UI inmediatamente
-          const strongEl = card.querySelector('.last strong'); // 🔥 CAMBIO
-          if (strongEl) strongEl.textContent = String(newLast); // 🔥 CAMBIO
+          await updateDoc(doc(db,'users',currentUser.uid,'mangas',id), { last: String(newLast) });
 
-          // mostrar toast pequeño temporal
-          const toast = card.querySelector('.small-toast'); // 🔥 CAMBIO
-          if (toast) {
-            toast.style.display = 'block'; // 🔥 CAMBIO
-            toast.textContent = (delta === 1) ? 'Has leído 1 capítulo' : `Se han añadido ${delta} capítulos`; // 🔥 CAMBIO
-            setTimeout(()=>{ toast.style.display='none'; }, 2200); // 🔥 CAMBIO
-          }
-          // también actualizamos el objeto items para futuras operaciones sin recargar
-          currentItem.last = String(newLast); // 🔥 CAMBIO
-        } catch (err) {
-          console.error('Error actualizando capítulo:', err); // 🔥 CAMBIO
-          alert('No se pudo actualizar el capítulo.'); // 🔥 CAMBIO
-        }
+          card.querySelector('.last strong').textContent = String(newLast);
 
-        let longPressTimer = null;
-let longPressDeltaMode = false;
-
-// Cuando el dedo toca la tarjeta
-card.addEventListener('touchstart', (e) => {
-  if (e.target.closest('button') || e.target.closest('a')) return;
-
-  longPressTimer = setTimeout(() => {
-    longPressDeltaMode = true;
-    card.classList.add("long-press-active");
-
-    const resp = prompt('¿Cuántos episodios quieres sumar? (número entero)');
-    if (!resp) { 
-      longPressDeltaMode = false;
-      return;
-    }
-
-    const n = parseInt(resp);
-    if (!Number.isInteger(n) || n <= 0) {
-      alert('Número inválido');
-      longPressDeltaMode = false;
-      return;
-    }
-
-    const id = card.dataset.itemId;
-    const currentItem = items.find(x => x.id === id);
-    if (!currentItem) return;
-
-    const oldLast = Number(currentItem.last) || 0;
-    const newLast = oldLast + n;
-
-    updateDoc(doc(db,'users',currentUser.uid,'mangas',id), { last: String(newLast) })
-      .then(() => {
-        const strongEl = card.querySelector('.last strong');
-        if (strongEl) strongEl.textContent = String(newLast);
-
-        const toast = card.querySelector('.small-toast');
-        if (toast) {
+          const toast = card.querySelector('.small-toast');
+          toast.textContent = delta === 1 ? 'Has leído 1 capítulo' : `+${delta} capítulos`;
           toast.style.display = 'block';
-          toast.textContent = `Se han añadido ${n} capítulos`;
-          setTimeout(() => toast.style.display = 'none', 2200);
-        }
+          setTimeout(()=> toast.style.display='none', 2000);
 
-        currentItem.last = String(newLast);
+          currentItem.last = String(newLast);
+        } catch (err) {
+          console.error(err);
+          alert('No se pudo actualizar el capítulo.');
+        }
       });
 
-  }, 600); // Mantener presionado 0.6s
-});
 
-// Si levanta el dedo antes de los 600ms, cancelar long press
-card.addEventListener('touchend', () => {
-  clearTimeout(longPressTimer);
-  longPressDeltaMode = false;
-  card.classList.remove("long-press-active");
-});
-      }); // 🔥 CAMBIO
+      // ------------------ LONG PRESS (SUMAR VARIOS EN MÓVIL) ------------------
 
-    }); // itemsTipo.forEach
-  }); // tipos.forEach
+      let longPressTimer = null;
 
-  // reenlazar botones (editar/borrar) como antes
+      card.addEventListener("touchstart", (e) => {
+
+        if (e.target.closest("button") || e.target.closest("a")) return;
+
+        longPressTimer = setTimeout(async () => {
+
+          const resp = prompt("¿Cuántos episodios quieres sumar?");
+          if (!resp) return;
+
+          const n = parseInt(resp);
+          if (!Number.isInteger(n) || n <= 0) return alert("Número inválido");
+
+          const id = card.dataset.itemId;
+          const currentItem = items.find(x => x.id === id);
+          if (!currentItem) return;
+
+          const oldLast = Number(currentItem.last) || 0;
+          const newLast = oldLast + n;
+
+          await updateDoc(doc(db,'users',currentUser.uid,'mangas',id), { last: String(newLast) });
+
+          card.querySelector('.last strong').textContent = String(newLast);
+
+          const toast = card.querySelector('.small-toast');
+          toast.textContent = `+${n} capítulos`;
+          toast.style.display = 'block';
+          setTimeout(()=> toast.style.display='none', 2000);
+
+          currentItem.last = String(newLast);
+
+        }, 600); // LONG PRESS
+      });
+
+      card.addEventListener("touchend", () => {
+        clearTimeout(longPressTimer);
+      });
+
+    });
+  });
+
+
+  // botones editar/borrar
   grid.querySelectorAll('button').forEach(b=>{
     const action=b.dataset.action; 
     const id=b.dataset.id; 
     if(action==='edit') b.addEventListener('click',()=>openForm(id)); 
     if(action==='del') b.addEventListener('click',()=>deleteManga(id));
   });
+
 }
+
+
+// --------------------- FORMULARIO ----------------------------------
 
 function openForm(id=null){
   editId=id; 
@@ -539,6 +552,7 @@ function openForm(id=null){
   fields.forEach(f=>document.getElementById(f).value=''); 
   preview.innerHTML=''; 
   preview.dataset.image='';
+
   if(id){
     getDocs(collection(db,'users',currentUser.uid,'mangas')).then(snapshot=>{
       const d=snapshot.docs.find(doc=>doc.id===id).data(); 
@@ -549,24 +563,40 @@ function openForm(id=null){
       document.getElementById('type').value=d.type; 
       updateGenres();
       document.getElementById('genre').value=d.genre; 
-      if(d.imgurl){preview.innerHTML='<img src="'+d.imgurl+'" style="max-width:120px;border-radius:6px">'; preview.dataset.image=d.imgurl;} 
+      if(d.imgurl){
+        preview.innerHTML='<img src="'+d.imgurl+'" style="max-width:120px;border-radius:6px">'; 
+        preview.dataset.image=d.imgurl;
+      }
     });
   }
+
   modal.classList.add('open');
 }
 
-
-function closeForm(){ modal.classList.remove('open'); fileInput.value=''; editId=null; }
+function closeForm(){ 
+  modal.classList.remove('open'); 
+  fileInput.value=''; 
+  editId=null; 
+}
 
 btnSave.addEventListener('click',async()=>{
   if(!currentUser){ alert('Debes iniciar sesión antes de guardar.'); return; }
+
   const data={}; 
   fields.forEach(f=>data[f]=document.getElementById(f).value); 
   data.imgurl=preview.dataset.image||'';
+
   const col=collection(db,'users',currentUser.uid,'mangas');
-  if(editId){ await setDoc(doc(db,'users',currentUser.uid,'mangas',editId),data); }
-  else{ await addDoc(col,data); }
-  closeForm(); loadMangas();
+
+  if(editId){ 
+    await setDoc(doc(db,'users',currentUser.uid,'mangas',editId),data); 
+  }
+  else{ 
+    await addDoc(col,data); 
+  }
+
+  closeForm(); 
+  loadMangas();
 });
 
 async function deleteManga(id){
