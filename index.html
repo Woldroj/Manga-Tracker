@@ -364,12 +364,12 @@ function openForm(id=null){
     getDocs(collection(db,'users',currentUser.uid,'mangas')).then(snapshot=>{
       const d=snapshot.docs.find(doc=>doc.id===id).data(); 
       document.getElementById('title').value=d.title; 
-      document.getElementById('genre').value=d.genre; 
       document.getElementById('last').value=d.last; 
       document.getElementById('url').value=d.url; 
       document.getElementById('notes').value=d.notes||''; 
       document.getElementById('type').value=d.type; 
       updateGenres();
+      document.getElementById('genre').value=d.genre; 
       if(d.imgurl){preview.innerHTML='<img src="'+d.imgurl+'" style="max-width:120px;border-radius:6px">'; preview.dataset.image=d.imgurl;} 
     });
   }
