@@ -10,57 +10,184 @@
       --bg: #0f172a; --card: #1e293b; --accent: #f1f5f9; --accent-2: #3b82f6;
       --muted: #94a3b8; --danger: #ef4444; --shadow: rgba(0,0,0,0.3);
     }
-    *{box-sizing:border-box} html,body{margin:0;padding:0;font-family:'Inter',sans-serif;background:var(--bg);color:var(--accent)}
+
+    *{box-sizing:border-box}
+    html,body{
+      margin:0;padding:0;font-family:'Inter',sans-serif;
+      background:var(--bg);color:var(--accent)
+    }
+
     .app{max-width:1100px;margin:40px auto;padding:20px}
-    header{text-align:center;margin-bottom:30px} header h1{font-size:38px;font-weight:700;margin-bottom:6px} header p{font-size:16px;color:var(--muted);margin:0}
-    .controls{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:15px} .controls input,.controls button,.controls select{padding:8px 12px;border-radius:8px;border:none;font-size:14px} .controls input,.controls select{background:var(--card);color:var(--accent)}
-    .controls button{cursor:pointer;transition:0.2s} .btn.primary{background:var(--accent-2);color:#fff} .btn.primary:hover{background:#2563eb}
-    .btn.ghost{background:transparent;border:1px solid var(--accent-2);color:var(--accent-2)} .btn.ghost:hover{background:var(--accent-2);color:var(--bg)}
-    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:18px;margin-top:25px}
-    h2.tipo-header{border-bottom:2px solid var(--accent-2); padding-bottom:4px; margin-top:20px; color:var(--accent-2);}
-    .card{background:var(--card);border-radius:14px;overflow:hidden;box-shadow:0 8px 20px var(--shadow);display:flex;flex-direction:column;transition:transform 0.2s,box-shadow 0.2s; cursor: pointer;} /* CAMBIO: cursor pointer para indicar clic */  /* 🔥 CAMBIO */
+
+    header{text-align:center;margin-bottom:30px}
+    header h1{font-size:38px;font-weight:700;margin-bottom:6px}
+    header p{font-size:16px;color:var(--muted);margin:0}
+
+    /* ------------------ 👤 Contenedor nombre + lápiz ------------------ */
+    #user-controls{
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    #user-display{
+      font-size: 22px;
+      font-weight: 600;
+    }
+
+    #btn-edit-name{
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--accent-2);
+      font-size: 20px;
+      padding: 4px;
+      transition: 0.2s;
+    }
+
+    #btn-edit-name:hover{
+      color: #1d4ed8;
+      transform: scale(1.1);
+    }
+
+    /* -------------- 📱 MÓVIL: lápiz al lado del nombre siempre ---------- */
+    @media (max-width: 600px){
+
+      #user-controls{
+        flex-direction: row;
+        gap: 10px;
+      }
+
+      #btn-edit-name{
+        margin-left: 4px;
+        font-size: 22px;
+        transform: translateY(1px);
+      }
+
+      #user-display{
+        font-size: 20px;
+      }
+    }
+
+    /* ------------------------------------------------------------------- */
+
+    .controls{
+      display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:15px
+    }
+    .controls input,.controls button,.controls select{
+      padding:8px 12px;border-radius:8px;border:none;font-size:14px
+    }
+    .controls input,.controls select{background:var(--card);color:var(--accent)}
+    .controls button{cursor:pointer;transition:0.2s}
+    .btn.primary{background:var(--accent-2);color:#fff}
+    .btn.primary:hover{background:#2563eb}
+    .btn.ghost{background:transparent;border:1px solid var(--accent-2);color:var(--accent-2)}
+    .btn.ghost:hover{background:var(--accent-2);color:var(--bg)}
+
+    .grid{
+      display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
+      gap:18px;margin-top:25px
+    }
+
+    h2.tipo-header{
+      display:flex;align-items:center;font-size:20px;color:var(--accent-2);
+      font-weight:600;margin:20px 0 10px 0;white-space:nowrap;
+      border-bottom:none !important;
+    }
+
+    h2.tipo-header::after{
+      content:'';flex-grow:1;height:1px;background:var(--accent-2);
+      margin-left:10px;
+    }
+
+    .card{
+      background:var(--card);border-radius:14px;overflow:hidden;
+      box-shadow:0 8px 20px var(--shadow);display:flex;flex-direction:column;
+      transition:transform 0.2s,box-shadow 0.2s;cursor:pointer;
+    }
     .card:hover{transform:translateY(-4px);box-shadow:0 12px 24px var(--shadow)}
-    .card .thumb{width:100%;height:140px;background:linear-gradient(135deg,#3b82f6,#2563eb);display:flex;align-items:center;justify-content:center;overflow:hidden}
-    .card .thumb img{width:100%;height:100%;object-fit:cover;transition:transform 0.3s} .card:hover .thumb img{transform:scale(1.05)}
-    .card .meta{padding:12px;display:flex;flex-direction:column;gap:4px} .card .title{font-size:18px;font-weight:700;margin:0}
-    .card .genre{font-size:13px;color:var(--muted)} .card .last{font-size:14px;margin-top:6px}
-    .card .actions{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-top:1px solid rgba(255,255,255,0.1)}
-    .card .link{color:var(--accent-2);text-decoration:none;font-size:13px} .card .small{font-size:12px;padding:6px 10px;border-radius:8px;border:none;cursor:pointer;transition:0.2s}
+
+    .card .thumb{
+      width:100%;height:140px;background:linear-gradient(135deg,#3b82f6,#2563eb);
+      display:flex;align-items:center;justify-content:center;overflow:hidden
+    }
+    .card .thumb img{
+      width:100%;height:100%;object-fit:cover;transition:transform 0.3s
+    }
+    .card:hover .thumb img{transform:scale(1.05)}
+
+    .card .meta{padding:12px;display:flex;flex-direction:column;gap:4px}
+    .card .title{font-size:18px;font-weight:700;margin:0}
+    .card .genre{font-size:13px;color:var(--muted)}
+    .card .last{font-size:14px;margin-top:6px}
+
+    .card .actions{
+      display:flex;justify-content:space-between;align-items:center;
+      padding:8px 12px;border-top:1px solid rgba(255,255,255,0.1)
+    }
+
+    .card .link{
+      color:var(--accent-2);text-decoration:none;font-size:13px
+    }
+    .card .small{
+      font-size:12px;padding:6px 10px;border-radius:8px;border:none;
+      cursor:pointer;transition:0.2s
+    }
     .card .small:hover{background:var(--accent-2);color:#fff}
-    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.6);padding:20px;z-index:999}
-    .modal.open{display:flex} .panel{width:100%;max-width:560px;background:var(--card);border-radius:14px;padding:20px}
-    .form-row{display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap} .form-row .col{flex:1}
-    label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}
-    input[type=text],select,input[type=url],textarea{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.2);font-size:14px;background:var(--bg);color:var(--accent)}
-    textarea{resize:vertical;min-height:70px} .uploader{display:flex;gap:8px;align-items:center}
-    .uploader input[type=file]{display:none} .fakefile{padding:8px 10px;border-radius:8px;border:1px dashed rgba(255,255,255,0.3);cursor:pointer;font-size:13px;color:var(--muted)}
-    h2.tipo-header {
-  display: flex;
-  align-items: center;
-  font-size: 20px;
-  color: var(--accent-2);
-  font-weight: 600;
-  margin: 20px 0 10px 0;
-  white-space: nowrap;
-}
 
-h2.tipo-header::after {
-  content: '';
-  flex-grow: 1;
-  height: 1px;
-  background: var(--accent-2);
-  margin-left: 12px;
-  margin-left: 10px;
-}
-    #preview img{max-width:120px;border-radius:8px;margin-top:6px}
+    .modal{
+      position:fixed;inset:0;display:none;align-items:center;
+      justify-content:center;background:rgba(0,0,0,0.6);padding:20px;z-index:999
+    }
+    .modal.open{display:flex}
+    .panel{
+      width:100%;max-width:560px;background:var(--card);
+      border-radius:14px;padding:20px
+    }
 
-    /* CAMBIO: estilo para aviso de sumar muchos capítulos (pequeño toast dentro de la tarjeta) */ /* 🔥 CAMBIO */
-    .small-toast { font-size:13px; color:var(--accent-2); margin-top:6px; } /* 🔥 CAMBIO */
+    .form-row{
+      display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap
+    }
+    .form-row .col{flex:1}
 
-    @media(max-width:520px){.form-row{flex-direction:column}.controls{flex-direction:column;align-items:center}.controls input,.controls button,.controls select{width:90%}}
-  
+    label{
+      display:block;font-size:12px;color:var(--muted);margin-bottom:4px
+    }
 
-  </style>
+    input[type=text],select,input[type=url],textarea{
+      width:100%;padding:10px;border-radius:8px;
+      border:1px solid rgba(255,255,255,0.2);
+      font-size:14px;background:var(--bg);color:var(--accent)
+    }
+
+    textarea{resize:vertical;min-height:70px}
+
+    .uploader{display:flex;gap:8px;align-items:center}
+    .uploader input[type=file]{display:none}
+    .fakefile{
+      padding:8px 10px;border-radius:8px;border:1px dashed rgba(255,255,255,0.3);
+      cursor:pointer;font-size:13px;color:var(--muted)
+    }
+
+    #preview img{
+      max-width:120px;border-radius:8px;margin-top:6px
+    }
+
+    .small-toast{
+      font-size:13px;color:var(--accent-2);margin-top:6px;
+    }
+
+    @media(max-width:520px){
+      .form-row{flex-direction:column}
+      .controls{
+        flex-direction:column;align-items:center
+      }
+      .controls input,.controls button,.controls select{width:90%}
+    }
+</style>
+
 </head>
 <body>
 <div class="app">
@@ -74,19 +201,17 @@ h2.tipo-header::after {
       <button id="btn-login" class="btn primary">Login / Register</button>
     </div>
     <div class="controls" id="user-controls" style="display:none">
-      <!-- CAMBIO: ahora el nombre es un span + icono lápiz SVG en vez del input y botón --> <!-- 🔥 CAMBIO -->
       <span id="user-display" style="font-weight:600;font-size:16px;display:inline-flex;align-items:center;gap:8px;"></span>
       <button id="btn-edit-name" title="Editar nombre" style="background:transparent;border:none;color:var(--accent-2);cursor:pointer;padding:4px;display:inline-flex;align-items:center;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1.003 1.003 0 0 0 0-1.41l-2.34-2.34a1.003 1.003 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" fill="currentColor"/>
         </svg>
-      </button> <!-- 🔥 CAMBIO --> <!-- 🔥 CAMBIO -->
+      </button>
       <button id="btn-logout" class="btn ghost">Cerrar sesión</button>
       <button id="btn-add" class="btn primary">＋ Añadir</button>
 
-      <!-- ocultamos los controles anteriores (si existen) y los mantuvimos en DOM por compatibilidad --> <!-- 🔥 CAMBIO -->
-      <input id="new-username" type="text" placeholder="Nuevo nombre" style="display:none;"> <!-- 🔥 CAMBIO -->
-      <button id="btn-change-name" class="btn ghost" style="display:none">Cambiar nombre</button> <!-- 🔥 CAMBIO -->
+      <input id="new-username" type="text" placeholder="Nuevo nombre" style="display:none;">
+      <button id="btn-change-name" class="btn ghost" style="display:none">Cambiar nombre</button> 
 
     </div>
   </header>
@@ -136,9 +261,9 @@ const userDisplay=document.getElementById('user-display');
 const btnLogin=document.getElementById('btn-login'); 
 const btnLogout=document.getElementById('btn-logout'); 
 const btnAdd=document.getElementById('btn-add');
-const btnChangeName = document.getElementById("btn-change-name"); // 👈 CAMBIO (se mantiene oculto)
-const inputNewName  = document.getElementById("new-username"); // 👈 CAMBIO (se mantiene oculto)
-const btnEditName = document.getElementById("btn-edit-name"); // 👈 CAMBIO: nuevo botón lápiz
+const btnChangeName = document.getElementById("btn-change-name");
+const inputNewName  = document.getElementById("new-username");
+const btnEditName = document.getElementById("btn-edit-name");
 const modal=document.getElementById('modal'); 
 const btnCancel=document.getElementById('btn-cancel'); 
 const btnSave=document.getElementById('btn-save');
@@ -183,23 +308,23 @@ btnLogin.addEventListener('click',async()=>{
 });
 btnLogout.addEventListener('click',()=>signOut(auth));
 
-// CAMBIO: ocultamos los controles antiguos (input+boton) y activamos icono lápiz manejable // 🔥 CAMBIO
-btnChangeName.style.display = 'none'; // 🔥 CAMBIO
-inputNewName.style.display = 'none'; // 🔥 CAMBIO
 
-// CAMBIO: al hacer click en el lápiz, convertimos el userDisplay en editable // 🔥 CAMBIO
-btnEditName.addEventListener('click', () => { // 🔥 CAMBIO
-  if (!currentUser) return alert('Inicia sesión para editar tu nombre'); // 🔥 CAMBIO
-  userDisplay.contentEditable = 'true'; // 🔥 CAMBIO
-  userDisplay.focus(); // 🔥 CAMBIO
+btnChangeName.style.display = 'none'; 
+inputNewName.style.display = 'none'; 
 
-  // mover el caret al final (opcional, para mejor UX) // 🔥 CAMBIO
-  const range = document.createRange(); // 🔥 CAMBIO
-  range.selectNodeContents(userDisplay); // 🔥 CAMBIO
-  range.collapse(false); // 🔥 CAMBIO
-  const sel = window.getSelection(); // 🔥 CAMBIO
-  sel.removeAllRanges(); // 🔥 CAMBIO
-  sel.addRange(range); // 🔥 CAMBIO
+
+btnEditName.addEventListener('click', () => { 
+  if (!currentUser) return alert('Inicia sesión para editar tu nombre'); 
+  userDisplay.contentEditable = 'true';
+  userDisplay.focus(); 
+
+
+  const range = document.createRange(); 
+  range.selectNodeContents(userDisplay); 
+  range.collapse(false); 
+  const sel = window.getSelection(); 
+  sel.removeAllRanges(); 
+  sel.addRange(range); 
 }); // 🔥 CAMBIO
 
 // CAMBIO: guarda el nombre al perder foco o al pulsar Enter // 🔥 CAMBIO
@@ -338,6 +463,62 @@ async function loadMangas(){
           console.error('Error actualizando capítulo:', err); // 🔥 CAMBIO
           alert('No se pudo actualizar el capítulo.'); // 🔥 CAMBIO
         }
+
+        let longPressTimer = null;
+let longPressDeltaMode = false;
+
+// Cuando el dedo toca la tarjeta
+card.addEventListener('touchstart', (e) => {
+  if (e.target.closest('button') || e.target.closest('a')) return;
+
+  longPressTimer = setTimeout(() => {
+    longPressDeltaMode = true;
+    card.classList.add("long-press-active");
+
+    const resp = prompt('¿Cuántos episodios quieres sumar? (número entero)');
+    if (!resp) { 
+      longPressDeltaMode = false;
+      return;
+    }
+
+    const n = parseInt(resp);
+    if (!Number.isInteger(n) || n <= 0) {
+      alert('Número inválido');
+      longPressDeltaMode = false;
+      return;
+    }
+
+    const id = card.dataset.itemId;
+    const currentItem = items.find(x => x.id === id);
+    if (!currentItem) return;
+
+    const oldLast = Number(currentItem.last) || 0;
+    const newLast = oldLast + n;
+
+    updateDoc(doc(db,'users',currentUser.uid,'mangas',id), { last: String(newLast) })
+      .then(() => {
+        const strongEl = card.querySelector('.last strong');
+        if (strongEl) strongEl.textContent = String(newLast);
+
+        const toast = card.querySelector('.small-toast');
+        if (toast) {
+          toast.style.display = 'block';
+          toast.textContent = `Se han añadido ${n} capítulos`;
+          setTimeout(() => toast.style.display = 'none', 2200);
+        }
+
+        currentItem.last = String(newLast);
+      });
+
+  }, 600); // Mantener presionado 0.6s
+});
+
+// Si levanta el dedo antes de los 600ms, cancelar long press
+card.addEventListener('touchend', () => {
+  clearTimeout(longPressTimer);
+  longPressDeltaMode = false;
+  card.classList.remove("long-press-active");
+});
       }); // 🔥 CAMBIO
 
     }); // itemsTipo.forEach
