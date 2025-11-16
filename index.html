@@ -180,18 +180,40 @@
     }
 
     @media(max-width:520px){
-      .form-row{flex-direction:column}
-      .controls{
-        flex-direction:column;align-items:center
-      }
-      #btn-edit-name{
-        margin-left: 4px;
-        font-size: 22px;
-        transform: translateY(1px);
-        flex-direction: row;
-      }
-      .controls input,.controls button,.controls select{width:90%}
-    }
+
+  /* Inputs login en columna */
+  .controls{
+    flex-direction:column;
+    align-items:center;
+  }
+  .controls input,
+  .controls button,
+  .controls select{
+    width:90%;
+  }
+
+  /* ✔ Usuario: nombre + lápiz SIEMPRE en línea */
+  #user-controls{
+    flex-direction:column;
+    gap:10px;
+  }
+
+  /* Primera fila: nombre + lápiz */
+  #user-display{
+    display:flex;
+    flex-direction:row;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    width:100%;
+  }
+
+  /* Segunda fila: botones en columna */
+  #btn-logout,
+  #btn-add{
+    width:90%;
+  }
+}
 </style>
 
 </head>
