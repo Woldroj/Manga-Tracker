@@ -543,7 +543,7 @@ window.addEventListener('load', ()=>{
 });
 
 /* ---------- Data (cards) ---------- */
-const fields = ['title','genre','last','url','notes','imgurl','type'];
+const fields = ['title','genre','last','url','imgurl','type'];
 const typeSelect = document.getElementById('type');
 const genreSelect = document.getElementById('genre');
 const categories = {
@@ -632,7 +632,6 @@ function openForm(id=null){
       document.getElementById('title').value = d.title || '';
       document.getElementById('last').value = d.last || '';
       document.getElementById('url').value = d.url || '';
-      document.getElementById('notes').value = d.notes || '';
       document.getElementById('type').value = d.type || 'Manga';
       updateGenres();
       document.getElementById('genre').value = d.genre || '';
