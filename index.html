@@ -233,20 +233,20 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-app.js";
 import {
   getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
-  signOut, onAuthStateChanged, updateProfile, sendEmailVerification
+  signOut, onAuthStateChanged, updateProfile
 } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-auth.js";
 import {
   getFirestore, collection, addDoc, getDocs, doc, setDoc, deleteDoc,
   getDoc, updateDoc
 } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-storage.js";
 
 /* --------- CONFIG --------- */
-/* Sustituye por tu config si hace falta: */
 const firebaseConfig = {
   apiKey: "AIzaSyBjGHgNC4CHglfh75yMxXYcLMij8aywcQc",
   authDomain: "mangatracker-63f14.firebaseapp.com",
   projectId: "mangatracker-63f14",
-  storageBucket: "mangatracker-63f14.firebasestorage.app",
+  storageBucket: "mangatracker-63f14.appspot.com",
   messagingSenderId: "612200334218",
   appId: "1:612200334218:web:1cd7349bbc61b71ad7fe73",
   measurementId: "G-1VY5WJG76J"
@@ -254,6 +254,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+const storage = getStorage(app);
 
 /* ---------- DOM refs ---------- */
 const authControls = document.getElementById('auth-controls');
@@ -309,13 +310,12 @@ Object.keys(THEMES).forEach(key=>{
 /* Apply theme to CSS vars */
 function setCssVarsFromTheme(themeKey){
   const vars = THEMES[themeKey] || THEMES.dark;
-  Object.entries(vars).forEach(([k,v])=> document.documentElement.style.setProperty(k,v) );
+  Object.entries(vars).forEach(([k,v])=> document.documentElement.style.setProperty(k,v));
 }
 function applyTheme(themeKey, save=true){
   document.body.dataset.theme = themeKey;
   setCssVarsFromTheme(themeKey);
   if(save){
-    // save to Firestore prefs when user logged in, else localStorage
     if(currentUser){
       const prefsRef = doc(db,'users',currentUser.uid,'prefs','ui');
       setDoc(prefsRef, { theme: themeKey }, { merge:true }).catch(e=>console.error(e));
@@ -336,7 +336,7 @@ async function loadPrefsForUser(uid){
       if(data.photoURL) setProfileImage(data.photoURL);
     } else {
       const local = localStorage.getItem('mt_theme') || 'dark';
-      applyTheme(local, false);
+      applyTheme(local,false);
     }
   }catch(e){ console.error(e); const local = localStorage.getItem('mt_theme') || 'dark'; applyTheme(local,false); }
 }
@@ -359,7 +359,6 @@ let currentUser = null;
 onAuthStateChanged(auth, async (user) => {
   currentUser = user;
   if(user){
-    // optionally enforce email verification here
     authControls.style.display = 'none';
     userControls.style.display = 'flex';
     setUserNameDisplay(user.displayName || user.email);
@@ -378,7 +377,7 @@ onAuthStateChanged(auth, async (user) => {
   }
 });
 
-/* ---------- AUTH: login/register (basic + email verification option) ---------- */
+/* ---------- AUTH: login/register ---------- */
 btnLogin.addEventListener('click', async ()=>{
   const email = document.getElementById('email').value.trim();
   const password = document.getElementById('password').value;
@@ -387,15 +386,11 @@ btnLogin.addEventListener('click', async ()=>{
   try{
     const uc = await signInWithEmailAndPassword(auth,email,password);
     if(!uc.user.displayName) await updateProfile(uc.user,{ displayName: username });
-    // optional: require verification — not enforced here; you can add sendEmailVerification
   }catch(err){
-    // register flow
     try{
       const created = await createUserWithEmailAndPassword(auth,email,password);
       await updateProfile(created.user,{ displayName: username });
-      // send email verify (optional):
-      // await sendEmailVerification(created.user);
-      alert('Cuenta creada correctamente. Inicia sesión (y verifica el correo si lo activas).');
+      alert('Cuenta creada correctamente. Inicia sesión.');
       await signOut(auth);
     }catch(e){
       console.error(e);
@@ -413,11 +408,7 @@ gearBtn.addEventListener('click', (e)=> {
     settingsMenu.setAttribute('aria-hidden', settingsMenu.classList.contains('open') ? 'false' : 'true');
   }
 });
-document.addEventListener('click', (e)=> {
-  if(!settingsMenu.contains(e.target) && !gearBtn.contains(e.target)){
-    settingsMenu.classList.remove('open');
-  }
-});
+document.addEventListener('click', ()=> settingsMenu.classList.remove('open'));
 
 /* Change name (desktop inline) */
 sChangeName.addEventListener('click', async ()=>{
@@ -425,7 +416,6 @@ sChangeName.addEventListener('click', async ()=>{
   settingsMenu.classList.remove('open');
 
   const nameSpan = document.getElementById('user-display');
-  // avoid creating multiple inputs
   if(nameSpan.dataset.editing === '1') return;
   nameSpan.dataset.editing = '1';
   const original = nameSpan.textContent || '';
@@ -433,7 +423,6 @@ sChangeName.addEventListener('click', async ()=>{
   input.type = 'text';
   input.value = original;
   input.placeholder = 'Nuevo nombre';
-  input.className = 'inline-name-input';
   input.style.width = '140px';
   input.addEventListener('keydown', async (ev)=>{
     if(ev.key === 'Enter'){ ev.preventDefault(); input.blur(); }
@@ -446,10 +435,10 @@ sChangeName.addEventListener('click', async ()=>{
     nameSpan.style.display = 'inline';
     if(!newName || newName === original) return;
     try{
-      await updateProfile(auth.currentUser, { displayName: newName });
-      // save to Firestore user doc for redundancy
-      const userDoc = doc(db,'users',currentUser.uid);
-      await setDoc(userDoc, { displayName: newName }, { merge:true });
+      const user = auth.currentUser;
+      if(!user) throw new Error('Usuario no disponible');
+      await updateProfile(user, { displayName: newName });
+      await setDoc(doc(db,'users',currentUser.uid), { displayName: newName }, { merge:true });
       setUserNameDisplay(newName);
       alert('Nombre actualizado');
     }catch(e){ console.error(e); alert('Error actualizando nombre'); }
@@ -466,31 +455,31 @@ sChangePhoto.addEventListener('click', ()=>{
   filePhotoInput.click();
   settingsMenu.classList.remove('open');
 });
-filePhotoInput.addEventListener('change', ()=>{
+
+async function uploadProfilePhoto(file){
+  if(!currentUser) return;
+  try{
+    const path = `users/${currentUser.uid}/profile.jpg`;
+    const storageRef = ref(storage, path);
+    await uploadBytes(storageRef, file);
+    const url = await getDownloadURL(storageRef);
+    await updateProfile(currentUser, { photoURL: url });
+    const prefsRef = doc(db,'users',currentUser.uid,'prefs','ui');
+    await setDoc(prefsRef, { photoURL: url }, { merge:true });
+    setProfileImage(url);
+    alert('Foto actualizada');
+  }catch(e){ console.error(e); alert('Error al subir foto'); }
+}
+
+filePhotoInput.addEventListener('change', ()=> {
   const f = filePhotoInput.files[0]; if(!f) return;
-  const reader = new FileReader();
-  reader.onload = async ()=>{
-    const dataUrl = reader.result;
-    try{
-      // update auth profile photoURL (storing dataUrl is OK for small images; consider Storage for production)
-      await updateProfile(auth.currentUser, { photoURL: dataUrl });
-      // store in prefs
-      const prefsRef = doc(db,'users',currentUser.uid,'prefs','ui');
-      await setDoc(prefsRef, { photoURL: dataUrl }, { merge:true });
-      setProfileImage(dataUrl);
-      alert('Foto actualizada');
-    }catch(e){ console.error(e); alert('Error al subir foto'); }
-  };
-  reader.readAsDataURL(f);
+  uploadProfilePhoto(f);
 });
 
 /* Sign out */
-sSignout.addEventListener('click', async ()=>{
-  await signOut(auth);
-  settingsMenu.classList.remove('open');
-});
+sSignout.addEventListener('click', async ()=>{ await signOut(auth); settingsMenu.classList.remove('open'); });
 
-/* Mobile gear condensed menu */
+/* Mobile gear fixed */
 mobileGear.addEventListener('click', ()=>{
   const container = document.createElement('div');
   container.style.position='fixed';
@@ -522,12 +511,15 @@ mobileGear.addEventListener('click', ()=>{
     const newName = prompt('Nuevo nombre:','');
     if(!newName) return;
     try{
-      await updateProfile(auth.currentUser, { displayName: newName });
+      const user = auth.currentUser;
+      if(!user) throw new Error('Usuario no disponible');
+      await updateProfile(user, { displayName: newName });
       await setDoc(doc(db,'users',currentUser.uid), { displayName: newName }, { merge:true });
       setUserNameDisplay(newName);
       container.remove();
     }catch(e){ console.error(e); alert('Error'); }
   });
+
   container.querySelector('#mb-signout').addEventListener('click', async ()=>{ await signOut(auth); container.remove(); });
   container.querySelector('#mb-close').addEventListener('click', ()=> container.remove());
 });
