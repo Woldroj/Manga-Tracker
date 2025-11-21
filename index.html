@@ -241,6 +241,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-firestore.js";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-storage.js";
 
+
 /* --------- CONFIG --------- */
 const firebaseConfig = {
   apiKey: "AIzaSyBjGHgNC4CHglfh75yMxXYcLMij8aywcQc",
@@ -472,31 +473,54 @@ sChangeName.addEventListener('click', async () => {
 
 
 /* Change photo (desktop) */
-sChangePhoto.addEventListener('click', ()=>{
-  if(!currentUser){ alert('Inicia sesión para cambiar la foto'); return; }
+sChangePhoto.addEventListener('click', () => {
+  if (!currentUser) { 
+    alert('Inicia sesión para cambiar la foto'); 
+    return; 
+  }
   filePhotoInput.click();
   settingsMenu.classList.remove('open');
 });
 
-async function uploadProfilePhoto(file){
-  if(!currentUser) return;
-  try{
-    const path = `users/${currentUser.uid}/profile.jpg`;
+
+async function uploadProfilePhoto(file) {
+  try {
+
+    // Asegurar que Firebase tiene user cargado
+    await auth.authStateReady();
+
+    const user = auth.currentUser;
+    if (!user) throw new Error("Usuario no disponible");
+
+    // Subir archivo a Storage
+    const path = `users/${user.uid}/profile.jpg`;
     const storageRef = ref(storage, path);
+
     await uploadBytes(storageRef, file);
     const url = await getDownloadURL(storageRef);
-    await updateProfile(currentUser, { photoURL: url });
-    const prefsRef = doc(db,'users',currentUser.uid,'prefs','ui');
-    await setDoc(prefsRef, { photoURL: url }, { merge:true });
-    setProfileImage(url);
-    alert('Foto actualizada');
-  }catch(e){ console.error(e); alert('Error al subir foto'); }
+
+    // Guardar en Auth
+    await updateProfile(user, { photoURL: url });
+
+    // Refrescar foto en la UI
+    const img = document.getElementById("profile-img");
+    if (img) img.src = url;
+
+    alert("Foto actualizada");
+
+  } catch (e) {
+    console.error(e);
+    alert("Error subiendo foto");
+  }
 }
 
-filePhotoInput.addEventListener('change', ()=> {
-  const f = filePhotoInput.files[0]; if(!f) return;
+
+filePhotoInput.addEventListener('change', () => {
+  const f = filePhotoInput.files[0];
+  if (!f) return;
   uploadProfilePhoto(f);
 });
+
 
 /* Sign out */
 sSignout.addEventListener('click', async ()=>{ await signOut(auth); settingsMenu.classList.remove('open'); });
