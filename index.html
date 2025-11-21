@@ -411,43 +411,67 @@ gearBtn.addEventListener('click', (e)=> {
 document.addEventListener('click', ()=> settingsMenu.classList.remove('open'));
 
 /* Change name (desktop inline) */
-sChangeName.addEventListener('click', async ()=>{
-  if(!currentUser){ alert('Inicia sesión para cambiar el nombre'); return; }
+sChangeName.addEventListener('click', async () => {
+  if (!currentUser) { 
+    alert('Inicia sesión para cambiar el nombre'); 
+    return; 
+  }
+
   settingsMenu.classList.remove('open');
 
   const nameSpan = document.getElementById('user-display');
-  if(nameSpan.dataset.editing === '1') return;
+  if (nameSpan.dataset.editing === '1') return;
+
   nameSpan.dataset.editing = '1';
   const original = nameSpan.textContent || '';
+
   const input = document.createElement('input');
   input.type = 'text';
   input.value = original;
   input.placeholder = 'Nuevo nombre';
   input.style.width = '140px';
-  input.addEventListener('keydown', async (ev)=>{
-    if(ev.key === 'Enter'){ ev.preventDefault(); input.blur(); }
-    if(ev.key === 'Escape'){ input.value = original; input.blur(); }
+
+  input.addEventListener('keydown', (ev) => {
+    if (ev.key === 'Enter') { ev.preventDefault(); input.blur(); }
+    if (ev.key === 'Escape') { input.value = original; input.blur(); }
   });
-  input.addEventListener('blur', async ()=>{
+
+  input.addEventListener('blur', async () => {
+
     const newName = input.value.trim();
     delete nameSpan.dataset.editing;
     input.remove();
     nameSpan.style.display = 'inline';
-    if(!newName || newName === original) return;
-    try{
+
+    if (!newName || newName === original) return;
+
+    try {
+
+      // Esperar a que Firebase garantice usuario cargado
+      await auth.authStateReady();
+
       const user = auth.currentUser;
-      if(!user) throw new Error('Usuario no disponible');
+      if (!user) throw new Error("Firebase no ha cargado el usuario aún");
+
+      // Cambiar nombre en Authentication
       await updateProfile(user, { displayName: newName });
-      await setDoc(doc(db,'users',currentUser.uid), { displayName: newName }, { merge:true });
-      setUserNameDisplay(newName);
-      alert('Nombre actualizado');
-    }catch(e){ console.error(e); alert('Error actualizando nombre'); }
+
+      // Actualizar UI sin recargar
+      nameSpan.textContent = newName;
+
+      alert("Nombre actualizado correctamente");
+
+    } catch (e) {
+      console.error(e);
+      alert("Error actualizando nombre (espera 1 seg y vuelve a probar)");
+    }
   });
 
   nameSpan.style.display = 'none';
   nameSpan.parentElement.prepend(input);
   input.focus();
 });
+
 
 /* Change photo (desktop) */
 sChangePhoto.addEventListener('click', ()=>{
