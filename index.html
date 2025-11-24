@@ -361,17 +361,27 @@ async function loadPrefsForUser(uid){
 }
 
 /* Profile helpers */
-function setProfileImage(url){
-  if(url){
-    // add cache-buster so browser loads latest image after upload
-    const safeUrl = url + (url.includes('?') ? '&' : '?') + 't=' + Date.now();
-    profileImg.src = safeUrl;
-    profileImg.style.display='block';
-    profileInitial.style.display='none';
+function setProfileImage(url) {
+  if (url) {
+
+    // Si es base64, NO se le agrega ?t= porque rompe la imagen
+    if (url.startsWith("data:image/")) {
+      profileImg.src = url;
+    } else {
+      // Si es una URL normal (ej: Firebase Storage), sí se agrega ?t=
+      const safeUrl = url + (url.includes("?") ? "&" : "?") + "t=" + Date.now();
+      profileImg.src = safeUrl;
+    }
+
+    profileImg.style.display = "block";
+    profileInitial.style.display = "none";
+
   } else {
-    profileImg.style.display='none'; profileInitial.style.display='inline-block';
+    profileImg.style.display = "none";
+    profileInitial.style.display = "inline-block";
   }
 }
+
 function setUserNameDisplay(name){
   userDisplay.textContent = name || 'Invitado';
   profileInitial.textContent = (name && name[0]) ? name[0].toUpperCase() : 'I';
