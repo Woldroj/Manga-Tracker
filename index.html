@@ -280,6 +280,7 @@ const btnCancel = document.getElementById('btn-cancel');
 const mobileAdd = document.getElementById('mobile-add');
 const mobileGear = document.getElementById('mobile-gear');
 const mobileProfile = document.getElementById('mobile-profile');
+/* Use the single file input with id="file-photo" (matches your HTML) */
 const filePhotoInput = document.getElementById('file-photo');
 
 const gridEl = document.getElementById('grid');
@@ -298,6 +299,11 @@ const THEMES = {
   green: { '--bg':'#f0fdf4','--card':'#dcfce7','--accent':'#04260f','--accent-2':'#10b981','--muted':'#4b6b53' }
 };
 
+/* helper to get prefs doc ref for a user */
+function prefsDocRef(uid){
+  return doc(db, 'users', uid, 'prefs', 'ui');
+}
+
 /* Populate swatches (UI) */
 Object.keys(THEMES).forEach(key=>{
   const sw = document.createElement('div');
@@ -314,15 +320,20 @@ function setCssVarsFromTheme(themeKey){
   const vars = THEMES[themeKey] || THEMES.dark;
   Object.entries(vars).forEach(([k,v])=> document.documentElement.style.setProperty(k,v));
 }
-function applyTheme(themeKey, save=true){
+async function applyTheme(themeKey, save=true){
   document.body.dataset.theme = themeKey;
   setCssVarsFromTheme(themeKey);
   if(save){
-    if(currentUser){
-      const prefsRef = doc(db,'users',currentUser.uid,'prefs','ui');
-      setDoc(prefsRef, { theme: themeKey }, { merge:true }).catch(e=>console.error(e));
-    } else {
-      localStorage.setItem('mt_theme', themeKey);
+    try{
+      if(currentUser){
+        const prefsRef = prefsDocRef(currentUser.uid);
+        // store theme in firestore (async but we don't block UI)
+        await setDoc(prefsRef, { theme: themeKey }, { merge:true });
+      } else {
+        localStorage.setItem('mt_theme', themeKey);
+      }
+    }catch(e){
+      console.error('Error guardando tema:', e);
     }
   }
 }
@@ -330,13 +341,14 @@ function applyTheme(themeKey, save=true){
 /* Load prefs for user */
 async function loadPrefsForUser(uid){
   try{
-    const prefsRef = doc(db,'users',uid,'prefs','ui');
+    const prefsRef = prefsDocRef(uid);
     const snap = await getDoc(prefsRef);
     if(snap && snap.exists()){
       const data = snap.data();
       if(data.theme) applyTheme(data.theme, false);
       if(data.photoURL) setProfileImage(data.photoURL);
     } else {
+      // if Firestore has no prefs, fallback to localStorage
       const local = localStorage.getItem('mt_theme') || 'dark';
       applyTheme(local,false);
     }
@@ -346,7 +358,11 @@ async function loadPrefsForUser(uid){
 /* Profile helpers */
 function setProfileImage(url){
   if(url){
-    profileImg.src = url; profileImg.style.display='block'; profileInitial.style.display='none';
+    // add cache-buster so browser loads latest image after upload
+    const safeUrl = url + (url.includes('?') ? '&' : '?') + 't=' + Date.now();
+    profileImg.src = safeUrl;
+    profileImg.style.display='block';
+    profileInitial.style.display='none';
   } else {
     profileImg.style.display='none'; profileInitial.style.display='inline-block';
   }
@@ -374,6 +390,7 @@ onAuthStateChanged(auth, async (user) => {
     setProfileImage(null);
     gridEl.innerHTML = '';
     empty.style.display = 'block';
+    // apply local theme when signed out
     const local = localStorage.getItem('mt_theme') || 'dark';
     applyTheme(local, false);
   }
@@ -414,9 +431,9 @@ document.addEventListener('click', ()=> settingsMenu.classList.remove('open'));
 
 /* Change name (desktop inline) */
 sChangeName.addEventListener('click', async () => {
-  if (!currentUser) { 
-    alert('Inicia sesión para cambiar el nombre'); 
-    return; 
+  if (!currentUser) {
+    alert('Inicia sesión para cambiar el nombre');
+    return;
   }
 
   settingsMenu.classList.remove('open');
@@ -432,6 +449,7 @@ sChangeName.addEventListener('click', async () => {
   input.value = original;
   input.placeholder = 'Nuevo nombre';
   input.style.width = '140px';
+  input.maxLength = 20; // enforce in input as well
 
   input.addEventListener('keydown', (ev) => {
     if (ev.key === 'Enter') { ev.preventDefault(); input.blur(); }
@@ -454,22 +472,21 @@ sChangeName.addEventListener('click', async () => {
     }
 
     try {
-
-      // Esperar a que Firebase garantice usuario cargado
-      await auth.authStateReady();
-
-      const user = auth.currentUser;
-      if (!user) throw new Error("Firebase no ha cargado el usuario aún");
+      const user = auth.currentUser || currentUser;
+      if (!user) throw new Error("Usuario no disponible");
 
       // Cambiar nombre en Authentication
       await updateProfile(user, { displayName: newName });
+
+      // Guardar también en Firestore users doc (opcional / facilita consultas)
+      await setDoc(doc(db,'users',user.uid), { displayName: newName }, { merge:true });
 
       // Actualizar UI sin recargar
       nameSpan.textContent = newName;
 
     } catch (e) {
       console.error(e);
-      alert("Error actualizando nombre (espera 1 seg y vuelve a probar)");
+      alert("Error actualizando nombre (vuelve a intentarlo)");
     }
   });
 
@@ -481,10 +498,11 @@ sChangeName.addEventListener('click', async () => {
 
 /* Change photo (desktop) */
 sChangePhoto.addEventListener('click', () => {
-  if (!currentUser) { 
-    alert('Inicia sesión para cambiar la foto'); 
-    return; 
+  if (!currentUser) {
+    alert('Inicia sesión para cambiar la foto');
+    return;
   }
+  // use the single hidden input (id="file-photo")
   filePhotoInput.click();
   settingsMenu.classList.remove('open');
 });
@@ -492,26 +510,28 @@ sChangePhoto.addEventListener('click', () => {
 
 async function uploadProfilePhoto(file) {
   try {
-
-    const user = auth.currentUser;
+    const user = auth.currentUser || currentUser;
     if (!user) throw new Error("Usuario no disponible");
 
-    // Subir a Storage
+    // Subir a Storage (agregando contentType para metadata)
     const path = `users/${user.uid}/profile.jpg`;
     const storageRef = ref(storage, path);
 
-    await uploadBytes(storageRef, file);
+    await uploadBytes(storageRef, file, { contentType: file.type });
     const url = await getDownloadURL(storageRef);
 
     // Guardar en Auth
     await updateProfile(user, { photoURL: url });
 
     // Guardar también en Firestore (para poder recuperarla después)
-    const prefsRef = doc(db, 'users', user.uid, 'prefs', 'ui');
+    const prefsRef = prefsDocRef(user.uid);
     await setDoc(prefsRef, { photoURL: url }, { merge: true });
 
-    // Actualizar UI sin recargar
+    // Actualizar UI sin recargar (cache-buster interno)
     setProfileImage(url);
+
+    // also update users doc top-level for convenience
+    await setDoc(doc(db,'users',user.uid), { photoURL: url }, { merge:true });
 
     alert("Foto actualizada");
 
@@ -537,7 +557,10 @@ mobileGear.addEventListener('click', ()=>{
   const container = document.createElement('div');
   container.style.position='fixed';
   container.style.left='12px'; container.style.right='12px'; container.style.bottom='90px';
-  container.style.zIndex='2000'; container.style.background=getComputedStyle(document.documentElement).getPropertyValue('--card'); container.style.padding='12px'; container.style.borderRadius='12px';
+  container.style.zIndex='2000';
+  container.style.background=getComputedStyle(document.documentElement).getPropertyValue('--card');
+  container.style.padding='12px'; container.style.borderRadius='12px';
+  container.style.color = getComputedStyle(document.documentElement).getPropertyValue('--accent');
   container.innerHTML = `
     <div style="padding:8px 0 0 0;">
       <div style="font-weight:700;margin-bottom:6px;color:var(--accent)">Ajustes</div>
@@ -563,11 +586,12 @@ mobileGear.addEventListener('click', ()=>{
   container.querySelector('#mb-change-name').addEventListener('click', async ()=>{
     const newName = prompt('Nuevo nombre:','');
     if(!newName) return;
+    if(newName.length > 20){ alert('Máx 20 caracteres'); return; }
     try{
-      const user = auth.currentUser;
+      const user = auth.currentUser || currentUser;
       if(!user) throw new Error('Usuario no disponible');
       await updateProfile(user, { displayName: newName });
-      await setDoc(doc(db,'users',currentUser.uid), { displayName: newName }, { merge:true });
+      await setDoc(doc(db,'users',user.uid), { displayName: newName }, { merge:true });
       setUserNameDisplay(newName);
       container.remove();
     }catch(e){ console.error(e); alert('Error'); }
@@ -776,12 +800,10 @@ modal.addEventListener('click', (e)=> { if(e.target === modal) closeForm(); });
 btnAdd.addEventListener('click', ()=> openForm());
 mobileAdd.addEventListener('click', ()=> openForm());
 
-/* initial local theme */
+/* initial local theme - always apply local first, then auth state will override if needed */
 window.addEventListener('load', () => {
-  if (!auth.currentUser) {
-    const local = localStorage.getItem('mt_theme') || 'dark';
-    applyTheme(local, false);
-  }
+  const local = localStorage.getItem('mt_theme') || 'dark';
+  applyTheme(local,false);
 });
 
 /* prevent settings menu from closing while interacting */
@@ -789,5 +811,6 @@ settingsMenu.addEventListener('click', (e)=> e.stopPropagation());
 
 /* END */
 </script>
+
 </body>
 </html>
