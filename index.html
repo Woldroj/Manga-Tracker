@@ -539,31 +539,41 @@ function fileToBase64(file) {
 async function uploadProfilePhoto(file) {
   try {
     const user = auth.currentUser || currentUser;
-    if (!user) throw new Error("Usuario no disponible");
+    if (!user) throw new Error("No hay usuario autenticado.");
 
-    // Convertir imagen a base64
-    const base64 = await fileToBase64(file);
+    // 1️⃣ Validación de tamaño
+    if (file.size > 3 * 1024 * 1024) {
+      throw new Error(`La imagen es demasiado grande (${(file.size/1024/1024).toFixed(2)}MB). Máximo permitido: 3MB.`);
+    }
 
-    // Guardar base64 en Firestore
-    await setDoc(
-      doc(db, "users", user.uid),
-      { photoURL: base64 },
-      { merge: true }
-    );
+    // 2️⃣ Convertir a Base64
+    const base64 = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
 
-    // Actualizar perfil en Authentication
-    await updateProfile(user, { photoURL: base64 });
+      reader.onload = () => {
+        if (!reader.result.startsWith("data:image"))
+          reject(new Error("El archivo no es una imagen válida."));
+        else resolve(reader.result);
+      };
 
-    // Mostrar en la interfaz
+      reader.onerror = () => reject(new Error("Error leyendo la imagen."));
+      reader.readAsDataURL(file);
+    });
+
+    // 3️⃣ Guardar Base64 en Firestore
+    await setDoc(prefsDocRef(user.uid), { photoURL: base64 }, { merge: true });
+
+    // 4️⃣ Actualizar UI
     setProfileImage(base64);
 
-    alert("Foto actualizada");
+    alert("Foto actualizada correctamente.");
 
-  } catch (e) {
-    console.error(e);
-    alert("Error subiendo foto");
+  } catch (err) {
+    console.error("❌ Error subiendo imagen:", err);
+    alert("Error al subir la imagen:\n\n" + err.message);
   }
 }
+
 
 filePhotoInput.addEventListener('change', () => {
   const f = filePhotoInput.files[0];
