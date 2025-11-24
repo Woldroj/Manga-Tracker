@@ -242,6 +242,7 @@ import {
   getDoc, updateDoc
 } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-firestore.js";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-storage.js";
+import { sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-auth.js";
 
 
 /* --------- CONFIG --------- */
@@ -444,9 +445,19 @@ btnLogin.addEventListener('click', async ()=>{
       await updateProfile(created.user,{ displayName: username });
       alert('Cuenta creada correctamente. Inicia sesión.');
       await signOut(auth);
+      try {
+        await sendEmailVerification(created.user);
+        alert('Cuenta creada. Te hemos enviado un email de verificación. Revísalo');
+      }catch (verErr) {
+        console.warn('No se pudo enviar email de verificación:', verErr);
+        alert('Cuenta creada pero no se pudo enviar el email de verificación');
+      }
     }catch(e){
       console.error(e);
-      alert('Error creando cuenta');
+      if (e.code === 'auth/email-already-in-use') alert('Ese email ya está en uso');
+      else if (e.code === 'auth/invalid-email') alert('Email inválido');
+      else if (e.code === 'auth/weak-password') alert('Contraseña demasiado débil');
+      else alert('Error creando cuenta: ' + (e.message || e.code));
     }
   }
 });
