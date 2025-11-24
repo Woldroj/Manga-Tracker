@@ -391,14 +391,30 @@ function setUserNameDisplay(name){
 let currentUser = null;
 onAuthStateChanged(auth, async (user) => {
   currentUser = user;
-  if(user){
 
-    await loadPrefsForUser(user.uid);
+  if (user) {
     authControls.style.display = 'none';
     userControls.style.display = 'flex';
     setUserNameDisplay(user.displayName || user.email);
-    if(user.photoURL) setProfileImage(user.photoURL);
+
+    // ---------------------------
+    // 1️⃣ Intentar cargar foto desde Firestore (SIEMPRE)
+    // ---------------------------
+    const prefsSnap = await getDoc(prefsDocRef(user.uid));
+    if (prefsSnap.exists() && prefsSnap.data().photoURL) {
+      setProfileImage(prefsSnap.data().photoURL);
+    } else if (user.photoURL) {
+      // 2️⃣ Si no está en Firestore, usar Auth
+      setProfileImage(user.photoURL);
+    } else {
+      // 3️⃣ Sin foto
+      setProfileImage(null);
+    }
+
+    // Cargar tema y datos
+    await loadPrefsForUser(user.uid);
     await loadMangas();
+
   } else {
     authControls.style.display = 'flex';
     userControls.style.display = 'none';
@@ -407,12 +423,11 @@ onAuthStateChanged(auth, async (user) => {
     gridEl.innerHTML = '';
     empty.style.display = 'block';
 
-    if (!currentUser) {
-      const local = localStorage.getItem('mt_theme') || 'dark';
-      applyTheme(local, false);
-    }
+    const local = localStorage.getItem('mt_theme') || 'dark';
+    applyTheme(local, false);
   }
 });
+
 
 /* ---------- AUTH: login/register ---------- */
 btnLogin.addEventListener('click', async ()=>{
