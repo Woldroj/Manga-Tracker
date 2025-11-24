@@ -526,30 +526,36 @@ sChangePhoto.addEventListener('click', () => {
 });
 
 
+// Convierte un archivo a Base64
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);   // devuelve data:image/png;base64,...
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
 async function uploadProfilePhoto(file) {
   try {
     const user = auth.currentUser || currentUser;
     if (!user) throw new Error("Usuario no disponible");
 
-    // Subir a Storage (agregando contentType para metadata)
-    const path = `users/${user.uid}/profile.jpg`;
-    const storageRef = ref(storage, path);
+    // Convertir imagen a base64
+    const base64 = await fileToBase64(file);
 
-    await uploadBytes(storageRef, file, { contentType: file.type });
-    const url = await getDownloadURL(storageRef);
+    // Guardar base64 en Firestore
+    await setDoc(
+      doc(db, "users", user.uid),
+      { photoURL: base64 },
+      { merge: true }
+    );
 
-    // Guardar en Auth
-    await updateProfile(user, { photoURL: url });
+    // Actualizar perfil en Authentication
+    await updateProfile(user, { photoURL: base64 });
 
-    // Guardar también en Firestore (para poder recuperarla después)
-    const prefsRef = prefsDocRef(user.uid);
-    await setDoc(prefsRef, { photoURL: url }, { merge: true });
-
-    // Actualizar UI sin recargar (cache-buster interno)
-    setProfileImage(url);
-
-    // also update users doc top-level for convenience
-    await setDoc(doc(db,'users',user.uid), { photoURL: url }, { merge:true });
+    // Mostrar en la interfaz
+    setProfileImage(base64);
 
     alert("Foto actualizada");
 
@@ -558,7 +564,6 @@ async function uploadProfilePhoto(file) {
     alert("Error subiendo foto");
   }
 }
-
 
 filePhotoInput.addEventListener('change', () => {
   const f = filePhotoInput.files[0];
