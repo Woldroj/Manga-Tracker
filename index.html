@@ -487,9 +487,6 @@ sChangePhoto.addEventListener('click', () => {
 async function uploadProfilePhoto(file) {
   try {
 
-    // Asegurar que Firebase tiene user cargado
-    await auth.authStateReady();
-
     const user = auth.currentUser;
     if (!user) throw new Error("Usuario no disponible");
 
