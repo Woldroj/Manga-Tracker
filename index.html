@@ -382,9 +382,10 @@ let currentUser = null;
 onAuthStateChanged(auth, async (user) => {
   currentUser = user;
   if(user){
+
+    await loadPrefsForUser(user.uid);
     authControls.style.display = 'none';
     userControls.style.display = 'flex';
-    await loadPrefsForUser(user.uid);
     setUserNameDisplay(user.displayName || user.email);
     if(user.photoURL) setProfileImage(user.photoURL);
     await loadMangas();
