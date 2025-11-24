@@ -496,7 +496,7 @@ async function uploadProfilePhoto(file) {
     const user = auth.currentUser;
     if (!user) throw new Error("Usuario no disponible");
 
-    // Subir archivo a Storage
+    // Subir a Storage
     const path = `users/${user.uid}/profile.jpg`;
     const storageRef = ref(storage, path);
 
@@ -506,9 +506,12 @@ async function uploadProfilePhoto(file) {
     // Guardar en Auth
     await updateProfile(user, { photoURL: url });
 
-    // Refrescar foto en la UI
-    const img = document.getElementById("profile-img");
-    if (img) img.src = url;
+    // Guardar también en Firestore (para poder recuperarla después)
+    const prefsRef = doc(db, 'users', user.uid, 'prefs', 'ui');
+    await setDoc(prefsRef, { photoURL: url }, { merge: true });
+
+    // Actualizar UI sin recargar
+    setProfileImage(url);
 
     alert("Foto actualizada");
 
@@ -774,9 +777,11 @@ btnAdd.addEventListener('click', ()=> openForm());
 mobileAdd.addEventListener('click', ()=> openForm());
 
 /* initial local theme */
-window.addEventListener('load', ()=> {
-  const local = localStorage.getItem('mt_theme') || 'dark';
-  applyTheme(local,false);
+window.addEventListener('load', () => {
+  if (!auth.currentUser) {
+    const local = localStorage.getItem('mt_theme') || 'dark';
+    applyTheme(local, false);
+  }
 });
 
 /* prevent settings menu from closing while interacting */
