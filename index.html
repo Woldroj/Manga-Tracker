@@ -332,9 +332,8 @@ async function applyTheme(themeKey, save=true){
   if(save){
     try{
       if(currentUser){
-        const prefsRef = prefsDocRef(currentUser.uid);
-        // store theme in firestore (async but we don't block UI)
-        await setDoc(prefsRef, { theme: themeKey }, { merge:true });
+        const prefsRef = doc(db, 'users', currentUser.uid, 'prefs', 'ui');
+        await setDoc(prefsRef, { theme: themeKey }, { merge: true }).catch(e=>console.error(e));
       } else {
         localStorage.setItem('mt_theme', themeKey);
       }
@@ -385,9 +384,9 @@ onAuthStateChanged(auth, async (user) => {
   if(user){
     authControls.style.display = 'none';
     userControls.style.display = 'flex';
+    await loadPrefsForUser(user.uid);
     setUserNameDisplay(user.displayName || user.email);
     if(user.photoURL) setProfileImage(user.photoURL);
-    await loadPrefsForUser(user.uid);
     await loadMangas();
   } else {
     authControls.style.display = 'flex';
@@ -396,9 +395,11 @@ onAuthStateChanged(auth, async (user) => {
     setProfileImage(null);
     gridEl.innerHTML = '';
     empty.style.display = 'block';
-    // apply local theme when signed out
-    const local = localStorage.getItem('mt_theme') || 'dark';
-    applyTheme(local, false);
+
+    if (!currentUser) {
+      const local = localStorage.getItem('mt_theme') || 'dark';
+      applyTheme(local, false);
+    }
   }
 });
 
