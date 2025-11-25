@@ -448,7 +448,7 @@ btnLogin.addEventListener('click', async () => {
     // ❗ Evitar acceso sin verificar
     if (!uc.user.emailVerified) {
       alert("Debes verificar tu correo antes de iniciar sesión. Revisa tu bandeja.");
-      await sendEmailVerification(uc.user.user);
+      await sendEmailVerification(uc.user);
       await signOut(auth);
       return;
     }
