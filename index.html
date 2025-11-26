@@ -431,33 +431,57 @@ onAuthStateChanged(auth, async (user) => {
 
 
 /* ---------- AUTH: login/register ---------- */
-btnLogin.addEventListener('click', async ()=>{
+btnLogin.addEventListener('click', async () => {
   const email = document.getElementById('email').value.trim();
   const password = document.getElementById('password').value;
   const username = (document.getElementById('username').value || 'Usuario').trim();
-  if(!email || !password){ alert('Email y contraseña necesarios'); return; }
-  try{
-    const uc = await signInWithEmailAndPassword(auth,email,password);
-    if(!uc.user.displayName) await updateProfile(uc.user,{ displayName: username });
-  }catch(err){
-    try{
-      const created = await createUserWithEmailAndPassword(auth,email,password);
-      await updateProfile(created.user,{ displayName: username });
-      alert('Cuenta creada correctamente. Inicia sesión.');
+
+  if (!email || !password) {
+    alert('Email y contraseña necesarios');
+    return;
+  }
+
+  try {
+    // Intentar iniciar sesión primero
+    const uc = await signInWithEmailAndPassword(auth, email, password);
+
+    // ❗ Evitar acceso sin verificar
+    if (!uc.user.emailVerified) {
+      alert("Debes verificar tu correo antes de iniciar sesión. Revisa tu bandeja.");
+      await sendEmailVerification(uc.user);
       await signOut(auth);
-      try {
-        await sendEmailVerification(created.user);
-        alert('Cuenta creada. Te hemos enviado un email de verificación. Revísalo');
-      }catch (verErr) {
-        console.warn('No se pudo enviar email de verificación:', verErr);
-        alert('Cuenta creada pero no se pudo enviar el email de verificación');
-      }
-    }catch(e){
+      return;
+    }
+
+    // Si no tenía displayName, lo actualizamos
+    if (!uc.user.displayName) {
+      await updateProfile(uc.user, { displayName: username });
+    }
+
+  } catch (err) {
+    console.warn("No pudo iniciar sesión, intentando crear cuenta…");
+
+    try {
+      // Crear nueva cuenta
+      const created = await createUserWithEmailAndPassword(auth, email, password);
+
+      // Poner nombre
+      await updateProfile(created.user, { displayName: username });
+
+      // ✉️ ENVIAR VERIFICACIÓN DE EMAIL
+      await sendEmailVerification(created.user);
+
+      alert(
+        "Cuenta creada. Debes verificar tu correo antes de poder iniciar sesión.\n\n" +
+        "Revisa tu bandeja de entrada o spam."
+      );
+
+      // Cerrar sesión para obligar a verificar
+      await signOut(auth);
+
+    } catch (e) {
       console.error(e);
-      if (e.code === 'auth/email-already-in-use') alert('Ese email ya está en uso');
-      else if (e.code === 'auth/invalid-email') alert('Email inválido');
-      else if (e.code === 'auth/weak-password') alert('Contraseña demasiado débil');
-      else alert('Error creando cuenta: ' + (e.message || e.code));
+      alert('Error creando la cuenta o enviando el correo de verificación');
     }
   }
 });
