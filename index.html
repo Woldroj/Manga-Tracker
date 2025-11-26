@@ -182,14 +182,21 @@
 
   <!-- mobile bottom bar -->
   <div class="mobile-bar" id="mobile-bar" aria-hidden="true">
-    <button class="mobile-btn" id="mobile-profile" title="Perfil" aria-label="Perfil">
-      <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0 2c-5 0-9 2.5-9 5v2h18v-2c0-2.5-4-5-9-5z"/></svg>
+    <button class="mobile-btn" id="mobile-profile" title="Perfil" aria-label="Perfil" style="padding:0;border-radius:50%;">
+      <div id="mobile-profile-pic" style="
+        width:40px;height:40px;border-radius:50%;
+        overflow:hidden;
+        background:linear-gradient(135deg,#3b82f6,#2563eb);
+        display:flex;align-items:center;justify-content:center;
+      ">
+      <img id="mobile-profile-img" src="" style="display:none;width:100%;height:100%;object-fit:cover;">
+      <span id="mobile-profile-initial" style="font-weight:700;color:white;font-size:16px;">I</span>
     </button>
 
     <button class="mobile-add" id="mobile-add" title="Añadir" aria-label="Añadir">＋</button>
 
     <button class="mobile-btn" id="mobile-gear" title="Ajustes" aria-label="Ajustes">
-      <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7z"/></svg>
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M19.14 12.936c.04-.303.06-.61.06-.936s-.02-.633-.06-.936l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.03 7.03 0 0 0-1.62-.94l-.36-2.54A.5.5 0 0 0 13.8 2h-3.6a.5.5 0 0 0-.5.42l-.36 2.54a7.03 7.03 0 0 0-1.62.94l-2.39-.96a.5.5 0 0 0-.6.22L2.7 8.84a.5.5 0 0 0 .12.64l2.03 1.58c-.04.303-.06.61-.06.936s.02.633.06.936L2.82 15.56a.5.5 0 0 0-.12.64l1.92 3.32c.14.24.45.34.7.22l2.39-.96c.5.38 1.05.69 1.62.94l.36 2.54c.05.28.28.49.56.49h3.6c.28 0 .51-.21.56-.49l.36-2.54c.57-.25 1.12-.56 1.62-.94l2.39.96c.25.1.55.02.7-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58zM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7z"/></svg>
     </button>
   </div>
 
@@ -231,7 +238,7 @@
 
 <script type="module">
 /* =========================
-   FIREBASE + APP LOGIC
+  FIREBASE + APP LOGIC
    ========================= */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-app.js";
 import {
@@ -283,6 +290,8 @@ const btnCancel = document.getElementById('btn-cancel');
 const mobileAdd = document.getElementById('mobile-add');
 const mobileGear = document.getElementById('mobile-gear');
 const mobileProfile = document.getElementById('mobile-profile');
+const mobileImg = document.getElementById('mobile-profile-img');
+const mobileInitial = document.getElementById('mobile-profile-initial');
 const filePhotoInput = document.getElementById('file-photo');
 
 const gridEl = document.getElementById('grid');
@@ -368,24 +377,33 @@ function setProfileImage(url) {
     // Si es base64, NO se le agrega ?t= porque rompe la imagen
     if (url.startsWith("data:image/")) {
       profileImg.src = url;
+      mobileImg.src = url;
     } else {
       // Si es una URL normal (ej: Firebase Storage), sí se agrega ?t=
       const safeUrl = url + (url.includes("?") ? "&" : "?") + "t=" + Date.now();
       profileImg.src = safeUrl;
+      mobileImg.src = safeUrl;
     }
 
     profileImg.style.display = "block";
     profileInitial.style.display = "none";
 
+    mobileImg.style.display = "block";
+    mobileInitial.style.display = "none";
+
   } else {
     profileImg.style.display = "none";
     profileInitial.style.display = "inline-block";
+
+    mobileImg.style.display = "none";
+    mobileInitial.style.display = "inline-block";
   }
 }
 
 function setUserNameDisplay(name){
   userDisplay.textContent = name || 'Invitado';
   profileInitial.textContent = (name && name[0]) ? name[0].toUpperCase() : 'I';
+  mobileInitial.textContent = (name && name[0]) ? name[0].toUpperCase() : 'I';
 }
 
 /* ---------- AUTH STATE ---------- */
@@ -649,6 +667,7 @@ mobileGear.addEventListener('click', ()=>{
       <div style="font-weight:700;margin-bottom:6px;color:var(--accent)">Ajustes</div>
       <div style="display:flex;flex-direction:column;gap:10px">
         <button id="mb-change-name" style="padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:var(--accent)">✏ Cambiar nombre</button>
+        <button id="mb-change-photo" style="padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:var(--accent)">🖼 Cambiar foto de perfil</button>
         <div style="display:flex;gap:8px;flex-wrap:wrap" id="mb-theme-grid"></div>
         <button id="mb-signout" style="padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:var(--accent)">🚪 Cerrar sesión</button>
         <button id="mb-close" style="padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:var(--accent)">Cerrar</button>
@@ -680,14 +699,22 @@ mobileGear.addEventListener('click', ()=>{
     }catch(e){ console.error(e); alert('Error'); }
   });
 
-  container.querySelector('#mb-signout').addEventListener('click', async ()=>{ await signOut(auth); container.remove(); });
-  container.querySelector('#mb-close').addEventListener('click', ()=> container.remove());
+  container.querySelector('#mb-change-photo').addEventListener('click', () => {
+  if (!currentUser) {
+    alert('Debes iniciar sesión para cambiar la foto');
+    return;
+  }
+
+  // Abrir el selector de imágenes ya existente
+  filePhotoInput.click();
+
+  // Cerrar menú
+  container.remove();
 });
 
-/* Mobile profile click */
-mobileProfile.addEventListener('click', ()=> {
-  if(currentUser) alert(`Perfil: ${currentUser.displayName || currentUser.email}`);
-  else alert('Invitado');
+
+  container.querySelector('#mb-signout').addEventListener('click', async ()=>{ await signOut(auth); container.remove(); });
+  container.querySelector('#mb-close').addEventListener('click', ()=> container.remove());
 });
 
 /* ---------- DATA / CARDS ---------- */
