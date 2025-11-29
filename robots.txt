@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://woldroj.github.io/Manga-Tracker/sitemap.xml
