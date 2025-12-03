@@ -45,6 +45,10 @@
 
       <!-- Desktop profile + gear -->
       <div class="profile-area" id="profile-area" aria-hidden="false">
+        <div class="top-actions">
+          <button id="btn-finalizados-pc" class="top-btn">Finalizados</button>
+          <button id="btn-volver-pc" class="top-btn" style="display:none;">Volver</button>
+        </div>
         <div class="profile-pic" id="profile-pic" title="Ver perfil / ajustes">
           <img id="profile-img" src="" alt="avatar" style="display:none">
           <span id="profile-initial" class="profile-initial">I</span>
@@ -107,8 +111,6 @@
     <!-- desktop logged controls -->
     <div class="controls" id="user-controls" style="display:none">
       <button id="btn-add" class="btn primary">＋ Añadir</button>
-      <!-- BOTÓN FINALIZADOS (PC) -->
-      <button id="btn-finalizados-pc" class="btn">📚 Finalizados</button>
     </div>
 
     <!-- time box (total consumed) -->
@@ -210,14 +212,8 @@
 <script type="module">
 /* ===================================================
    Manga Tracker - Script unificado, limpio y optimizado
-   - Mantiene todas las funciones originales
-   - Añade "Finalizados" (status: "finished")
-   - Organizado y con protección DOMContentLoaded
    =================================================== */
 
-/* -----------------------
-   IMPORTS (Firebase)
-   ----------------------- */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-app.js";
 import {
   getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
@@ -228,11 +224,8 @@ import {
   getDoc, updateDoc, query
 } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-firestore.js";
 import { getStorage } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-storage.js";
-import { getDoc as _getDoc } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-firestore.js";
 
-/* -----------------------
-   CONFIG
-   ----------------------- */
+/* -------- CONFIG -------- */
 const firebaseConfig = {
   apiKey: "AIzaSyBjGHgNC4CHglfh75yMxXYcLMij8aywcQc",
   authDomain: "mangatracker-63f14.firebaseapp.com",
@@ -242,24 +235,18 @@ const firebaseConfig = {
   appId: "1:612200334218:web:1cd7349bbc61b71ad7fe73",
   measurementId: "G-1VY5WJG76J"
 };
-
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
-/* -----------------------
-   BOOTSTRAP AFTER DOM
-   ----------------------- */
+/* -------- BOOTSTRAP -------- */
 document.addEventListener('DOMContentLoaded', () => {
 
-/* -----------------------
-   DOM REFS
-   ----------------------- */
+/* -------- DOM REFS -------- */
 const authControls = document.getElementById('auth-controls');
 const userControls = document.getElementById('user-controls');
 const userDisplay = document.getElementById('user-display');
-const profilePic = document.getElementById('profile-pic');
 const profileImg = document.getElementById('profile-img');
 const profileInitial = document.getElementById('profile-initial');
 const gearBtn = document.getElementById('gear-btn');
@@ -290,39 +277,23 @@ const timeBoxValue = document.getElementById('time-box-value');
 const timeBoxSwitch = document.getElementById('timebox-switch');
 
 const btnFinalizadosPC = document.getElementById('btn-finalizados-pc');
+const btnVolverPC = document.getElementById("btn-volver-pc"); // puede ser null si no lo añadiste
 const btnFinalizadosMobile = document.getElementById('btn-finalizados-mobile');
+const btnHomeMobile = document.getElementById('mobile-home');
 
-/* -----------------------
-   APP STATE
-   ----------------------- */
+/* -------- STATE -------- */
 let currentUser = null;
 let editId = null;
-let selectedToFinish = null; // id pending confirmation
+let selectedToFinish = null;
+let currentFilter = 'reading'; // 'reading' or 'finished'
 window.timeBoxEnabled = false;
 
-/* -----------------------
-   THEMES
-   ----------------------- */
-const THEMES = {
-  dark: { '--bg':'#0f172a','--card':'#1e293b','--accent':'#f1f5f9','--accent-2':'#3b82f6','--muted':'#94a3b8' },
-  black: { '--bg':'#0f0f0f','--card':'#1a1a1a','--accent':'#f5f5f5','--accent-2':'#888888','--muted':'#5a5a5a' },
-  light: { '--bg':'#ffffff','--card':'#f8fafc','--accent':'#0f172a','--accent-2':'#f0f1f5','--muted':'#6b7280' },
-  pink: { '--bg':'#fff0f6','--card':'#fff1f2','--accent':'#2b2a2a','--accent-2':'#ec4899','--muted':'#7c4a5b' },
-  blue: { '--bg':'#eff6ff','--card':'#e0f2fe','--accent':'#0b1220','--accent-2':'#3b82f6','--muted':'#64748b' },
-  purple: { '--bg':'#faf5ff','--card':'#f3e8ff','--accent':'#211634','--accent-2':'#7c3aed','--muted':'#6b5b7a' },
-  green: { '--bg':'#f0fdf4','--card':'#dcfce7','--accent':'#04260f','--accent-2':'#10b981','--muted':'#4b6b53' },
-  red: { '--bg':'#fff5f5','--card':'#ffe5e5','--accent':'#2a0a0a','--accent-2':'#ef4444','--muted':'#a64b4b' },
-  orange: { '--bg':'#fffaf0','--card':'#fff3e0','--accent':'#2b1a00','--accent-2':'#f97316','--muted':'#b36b3b' },
-  teal: { '--bg':'#f0fdfa','--card':'#ccfbf1','--accent':'#042f2e','--accent-2':'#14b8a6','--muted':'#4a7c79' },
-  yellow: { '--bg':'#fffbeb','--card':'#fef3c7','--accent':'#2b2a00','--accent-2':'#facc15','--muted':'#a68c4b' }
-};
+/* -------- THEMES (igual que antes) -------- */
+const THEMES = { dark: { '--bg':'#0f172a','--card':'#1e293b','--accent':'#f1f5f9','--accent-2':'#3b82f6','--muted':'#94a3b8' }, black: { '--bg':'#0f0f0f','--card':'#1a1a1a','--accent':'#f5f5f5','--accent-2':'#888888','--muted':'#5a5a5a' }, light: { '--bg':'#ffffff','--card':'#f8fafc','--accent':'#0f172a','--accent-2':'#f0f1f5','--muted':'#6b7280' }, pink: { '--bg':'#fff0f6','--card':'#fff1f2','--accent':'#2b2a2a','--accent-2':'#ec4899','--muted':'#7c4a5b' }, blue: { '--bg':'#eff6ff','--card':'#e0f2fe','--accent':'#0b1220','--accent-2':'#3b82f6','--muted':'#64748b' }, purple: { '--bg':'#faf5ff','--card':'#f3e8ff','--accent':'#211634','--accent-2':'#7c3aed','--muted':'#6b5b7a' }, green: { '--bg':'#f0fdf4','--card':'#dcfce7','--accent':'#04260f','--accent-2':'#10b981','--muted':'#4b6b53' }, red: { '--bg':'#fff5f5','--card':'#ffe5e5','--accent':'#2a0a0a','--accent-2':'#ef4444','--muted':'#a64b4b' }, orange: { '--bg':'#fffaf0','--card':'#fff3e0','--accent':'#2b1a00','--accent-2':'#f97316','--muted':'#b36b3b' }, teal: { '--bg':'#f0fdfa','--card':'#ccfbf1','--accent':'#042f2e','--accent-2':'#14b8a6','--muted':'#4a7c79' }, yellow: { '--bg':'#fffbeb','--card':'#fef3c7','--accent':'#2b2a00','--accent-2':'#facc15','--muted':'#a68c4b' } };
 
-/* helper to get prefs doc ref for a user */
-function prefsDocRef(uid){
-  return doc(db, 'users', uid, 'prefs', 'ui');
-}
+function prefsDocRef(uid){ return doc(db, 'users', uid, 'prefs', 'ui'); }
 
-/* render theme swatches */
+/* render swatches */
 if (themeGrid) {
   Object.keys(THEMES).forEach(key=>{
     const sw = document.createElement('div');
@@ -334,35 +305,19 @@ if (themeGrid) {
     themeGrid.appendChild(sw);
   });
 }
-
-/* Apply theme */
-function setCssVarsFromTheme(themeKey){
-  const vars = THEMES[themeKey] || THEMES.dark;
-  Object.entries(vars).forEach(([k,v])=> document.documentElement.style.setProperty(k,v));
-}
+function setCssVarsFromTheme(themeKey){ const vars = THEMES[themeKey] || THEMES.dark; Object.entries(vars).forEach(([k,v])=> document.documentElement.style.setProperty(k,v)); }
 async function applyTheme(themeKey, save=true){
   document.body.dataset.theme = themeKey;
   setCssVarsFromTheme(themeKey);
-
   if(save){
-    try{
-      if(currentUser){
-        const prefsRef = prefsDocRef(currentUser.uid);
-        await setDoc(prefsRef, { theme: themeKey }, { merge: true });
-      } else {
-        localStorage.setItem('mt_theme', themeKey);
-      }
-    }catch(e){ console.error('Error guardando tema:', e); }
+    try{ if(currentUser){ await setDoc(prefsDocRef(currentUser.uid), { theme: themeKey }, { merge: true }); } else { localStorage.setItem('mt_theme', themeKey); } }catch(e){ console.error('Error guardando tema:', e); }
   }
 }
 
-/* -----------------------
-   PROFILE HELPERS
-   ----------------------- */
+/* -------- PROFILE HELPERS -------- */
 function setProfileImage(url) {
   const mobileImg = document.getElementById("mobile-profile-img");
   const mobileInitial = document.getElementById("mobile-profile-initial");
-
   if (!profileImg) return;
   if (url) {
     if (url.startsWith("data:image/")) {
@@ -393,13 +348,11 @@ function setUserNameDisplay(name){
   if (mobileInitial) mobileInitial.textContent = initial;
 }
 
-/* -----------------------
-   PREFERENCES LOADING
-   ----------------------- */
+/* -------- LOAD PREFS -------- */
 async function loadPrefsForUser(uid){
   try{
     const prefsRef = prefsDocRef(uid);
-    const snap = await _getDoc(prefsRef);
+    const snap = await getDoc(prefsRef);
     if(snap && snap.exists()){
       const data = snap.data();
       if(data.theme) applyTheme(data.theme, false);
@@ -422,19 +375,17 @@ async function loadPrefsForUser(uid){
   }catch(e){ console.error(e); const local = localStorage.getItem('mt_theme') || 'dark'; applyTheme(local,false); }
 }
 
-/* -----------------------
-   AUTH STATE
-   ----------------------- */
+/* -------- AUTH STATE -------- */
 onAuthStateChanged(auth, async (user) => {
   currentUser = user;
 
   if (user) {
-    if(authControls) authControls.style.display = 'none';
-    if(userControls) userControls.style.display = 'flex';
+    authControls && (authControls.style.display = 'none');
+    userControls && (userControls.style.display = 'flex');
     setUserNameDisplay(user.displayName || user.email);
 
     // try load prefs/photo
-    const prefsSnap = await _getDoc(prefsDocRef(user.uid));
+    const prefsSnap = await getDoc(prefsDocRef(user.uid));
     if (prefsSnap && prefsSnap.exists() && prefsSnap.data().photoURL) {
       setProfileImage(prefsSnap.data().photoURL);
     } else if (user.photoURL) {
@@ -444,11 +395,11 @@ onAuthStateChanged(auth, async (user) => {
     }
 
     await loadPrefsForUser(user.uid);
-    await loadMangas(); // default view (reading)
+    await loadMangas(currentFilter); // load current filter (default reading)
 
   } else {
-    if(authControls) authControls.style.display = 'flex';
-    if(userControls) userControls.style.display = 'none';
+    authControls && (authControls.style.display = 'flex');
+    userControls && (userControls.style.display = 'none');
     setUserNameDisplay('Invitado');
     setProfileImage(null);
     if(gridEl) gridEl.innerHTML = '';
@@ -464,9 +415,7 @@ onAuthStateChanged(auth, async (user) => {
   }
 });
 
-/* -----------------------
-   AUTH: login/register
-   ----------------------- */
+/* -------- AUTH (login/register) -------- */
 btnLogin?.addEventListener('click', async () => {
   const email = document.getElementById('email').value.trim();
   const password = document.getElementById('password').value;
@@ -486,20 +435,15 @@ btnLogin?.addEventListener('click', async () => {
 
     if (!uc.user.displayName) await updateProfile(uc.user, { displayName: username });
 
-    } catch (err) {
+  } catch (err) {
     console.warn("No pudo iniciar sesión, intentando crear cuenta…");
 
     try {
       const created = await createUserWithEmailAndPassword(auth, email, password);
       await updateProfile(created.user, { displayName: username });
-
       await sendEmailVerification(created.user);
 
-      alert(
-        "Cuenta creada. Debes verificar tu correo antes de poder iniciar sesión.\n\n" +
-        "Revisa tu bandeja de entrada o spam."
-      );
-
+      alert("Cuenta creada. Debes verificar tu correo antes de poder iniciar sesión. Revisa inbox/spam.");
       await signOut(auth);
 
     } catch (e) {
@@ -509,99 +453,51 @@ btnLogin?.addEventListener('click', async () => {
   }
 });
 
-/* -----------------------
-   SETTINGS UI / GEAR
-   ----------------------- */
-gearBtn?.addEventListener('click', (e)=> {
-  e.stopPropagation();
-  if(window.innerWidth > 520){
-    settingsMenu.classList.toggle('open');
-  }
-});
-document.addEventListener('click', ()=> settingsMenu.classList.remove('open'));
+/* -------- SETTINGS / PROFILE actions -------- */
+gearBtn?.addEventListener('click', (e)=> { e.stopPropagation(); if(window.innerWidth > 520){ settingsMenu.classList.toggle('open'); } });
+document.addEventListener('click', ()=> settingsMenu && settingsMenu.classList.remove('open'));
 
-/* Change name */
 sChangeName?.addEventListener('click', async () => {
   if (!currentUser) return alert('Inicia sesión');
-
   settingsMenu.classList.remove('open');
   const nameSpan = document.getElementById('user-display');
   if (nameSpan.dataset.editing === '1') return;
-
   const original = nameSpan.textContent;
   const input = document.createElement('input');
-  input.type = 'text';
-  input.value = original;
-  input.maxLength = 20;
+  input.type = 'text'; input.value = original; input.maxLength = 20;
   nameSpan.dataset.editing = '1';
-
-  input.addEventListener('keydown', (ev) => {
-    if (ev.key === 'Enter') input.blur();
-    if (ev.key === 'Escape') { input.value = original; input.blur(); }
-  });
-
+  input.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') input.blur(); if (ev.key === 'Escape') { input.value = original; input.blur(); } });
   input.addEventListener('blur', async () => {
     const newName = input.value.trim();
     delete nameSpan.dataset.editing;
     input.remove();
     nameSpan.style.display = 'inline';
-
     if (!newName || newName === original) return;
     if (newName.length > 20) return alert("Máx 20 caracteres");
-
-    try {
-      await updateProfile(currentUser, { displayName: newName });
-      await setDoc(doc(db,'users',currentUser.uid), { displayName: newName }, { merge:true });
-      setUserNameDisplay(newName);
-    } catch (e) {
-      console.error(e);
-      alert("Error actualizando nombre");
-    }
+    try { await updateProfile(currentUser, { displayName: newName }); await setDoc(doc(db,'users',currentUser.uid), { displayName: newName }, { merge:true }); setUserNameDisplay(newName); } catch (e) { console.error(e); alert("Error actualizando nombre"); }
   });
-
   nameSpan.style.display = 'none';
   nameSpan.parentElement.prepend(input);
   input.focus();
 });
 
-/* Change photo */
-sChangePhoto?.addEventListener('click', ()=> {
-  if (!currentUser) return alert('Inicia sesión');
-  filePhotoInput.click();
-  settingsMenu.classList.remove('open');
-});
+sChangePhoto?.addEventListener('click', ()=> { if (!currentUser) return alert('Inicia sesión'); filePhotoInput.click(); settingsMenu.classList.remove('open'); });
 
 async function uploadProfilePhoto(file){
   try{
     if (file.size > 3*1024*1024) throw new Error("Máximo 3MB");
-    const base64 = await new Promise((res,rej)=>{
-      const r = new FileReader();
-      r.onload = ()=> res(r.result);
-      r.onerror = rej;
-      r.readAsDataURL(file);
-    });
-
+    const base64 = await new Promise((res,rej)=>{ const r = new FileReader(); r.onload = ()=> res(r.result); r.onerror = rej; r.readAsDataURL(file); });
     await setDoc(prefsDocRef(currentUser.uid), { photoURL: base64 }, { merge: true });
     setProfileImage(base64);
-
-  }catch(err){
-    alert("Error: " + err.message);
-  }
+  }catch(err){ alert("Error: " + err.message); }
 }
-filePhotoInput?.addEventListener('change', ()=> {
-  const f = filePhotoInput.files[0];
-  if (f) uploadProfilePhoto(f);
-});
+filePhotoInput?.addEventListener('change', ()=> { const f = filePhotoInput.files[0]; if (f) uploadProfilePhoto(f); });
 
-/* signout */
 sSignout?.addEventListener('click', async()=>{ await signOut(auth); });
 
-/* -----------------------
-   MOBILE GEAR
-   ----------------------- */
-mobileGear?.addEventListener('click', ()=>{
-  const c = document.createElement('div');
-  c.className = 'mobile-settings-popup';
+/* MOBILE GEAR POPUP */
+mobileGear?.addEventListener('click', ()=> {
+  const c = document.createElement('div'); c.className = 'mobile-settings-popup';
   c.innerHTML = `
     <h3>Ajustes</h3>
     <button id="mb-change-name">✏ Cambiar nombre</button>
@@ -615,104 +511,64 @@ mobileGear?.addEventListener('click', ()=>{
 
   const g = c.querySelector('#mb-theme-grid');
   Object.keys(THEMES).forEach(k=>{
-    const d = document.createElement('div');
-    d.style.width='30px'; d.style.height='30px';
-    d.style.borderRadius='6px';
-    d.style.background = THEMES[k]['--accent-2'];
-    d.style.cursor='pointer';
-    d.onclick = ()=>{ applyTheme(k,true); c.remove(); };
-    g.appendChild(d);
+    const d = document.createElement('div'); d.style.width='30px'; d.style.height='30px'; d.style.borderRadius='6px';
+    d.style.background = THEMES[k]['--accent-2']; d.style.cursor='pointer'; d.onclick = ()=>{ applyTheme(k,true); c.remove(); }; g.appendChild(d);
   });
 
-  c.querySelector('#mb-change-name').onclick = async()=>{
-    const n = prompt("Nuevo nombre:");
-    if(!n) return;
-    if(n.length>20) return alert("Máx 20 caracteres");
-    await updateProfile(currentUser,{displayName:n});
-    await setDoc(doc(db,'users',currentUser.uid),{displayName:n},{merge:true});
-    setUserNameDisplay(n);
-    c.remove();
-  };
-
+  c.querySelector('#mb-change-name').onclick = async()=>{ const n = prompt("Nuevo nombre:"); if(!n) return; if(n.length>20) return alert("Máx 20 caracteres"); await updateProfile(currentUser,{displayName:n}); await setDoc(doc(db,'users',currentUser.uid),{displayName:n},{merge:true}); setUserNameDisplay(n); c.remove(); };
   c.querySelector('#mb-change-photo').onclick = ()=>{ filePhotoInput.click(); c.remove(); };
-  c.querySelector('#mb-toggle-timebox').onclick = async()=>{
-    const v = !(window.timeBoxEnabled ?? false);
-    await setDoc(prefsDocRef(currentUser.uid),{showTimeBox:v},{merge:true});
-    window.timeBoxEnabled = v;
-    localStorage.setItem('mt_showTimeBox', v?'1':'0');
-    updateTimeBoxVisibility();
-    c.remove();
-  };
-
+  c.querySelector('#mb-toggle-timebox').onclick = async()=>{ const v = !(window.timeBoxEnabled ?? false); if(currentUser) await setDoc(prefsDocRef(currentUser.uid),{showTimeBox:v},{merge:true}); window.timeBoxEnabled = v; localStorage.setItem('mt_showTimeBox', v?'1':'0'); updateTimeBoxVisibility(); c.remove(); };
   c.querySelector('#mb-signout').onclick = async()=>{ await signOut(auth); c.remove(); };
   c.querySelector('#mb-close').onclick = ()=> c.remove();
 });
 
-/* -----------------------
-   FINALIZADOS — EVENTS
-   ----------------------- */
-btnFinalizadosPC?.addEventListener('click', ()=> loadMangas('finished'));
-btnFinalizadosMobile?.addEventListener('click', ()=> loadMangas('finished'));
-
-document.getElementById("mobile-home")?.addEventListener('click', ()=> loadMangas('reading'));
-
-/* -----------------------
-   CATEGORIES
-   ----------------------- */
-const categories = {
-  Manga:['Acción','Aventura','Comedia','Drama','Fantasía','Romance','Seinen','Shonen','Otro'],
-  Anime:['Acción','Aventura','Comedia','Drama','Fantasía','Romance','Slice of Life','Mecha','Isekai','Otro'],
-  Serie:['Acción','Drama','Comedia','Thriller','Ciencia Ficción','Fantasía','Misterio','Otro']
-};
-
+/* -------- CATEGORIES / FORM HELPERS -------- */
+const categories = { Manga:['Acción','Aventura','Comedia','Drama','Fantasía','Romance','Seinen','Shonen','Otro'], Anime:['Acción','Aventura','Comedia','Drama','Fantasía','Romance','Slice of Life','Mecha','Isekai','Otro'], Serie:['Acción','Drama','Comedia','Thriller','Ciencia Ficción','Fantasía','Misterio','Otro'] };
 const fields = ['title','genre','last','url','imgurl','type'];
 const typeSelect = document.getElementById('type');
 const genreSelect = document.getElementById('genre');
-
-function updateGenres(){
-  genreSelect.innerHTML='';
-  categories[typeSelect.value].forEach(c=>{
-    const o=document.createElement('option');
-    o.value=o.textContent=c;
-    genreSelect.appendChild(o);
-  });
-}
+function updateGenres(){ if(!typeSelect || !genreSelect) return; genreSelect.innerHTML=''; categories[typeSelect.value].forEach(c=>{ const o=document.createElement('option'); o.value=o.textContent=c; genreSelect.appendChild(o); }); }
 typeSelect?.addEventListener('change', updateGenres);
 updateGenres();
 
-/* -----------------------
-   IMAGE PREVIEW
-   ----------------------- */
-document.getElementById('fakefile')?.addEventListener('click',()=> document.getElementById('file').click());
+/* IMAGE PREVIEW */
+document.getElementById('fakefile')?.addEventListener('click',()=> document.getElementById('file')?.click());
 document.getElementById('file')?.addEventListener('change',()=>{
-  const f = document.getElementById('file').files[0];
-  if(!f) return;
+  const f = document.getElementById('file').files[0]; if(!f) return;
   const r=new FileReader();
-  r.onload=()=>{ preview.innerHTML=`<img src="${r.result}">`; preview.dataset.image=r.result; };
+  r.onload=()=>{ preview.innerHTML=`<img src="${r.result}" style="max-width:120px;border-radius:6px">`; preview.dataset.image=r.result; };
   r.readAsDataURL(f);
 });
-document.getElementById('imgurl')?.addEventListener('change',(e)=>{
-  const v = e.target.value.trim();
-  preview.dataset.image = v;
-  preview.innerHTML = v? `<img src="${v}">` : '';
-});
+document.getElementById('imgurl')?.addEventListener('change',(e)=>{ const v = e.target.value.trim(); preview.dataset.image = v; preview.innerHTML = v? `<img src="${v}" style="max-width:120px;border-radius:6px">` : ''; });
 
-/* -----------------------
-   LOAD MANGAS (reading/finished)
-   ----------------------- */
+/* -------- UI helper: toggle buttons according to filter -------- */
+function setButtonsForFilter(filter){
+  currentFilter = filter;
+  // PC
+  if(btnFinalizadosPC) btnFinalizadosPC.style.display = (filter==='finished') ? 'none' : 'inline-block';
+  if(btnVolverPC) btnVolverPC.style.display = (filter==='finished') ? 'inline-block' : 'none';
+  // Mobile
+  if(btnFinalizadosMobile) btnFinalizadosMobile.style.display = (filter==='finished') ? 'none' : 'flex';
+  if(btnHomeMobile) btnHomeMobile.style.opacity = (filter==='finished') ? 1 : 0.5;
+}
+
+/* -------- LOAD MANGAS (reading | finished) -------- */
 async function loadMangas(status='reading'){
-  gridEl.innerHTML='';
-  if(!currentUser){ empty.style.display='block'; return; }
+  // status = 'reading' or 'finished'
+  gridEl.innerHTML = '';
+  if(!currentUser){ empty && (empty.style.display='block'); return; }
 
+  // fetch all mangas for user (keeps it simple)
   const col = collection(db,'users',currentUser.uid,'mangas');
   const snap = await getDocs(col);
+  const items = snap.docs.map(d=> ({ id:d.id, ...d.data() }) );
 
-  const items = snap.docs.map(d=> ({id:d.id, ...d.data()} ));
-
+  // filter by status
   const filtered = items.filter(it => (it.status || 'reading') === status);
 
-  if(filtered.length===0){ empty.style.display='block'; return; }
-  empty.style.display='none';
+  if(filtered.length===0){ if(empty){ empty.style.display='block'; } setButtonsForFilter(status); return; }
+  empty && (empty.style.display='none');
+  setButtonsForFilter(status);
 
   const tipos = ['Manga','Anime','Serie'];
   tipos.forEach(tipo=>{
@@ -722,6 +578,9 @@ async function loadMangas(status='reading'){
     const header = document.createElement('h2');
     header.textContent = tipo;
     header.className = 'tipo-header';
+    // force full width inside grid (in case it's inside)
+    header.style.gridColumn = '1 / -1';
+    header.style.display = 'flex';
     gridEl.appendChild(header);
 
     group.forEach(it=>{
@@ -730,212 +589,202 @@ async function loadMangas(status='reading'){
       card.dataset.id = it.id;
 
       card.innerHTML = `
-        <div class="thumb">${it.imgurl? `<img src="${it.imgurl}">` : ''}</div>
+        <div class="thumb">${it.imgurl? `<img src="${it.imgurl}" style="width:100%;height:100%;object-fit:cover">` : ''}</div>
         <div class="meta">
           <div class="title">${it.title}</div>
           <div class="genre">${it.genre}</div>
           <div class="last">Últ.: <strong>${it.last||0}</strong></div>
           ${status==='reading'
             ? `<div class="finish-box"><label><input type="checkbox" class="finish-check" data-id="${it.id}"> Terminado</label></div>`
-            : `<div class="finished-label">Finalizado ✔</div>`
+            : `<div class="finished-label">Finalizado ✔</div><button class="small restore-btn" data-id="${it.id}" style="margin-top:8px;">Restaurar</button>`
           }
         </div>
         <div class="actions">
-          <a class="link" href="${it.url||'#'}" target="_blank">Ir →</a>
-          <button class="small edit-btn" data-id="${it.id}">Editar</button>
-          <button class="small del-btn" data-id="${it.id}">Borrar</button>
+          <a class="link" href="${it.url||'#'}" target="_blank" rel="noopener">Ir →</a>
+          <div style="display:flex;gap:6px;">
+            <button class="small edit-btn" data-id="${it.id}">Editar</button>
+            <button class="small del-btn" data-id="${it.id}" style="background:transparent;border:1px solid rgba(255,255,255,0.12)">Borrar</button>
+          </div>
         </div>
       `;
       gridEl.appendChild(card);
     });
   });
 
-  // editing
-  gridEl.querySelectorAll('.edit-btn').forEach(b=> {
-    b.onclick = ()=> openForm(b.dataset.id);
-  });
+  // delegate handlers (edit/delete/increment/finish)
+  // edit
+  gridEl.querySelectorAll('.edit-btn').forEach(b=> b.onclick = (e)=> { e.stopPropagation(); openForm(b.dataset.id); });
 
   // delete
-  gridEl.querySelectorAll('.del-btn').forEach(b=>{
-    b.onclick = async()=>{
-      if(!confirm("¿Eliminar?")) return;
-      await deleteDoc(doc(db,'users',currentUser.uid,'mangas',b.dataset.id));
-      loadMangas(status);
-    };
+  gridEl.querySelectorAll('.del-btn').forEach(b=> b.onclick = async (e)=> {
+    e.stopPropagation();
+    if(!confirm("¿Eliminar?")) return;
+    await deleteDoc(doc(db,'users',currentUser.uid,'mangas',b.dataset.id));
+    await loadMangas(status);
   });
 
-  // increment chapters only if reading
-  if(status==='reading'){
+  // increment chapters (only reading)
+  if(status === 'reading'){
     gridEl.querySelectorAll('.card').forEach(card=>{
-      card.addEventListener('click', async(e)=>{
+      card.onclick = async (e)=>{
         if(e.target.closest('button') || e.target.closest('a') || e.target.closest('.finish-box')) return;
         const id = card.dataset.id;
         const docRef = doc(db,'users',currentUser.uid,'mangas',id);
         const snap = await getDoc(docRef);
         if(!snap.exists()) return;
-        let delta = e.shiftKey ? parseInt(prompt("¿Cuántos sumar?",1)) : 1;
-        if(!delta || delta<=0) return;
-
-        const old = Number(snap.data().last)||0;
-        await updateDoc(docRef,{ last:String(old+delta) });
-
-        card.querySelector('.last strong').textContent = old+delta;
-      });
-    });
-
-    // handle "terminado"
-    gridEl.querySelectorAll('.finish-check').forEach(chk=>{
-      chk.onchange = ()=>{
-        if(chk.checked){
-          selectedToFinish = chk.dataset.id;
-          showFinishModal();
-        }
+        let delta = e.shiftKey ? parseInt(prompt("¿Cuántos sumar?", "1")) : 1;
+        if(!delta || delta <= 0) return;
+        const old = Number(snap.data().last) || 0;
+        await updateDoc(docRef, { last: String(old + delta) });
+        const strong = card.querySelector('.last strong');
+        if(strong) strong.textContent = String(old + delta);
+        if(window.timeBoxEnabled) calculateTotalTime();
       };
     });
+
+    // finish checkbox handlers
+    gridEl.querySelectorAll('.finish-check').forEach(chk=>{
+      chk.onchange = ()=>{ if(chk.checked){ selectedToFinish = chk.dataset.id; showFinishModal(); } };
+    });
   }
+
+  if(status === 'finished'){
+      gridEl.querySelectorAll('.restore-btn').forEach(btn=>{
+        btn.onclick = async (e)=>{
+          e.stopPropagation();
+          const id = btn.dataset.id;
+
+          await updateDoc(doc(db,'users',currentUser.uid,'mangas',id), {
+            status: 'reading'
+          });
+
+          // recargar para que desaparezca de finalizados
+          await loadMangas('reading');
+        };
+      });
+    }
 
   if(window.timeBoxEnabled) calculateTotalTime();
 }
 
-/* -----------------------
-   FINISH MODAL
-   ----------------------- */
+/* -------- FINISH MODAL HANDLERS -------- */
 const finishModal = document.getElementById('finish-modal');
 const finishConfirm = document.getElementById('finish-confirm');
 const finishCancel = document.getElementById('finish-cancel');
 
-function showFinishModal(){
-  finishModal.classList.remove('hidden');
-}
-function hideFinishModal(){
-  finishModal.classList.add('hidden');
-  selectedToFinish = null;
-}
+function showFinishModal(){ if(finishModal) finishModal.classList.remove('hidden'); }
+function hideFinishModal(){ if(finishModal) finishModal.classList.add('hidden'); selectedToFinish = null; }
 
-finishCancel.onclick = hideFinishModal;
+finishCancel?.addEventListener('click', ()=> { if(finishModal) hideFinishModal(); });
+finishConfirm?.addEventListener('click', async ()=> {
+  if(!selectedToFinish) { hideFinishModal(); return; }
+  try {
+    await updateDoc(doc(db,'users',currentUser.uid,'mangas',selectedToFinish), { status: 'finished' });
+    // reload view according to currentFilter (setButtonsForFilter already updates currentFilter)
+    hideFinishModal();
+    await loadMangas(currentFilter);
+  } catch (e) { console.error(e); hideFinishModal(); }
+});
 
-finishConfirm.onclick = async()=>{
-  if(!selectedToFinish) return hideFinishModal();
-  await updateDoc(doc(db,'users',currentUser.uid,'mangas',selectedToFinish),{
-    status:'finished'
-  });
-  hideFinishModal();
-  loadMangas('reading');
-};
-
-/* -----------------------
-   FORM OPEN/CLOSE
-   ----------------------- */
+/* -------- FORM OPEN/CLOSE/SAVE -------- */
 function openForm(id=null){
-  editId=id;
+  editId = id;
   document.getElementById('form-title').textContent = id? "Editar" : "Añadir";
-
-  fields.forEach(f=> document.getElementById(f).value="");
-  preview.innerHTML="";
-  preview.dataset.image="";
-
+  fields.forEach(f=> { const el = document.getElementById(f); if(el) el.value = ''; });
+  preview.innerHTML=''; preview.dataset.image='';
   if(id){
     getDoc(doc(db,'users',currentUser.uid,'mangas',id)).then(s=>{
       if(!s.exists()) return;
-      const d=s.data();
-      document.getElementById('title').value=d.title||"";
-      document.getElementById('last').value=d.last||"";
-      document.getElementById('url').value=d.url||"";
-      document.getElementById('type').value=d.type||"Manga";
+      const d = s.data();
+      const t = document.getElementById('title'); if(t) t.value = d.title || "";
+      const l = document.getElementById('last'); if(l) l.value = d.last || "";
+      const u = document.getElementById('url'); if(u) u.value = d.url || "";
+      const tp = document.getElementById('type'); if(tp) tp.value = d.type || "Manga";
       updateGenres();
-      document.getElementById('genre').value=d.genre||"";
-      if(d.imgurl){
-        preview.innerHTML=`<img src="${d.imgurl}">`;
-        preview.dataset.image=d.imgurl;
-      }
-    });
+      const g = document.getElementById('genre'); if(g) g.value = d.genre || "";
+      if(d.imgurl){ preview.innerHTML = `<img src="${d.imgurl}" style="max-width:120px;border-radius:6px">`; preview.dataset.image = d.imgurl; }
+    }).catch(e=>console.error(e));
   }
-  modal.classList.add('open');
+  modal && modal.classList.add('open');
 }
+function closeForm(){ modal && modal.classList.remove('open'); editId = null; }
 
-function closeForm(){
-  modal.classList.remove('open');
-  editId=null;
-}
+/* --- IMPORTANT: listeners for Add buttons (fix for the issue) --- */
+btnAdd?.addEventListener('click', ()=> { openForm(); });
+mobileAdd?.addEventListener('click', ()=> { openForm(); });
 
-btnSave.onclick = async()=>{
+btnSave?.addEventListener('click', async ()=>{
   if(!currentUser) return alert("Inicia sesión");
-  const data={};
-  fields.forEach(f=> data[f] = document.getElementById(f).value);
-
+  const data = {};
+  fields.forEach(f=> { const el = document.getElementById(f); data[f] = el ? el.value : ""; });
   data.imgurl = preview.dataset.image || "";
   data.status = data.status || "reading";
-
   const colRef = collection(db,'users',currentUser.uid,'mangas');
-
-  if(editId){
-    await setDoc(doc(db,'users',currentUser.uid,'mangas',editId),data,{merge:true});
-  } else {
-    await addDoc(colRef,data);
-  }
-
-  closeForm();
-  loadMangas();
-};
-
-btnCancel.onclick = closeForm;
-
-modal.addEventListener('click',e=>{
-  if(e.target===modal) closeForm();
+  try {
+    if(editId) { await setDoc(doc(db,'users',currentUser.uid,'mangas',editId), data, { merge:true }); }
+    else { await addDoc(colRef, data); }
+    closeForm();
+    await loadMangas(currentFilter);
+  } catch(e){ console.error(e); alert("Error guardando"); }
 });
+btnCancel?.addEventListener('click', closeForm);
+modal?.addEventListener('click', e=> { if(e.target === modal) closeForm(); });
 
-/* -----------------------
-   TIME BOX
-   ----------------------- */
+/* -------- TIME BOX -------- */
 function updateTimeBoxVisibility(){
-  if(window.timeBoxEnabled){
-    timeBox.style.display='flex';
-    calculateTotalTime();
-  } else {
-    timeBox.style.display='none';
-  }
+  if(!timeBox) return;
+  if(window.timeBoxEnabled){ timeBox.style.display='flex'; calculateTotalTime(); } else { timeBox.style.display='none'; }
 }
 
-timeBoxSwitch?.addEventListener('change', async()=>{
+timeBoxSwitch?.addEventListener('change', async ()=>{
   const v = timeBoxSwitch.checked;
-  if(currentUser){
-    await setDoc(prefsDocRef(currentUser.uid),{showTimeBox:v},{merge:true});
-  } else {
-    localStorage.setItem('mt_showTimeBox', v?'1':'0');
-  }
+  if(currentUser) { try{ await setDoc(prefsDocRef(currentUser.uid),{showTimeBox:v},{merge:true}); }catch(e){console.error(e);} }
+  else localStorage.setItem('mt_showTimeBox', v?'1':'0');
   window.timeBoxEnabled = v;
   updateTimeBoxVisibility();
 });
 
 async function calculateTotalTime(){
-  if(!currentUser) return;
+  if(!currentUser || !timeBoxValue) {
+    if(timeBoxValue) timeBoxValue.textContent = '0d 0h 0m';
+    return;
+  }
 
   const col = collection(db, "users", currentUser.uid, "mangas");
   const snap = await getDocs(col);
-
   let totalMinutes = 0;
 
-  snap.docs.forEach(d=>{
+  snap.docs.forEach(d => {
     const it = d.data();
-    if((it.status||"reading")!=="reading") return;
 
-    const last = Number(it.last)||0;
+    // ❗️ANTES filtrabas aquí por "reading"
+    // ❗️AHORA se cuentan TODOS (reading + finished)
+
+    const last = Number(it.last) || 0;
+
     let mult = 10;
-    if(it.type==="Anime") mult=20;
-    if(it.type==="Serie") mult=45;
-    totalMinutes += last*mult;
+    if(it.type === "Anime") mult = 20;
+    if(it.type === "Serie") mult = 45;
+
+    totalMinutes += last * mult;
   });
 
   const days = Math.floor(totalMinutes / 1440);
-  const hours = Math.floor((totalMinutes % 1440)/60);
+  const hours = Math.floor((totalMinutes % 1440) / 60);
   const minutes = totalMinutes % 60;
+
   timeBoxValue.textContent = `${days}d ${hours}h ${minutes}m`;
 }
 
-/* -----------------------
-   INITIAL LOCAL THEME
-   ----------------------- */
-window.addEventListener('load',()=>{
+
+/* -------- BUTTONS: finalizados / volver / mobile home -------- */
+btnFinalizadosPC?.addEventListener('click', ()=> { loadMangas('finished'); });
+btnFinalizadosMobile?.addEventListener('click', ()=> { loadMangas('finished'); });
+btnVolverPC?.addEventListener('click', ()=> { loadMangas('reading'); });
+btnHomeMobile?.addEventListener('click', ()=> { loadMangas('reading'); });
+
+/* -------- INITIAL LOCAL THEME & TIMEBOX ON PAGE LOAD -------- */
+window.addEventListener('load', ()=>{
   const local = localStorage.getItem('mt_theme') || 'dark';
   applyTheme(local,false);
   const localShow = localStorage.getItem('mt_showTimeBox');
@@ -944,10 +793,10 @@ window.addEventListener('load',()=>{
   updateTimeBoxVisibility();
 });
 
-/* prevent menu closing */
-settingsMenu.addEventListener('click', e=> e.stopPropagation());
+/* prevent settings menu from closing while interacting */
+settingsMenu?.addEventListener('click', e=> e.stopPropagation());
 
-}); // DOMContentLoaded END
+}); // DOMContentLoaded end
 </script>
 
 </body>

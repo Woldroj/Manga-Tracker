@@ -172,6 +172,7 @@ input:checked + .slider:before {
   #mobile-gear{width:40px;height:40px;border-radius:50%;padding:0;display:flex;align-items:center;justify-content:center;gap:0}
   #mobile-gear svg{width:22px;height:22px}
   #mobile-profile-pic{width:38px;height:38px}
+  #btn-finalizados-pc {display: none !important;}
 }
 
 /* ============================================
@@ -279,6 +280,29 @@ input:checked + .slider:before {
 #btn-finalizados-pc:hover {
   background: rgba(59,130,246,0.1);
 }
+.top-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-right: auto; /* empuja hacia la izquierda */
+}
+
+.top-btn {
+  background: var(--card);
+  border: 1px solid rgba(255,255,255,0.12);
+  padding: 6px 12px;
+  margin-right: 15px;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  color: var(--accent);
+  transition: 0.2s ease;
+}
+
+.top-btn:hover {
+  background: rgba(255,255,255,0.08);
+}
+
 
 /* mobile home / finalizados buttons */
 .mobile-btn-home,
