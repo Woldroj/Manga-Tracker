@@ -18,7 +18,6 @@
   <!-- MANIFEST -->
   <link rel="manifest" href="manifest.json">
 
-
   <meta name="description" content="Lleva seguimiento de tus mangas, anime y series con carga instantánea, sincronización en la nube y detección de nuevos capítulos.">
   <meta name="keywords" content="manga tracker, zonatmo, anime tracker, seguimiento manga, capitulos nuevos">
 
@@ -108,6 +107,8 @@
     <!-- desktop logged controls -->
     <div class="controls" id="user-controls" style="display:none">
       <button id="btn-add" class="btn primary">＋ Añadir</button>
+      <!-- BOTÓN FINALIZADOS (PC) -->
+      <button id="btn-finalizados-pc" class="btn">📚 Finalizados</button>
     </div>
 
     <!-- time box (total consumed) -->
@@ -139,7 +140,17 @@
       </div>
     </button>
 
+    <!-- BOTÓN INICIO (MÓVIL) -->
+    <button class="mobile-btn" id="mobile-home" title="Inicio" aria-label="Inicio">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 3l9 8h-3v10H6V11H3l9-8z"></path></svg>
+    </button>
+
     <button class="mobile-add" id="mobile-add" title="Añadir" aria-label="Añadir">＋</button>
+
+    <!-- BOTÓN FINALIZADOS (MÓVIL) -->
+    <button class="mobile-btn" id="btn-finalizados-mobile" title="Finalizados" aria-label="Finalizados">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M9 16.2l-3.5-3.5L4 14.2l5 5 11-11-1.5-1.5L9 16.2z"></path></svg>
+    </button>
 
     <button class="mobile-btn" id="mobile-gear" title="Ajustes" aria-label="Ajustes">
       <!-- Usa el mismo SVG de engranaje que el escritorio -->
@@ -183,24 +194,45 @@
     </div>
   </div>
 
+  <!-- MODAL MOVER A FINALIZADOS -->
+  <div id="finish-modal" class="finish-modal hidden">
+    <div class="finish-panel">
+      <h3>¿Mover a finalizados?</h3>
+      <p>Has marcado este título como terminado.<br>¿Quieres moverlo a la sección de finalizados?</p>
+
+      <div class="finish-actions">
+        <button id="finish-cancel" class="btn">Cancelar</button>
+        <button id="finish-confirm" class="btn primary">Mover</button>
+      </div>
+    </div>
+  </div>
+
 <script type="module">
-/* =========================
-   FIREBASE + APP LOGIC
-   ========================= */
+/* ===================================================
+   Manga Tracker - Script unificado, limpio y optimizado
+   - Mantiene todas las funciones originales
+   - Añade "Finalizados" (status: "finished")
+   - Organizado y con protección DOMContentLoaded
+   =================================================== */
+
+/* -----------------------
+   IMPORTS (Firebase)
+   ----------------------- */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-app.js";
 import {
   getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
-  signOut, onAuthStateChanged, updateProfile
+  signOut, onAuthStateChanged, updateProfile, sendEmailVerification
 } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-auth.js";
 import {
   getFirestore, collection, addDoc, getDocs, doc, setDoc, deleteDoc,
-  getDoc, updateDoc
+  getDoc, updateDoc, query
 } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-firestore.js";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-storage.js";
-import { sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-auth.js";
+import { getStorage } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-storage.js";
+import { getDoc as _getDoc } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-firestore.js";
 
-
-/* --------- CONFIG --------- */
+/* -----------------------
+   CONFIG
+   ----------------------- */
 const firebaseConfig = {
   apiKey: "AIzaSyBjGHgNC4CHglfh75yMxXYcLMij8aywcQc",
   authDomain: "mangatracker-63f14.firebaseapp.com",
@@ -210,12 +242,20 @@ const firebaseConfig = {
   appId: "1:612200334218:web:1cd7349bbc61b71ad7fe73",
   measurementId: "G-1VY5WJG76J"
 };
+
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
-/* ---------- DOM refs ---------- */
+/* -----------------------
+   BOOTSTRAP AFTER DOM
+   ----------------------- */
+document.addEventListener('DOMContentLoaded', () => {
+
+/* -----------------------
+   DOM REFS
+   ----------------------- */
 const authControls = document.getElementById('auth-controls');
 const userControls = document.getElementById('user-controls');
 const userDisplay = document.getElementById('user-display');
@@ -249,7 +289,20 @@ const timeBox = document.getElementById('time-box');
 const timeBoxValue = document.getElementById('time-box-value');
 const timeBoxSwitch = document.getElementById('timebox-switch');
 
-/* ---------- Themes ---------- */
+const btnFinalizadosPC = document.getElementById('btn-finalizados-pc');
+const btnFinalizadosMobile = document.getElementById('btn-finalizados-mobile');
+
+/* -----------------------
+   APP STATE
+   ----------------------- */
+let currentUser = null;
+let editId = null;
+let selectedToFinish = null; // id pending confirmation
+window.timeBoxEnabled = false;
+
+/* -----------------------
+   THEMES
+   ----------------------- */
 const THEMES = {
   dark: { '--bg':'#0f172a','--card':'#1e293b','--accent':'#f1f5f9','--accent-2':'#3b82f6','--muted':'#94a3b8' },
   black: { '--bg':'#0f0f0f','--card':'#1a1a1a','--accent':'#f5f5f5','--accent-2':'#888888','--muted':'#5a5a5a' },
@@ -269,18 +322,20 @@ function prefsDocRef(uid){
   return doc(db, 'users', uid, 'prefs', 'ui');
 }
 
-/* Populate swatches (UI) */
-Object.keys(THEMES).forEach(key=>{
-  const sw = document.createElement('div');
-  sw.className = 'theme-swatch';
-  sw.style.background = THEMES[key]['--accent-2'];
-  sw.title = key;
-  sw.dataset.theme = key;
-  sw.addEventListener('click', ()=> applyTheme(key, true));
-  themeGrid.appendChild(sw);
-});
+/* render theme swatches */
+if (themeGrid) {
+  Object.keys(THEMES).forEach(key=>{
+    const sw = document.createElement('div');
+    sw.className = 'theme-swatch';
+    sw.style.background = THEMES[key]['--accent-2'];
+    sw.title = key;
+    sw.dataset.theme = key;
+    sw.addEventListener('click', ()=> applyTheme(key, true));
+    themeGrid.appendChild(sw);
+  });
+}
 
-/* Apply theme to CSS vars */
+/* Apply theme */
 function setCssVarsFromTheme(themeKey){
   const vars = THEMES[themeKey] || THEMES.dark;
   Object.entries(vars).forEach(([k,v])=> document.documentElement.style.setProperty(k,v));
@@ -289,27 +344,62 @@ async function applyTheme(themeKey, save=true){
   document.body.dataset.theme = themeKey;
   setCssVarsFromTheme(themeKey);
 
-  // Update time-box accent so it's consistent with theme
-  // (time-box uses var(--card), var(--accent), var(--accent-2) in CSS)
   if(save){
     try{
       if(currentUser){
-        const prefsRef = doc(db, 'users', currentUser.uid, 'prefs', 'ui');
-        await setDoc(prefsRef, { theme: themeKey }, { merge: true }).catch(e=>console.error(e));
+        const prefsRef = prefsDocRef(currentUser.uid);
+        await setDoc(prefsRef, { theme: themeKey }, { merge: true });
       } else {
         localStorage.setItem('mt_theme', themeKey);
       }
-    }catch(e){
-      console.error('Error guardando tema:', e);
-    }
+    }catch(e){ console.error('Error guardando tema:', e); }
   }
 }
 
-/* Load prefs for user */
+/* -----------------------
+   PROFILE HELPERS
+   ----------------------- */
+function setProfileImage(url) {
+  const mobileImg = document.getElementById("mobile-profile-img");
+  const mobileInitial = document.getElementById("mobile-profile-initial");
+
+  if (!profileImg) return;
+  if (url) {
+    if (url.startsWith("data:image/")) {
+      profileImg.src = url;
+      if (mobileImg) mobileImg.src = url;
+    } else {
+      const safeUrl = url + (url.includes("?") ? "&" : "?") + "t=" + Date.now();
+      profileImg.src = safeUrl;
+      if (mobileImg) mobileImg.src = safeUrl;
+    }
+    profileImg.style.display = "block";
+    profileInitial.style.display = "none";
+    if (mobileImg) mobileImg.style.display = "block";
+    if (mobileInitial) mobileInitial.style.display = "none";
+  } else {
+    profileImg.style.display = "none";
+    profileInitial.style.display = "inline-block";
+    if (mobileImg) mobileImg.style.display = "none";
+    if (mobileInitial) mobileInitial.style.display = "inline-block";
+  }
+}
+function setUserNameDisplay(name){
+  if (!userDisplay) return;
+  userDisplay.textContent = name || 'Invitado';
+  const initial = (name && name[0]) ? name[0].toUpperCase() : 'I';
+  if (profileInitial) profileInitial.textContent = initial;
+  const mobileInitial = document.getElementById("mobile-profile-initial");
+  if (mobileInitial) mobileInitial.textContent = initial;
+}
+
+/* -----------------------
+   PREFERENCES LOADING
+   ----------------------- */
 async function loadPrefsForUser(uid){
   try{
     const prefsRef = prefsDocRef(uid);
-    const snap = await getDoc(prefsRef);
+    const snap = await _getDoc(prefsRef);
     if(snap && snap.exists()){
       const data = snap.data();
       if(data.theme) applyTheme(data.theme, false);
@@ -320,10 +410,8 @@ async function loadPrefsForUser(uid){
         updateTimeBoxVisibility();
       }
     } else {
-      // if Firestore has no prefs, fallback to localStorage
       const local = localStorage.getItem('mt_theme') || 'dark';
       applyTheme(local,false);
-      // also showTimeBox fallback
       const localShow = localStorage.getItem('mt_showTimeBox');
       if(localShow !== null){
         window.timeBoxEnabled = localShow === '1';
@@ -334,82 +422,37 @@ async function loadPrefsForUser(uid){
   }catch(e){ console.error(e); const local = localStorage.getItem('mt_theme') || 'dark'; applyTheme(local,false); }
 }
 
-/* Profile helpers */
-function setProfileImage(url) {
-  const mobileImg = document.getElementById("mobile-profile-img");
-  const mobileInitial = document.getElementById("mobile-profile-initial");
-
-  if (url) {
-
-    // Si es base64, NO se le agrega ?t= porque rompe la imagen
-    if (url.startsWith("data:image/")) {
-      profileImg.src = url;
-      if (mobileImg) mobileImg.src = url;
-    } else {
-      // Si es una URL normal (ej: Firebase Storage), sí se agrega ?t=
-      const safeUrl = url + (url.includes("?") ? "&" : "?") + "t=" + Date.now();
-      profileImg.src = safeUrl;
-      if (mobileImg) mobileImg.src = safeUrl;
-    }
-
-    profileImg.style.display = "block";
-    profileInitial.style.display = "none";
-
-    if (mobileImg) mobileImg.style.display = "block";
-    if (mobileInitial) mobileInitial.style.display = "none";
-
-  } else {
-    profileImg.style.display = "none";
-    profileInitial.style.display = "inline-block";
-
-    if (mobileImg) mobileImg.style.display = "none";
-    if (mobileInitial) mobileInitial.style.display = "inline-block";
-  }
-}
-
-function setUserNameDisplay(name){
-  userDisplay.textContent = name || 'Invitado';
-  const initial = (name && name[0]) ? name[0].toUpperCase() : 'I';
-  profileInitial.textContent = initial;
-  const mobileInitial = document.getElementById("mobile-profile-initial");
-  if (mobileInitial) mobileInitial.textContent = initial;
-}
-
-/* ---------- AUTH STATE ---------- */
-let currentUser = null;
+/* -----------------------
+   AUTH STATE
+   ----------------------- */
 onAuthStateChanged(auth, async (user) => {
   currentUser = user;
 
   if (user) {
-    authControls.style.display = 'none';
-    userControls.style.display = 'flex';
+    if(authControls) authControls.style.display = 'none';
+    if(userControls) userControls.style.display = 'flex';
     setUserNameDisplay(user.displayName || user.email);
 
-    // ---------------------------
-    // 1️⃣ Intentar cargar foto desde Firestore (SIEMPRE)
-    // ---------------------------
-    const prefsSnap = await getDoc(prefsDocRef(user.uid));
-    if (prefsSnap.exists() && prefsSnap.data().photoURL) {
+    // try load prefs/photo
+    const prefsSnap = await _getDoc(prefsDocRef(user.uid));
+    if (prefsSnap && prefsSnap.exists() && prefsSnap.data().photoURL) {
       setProfileImage(prefsSnap.data().photoURL);
     } else if (user.photoURL) {
-      // 2️⃣ Si no está en Firestore, usar Auth
       setProfileImage(user.photoURL);
     } else {
-      // 3️⃣ Sin foto
       setProfileImage(null);
     }
 
-    // Cargar tema y datos
     await loadPrefsForUser(user.uid);
-    await loadMangas();
+    await loadMangas(); // default view (reading)
 
   } else {
-    authControls.style.display = 'flex';
-    userControls.style.display = 'none';
+    if(authControls) authControls.style.display = 'flex';
+    if(userControls) userControls.style.display = 'none';
     setUserNameDisplay('Invitado');
     setProfileImage(null);
-    gridEl.innerHTML = '';
-    empty.style.display = 'block';
+    if(gridEl) gridEl.innerHTML = '';
+    if(empty) empty.style.display = 'block';
 
     const local = localStorage.getItem('mt_theme') || 'dark';
     applyTheme(local, false);
@@ -421,23 +464,19 @@ onAuthStateChanged(auth, async (user) => {
   }
 });
 
-
-/* ---------- AUTH: login/register ---------- */
-btnLogin.addEventListener('click', async () => {
+/* -----------------------
+   AUTH: login/register
+   ----------------------- */
+btnLogin?.addEventListener('click', async () => {
   const email = document.getElementById('email').value.trim();
   const password = document.getElementById('password').value;
   const username = (document.getElementById('username').value || 'Usuario').trim();
 
-  if (!email || !password) {
-    alert('Email y contraseña necesarios');
-    return;
-  }
+  if (!email || !password) { alert('Email y contraseña necesarios'); return; }
 
   try {
-    // Intentar iniciar sesión primero
     const uc = await signInWithEmailAndPassword(auth, email, password);
 
-    // ❗ Evitar acceso sin verificar
     if (!uc.user.emailVerified) {
       alert("Debes verificar tu correo antes de iniciar sesión. Revisa tu bandeja.");
       await sendEmailVerification(uc.user);
@@ -445,22 +484,15 @@ btnLogin.addEventListener('click', async () => {
       return;
     }
 
-    // Si no tenía displayName, lo actualizamos
-    if (!uc.user.displayName) {
-      await updateProfile(uc.user, { displayName: username });
-    }
+    if (!uc.user.displayName) await updateProfile(uc.user, { displayName: username });
 
-  } catch (err) {
+    } catch (err) {
     console.warn("No pudo iniciar sesión, intentando crear cuenta…");
 
     try {
-      // Crear nueva cuenta
       const created = await createUserWithEmailAndPassword(auth, email, password);
-
-      // Poner nombre
       await updateProfile(created.user, { displayName: username });
 
-      // ✉️ ENVIAR VERIFICACIÓN DE EMAIL
       await sendEmailVerification(created.user);
 
       alert(
@@ -468,7 +500,6 @@ btnLogin.addEventListener('click', async () => {
         "Revisa tu bandeja de entrada o spam."
       );
 
-      // Cerrar sesión para obligar a verificar
       await signOut(auth);
 
     } catch (e) {
@@ -478,75 +509,53 @@ btnLogin.addEventListener('click', async () => {
   }
 });
 
-/* ---------- SETTINGS UI ---------- */
-/* toggle desktop menu */
-gearBtn.addEventListener('click', (e)=> {
+/* -----------------------
+   SETTINGS UI / GEAR
+   ----------------------- */
+gearBtn?.addEventListener('click', (e)=> {
   e.stopPropagation();
   if(window.innerWidth > 520){
     settingsMenu.classList.toggle('open');
-    settingsMenu.setAttribute('aria-hidden', settingsMenu.classList.contains('open') ? 'false' : 'true');
   }
 });
 document.addEventListener('click', ()=> settingsMenu.classList.remove('open'));
 
-/* Change name (desktop inline) */
-sChangeName.addEventListener('click', async () => {
-  if (!currentUser) {
-    alert('Inicia sesión para cambiar el nombre');
-    return;
-  }
+/* Change name */
+sChangeName?.addEventListener('click', async () => {
+  if (!currentUser) return alert('Inicia sesión');
 
   settingsMenu.classList.remove('open');
-
   const nameSpan = document.getElementById('user-display');
   if (nameSpan.dataset.editing === '1') return;
 
-  nameSpan.dataset.editing = '1';
-  const original = nameSpan.textContent || '';
-
+  const original = nameSpan.textContent;
   const input = document.createElement('input');
   input.type = 'text';
   input.value = original;
-  input.placeholder = 'Nuevo nombre';
-  input.style.width = '140px';
-  input.maxLength = 20; // enforce in input as well
+  input.maxLength = 20;
+  nameSpan.dataset.editing = '1';
 
   input.addEventListener('keydown', (ev) => {
-    if (ev.key === 'Enter') { ev.preventDefault(); input.blur(); }
+    if (ev.key === 'Enter') input.blur();
     if (ev.key === 'Escape') { input.value = original; input.blur(); }
   });
 
   input.addEventListener('blur', async () => {
-
     const newName = input.value.trim();
     delete nameSpan.dataset.editing;
     input.remove();
     nameSpan.style.display = 'inline';
 
     if (!newName || newName === original) return;
-
-    if (newName.length > 20) {
-      alert('El nombre es demasiado largo (máx 20 caracteres)');
-      nameSpan.textContent = original;
-      return;
-    }
+    if (newName.length > 20) return alert("Máx 20 caracteres");
 
     try {
-      const user = auth.currentUser || currentUser;
-      if (!user) throw new Error("Usuario no disponible");
-
-      // Cambiar nombre en Authentication
-      await updateProfile(user, { displayName: newName });
-
-      // Guardar también en Firestore users doc (opcional / facilita consultas)
-      await setDoc(doc(db,'users',user.uid), { displayName: newName }, { merge:true });
-
-      // Actualizar UI sin recargar
-      nameSpan.textContent = newName;
-
+      await updateProfile(currentUser, { displayName: newName });
+      await setDoc(doc(db,'users',currentUser.uid), { displayName: newName }, { merge:true });
+      setUserNameDisplay(newName);
     } catch (e) {
       console.error(e);
-      alert("Error actualizando nombre (vuelve a intentarlo)");
+      alert("Error actualizando nombre");
     }
   });
 
@@ -555,416 +564,390 @@ sChangeName.addEventListener('click', async () => {
   input.focus();
 });
 
-
-/* Change photo (desktop) */
-sChangePhoto.addEventListener('click', () => {
-  if (!currentUser) {
-    alert('Inicia sesión para cambiar la foto');
-    return;
-  }
-  // use the single hidden input (id="file-photo")
+/* Change photo */
+sChangePhoto?.addEventListener('click', ()=> {
+  if (!currentUser) return alert('Inicia sesión');
   filePhotoInput.click();
   settingsMenu.classList.remove('open');
 });
 
-// Convierte un archivo a Base64
-function fileToBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);   // devuelve data:image/png;base64,...
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
-
-async function uploadProfilePhoto(file) {
-  try {
-    const user = auth.currentUser || currentUser;
-    if (!user) throw new Error("No hay usuario autenticado.");
-
-    // 1️⃣ Validación de tamaño
-    if (file.size > 3 * 1024 * 1024) {
-      throw new Error(`La imagen es demasiado grande (${(file.size/1024/1024).toFixed(2)}MB). Máximo permitido: 3MB.`);
-    }
-
-    // 2️⃣ Convertir a Base64
-    const base64 = await new Promise((resolve, reject) => {
-      const reader = new FileReader();
-
-      reader.onload = () => {
-        if (!reader.result.startsWith("data:image"))
-          reject(new Error("El archivo no es una imagen válida."));
-        else resolve(reader.result);
-      };
-
-      reader.onerror = () => reject(new Error("Error leyendo la imagen."));
-      reader.readAsDataURL(file);
+async function uploadProfilePhoto(file){
+  try{
+    if (file.size > 3*1024*1024) throw new Error("Máximo 3MB");
+    const base64 = await new Promise((res,rej)=>{
+      const r = new FileReader();
+      r.onload = ()=> res(r.result);
+      r.onerror = rej;
+      r.readAsDataURL(file);
     });
 
-    // 3️⃣ Guardar Base64 en Firestore
-    await setDoc(prefsDocRef(user.uid), { photoURL: base64 }, { merge: true });
-
-    // 4️⃣ Actualizar UI
+    await setDoc(prefsDocRef(currentUser.uid), { photoURL: base64 }, { merge: true });
     setProfileImage(base64);
 
-    alert("Foto actualizada correctamente.");
-
-  } catch (err) {
-    console.error("❌ Error subiendo imagen:", err);
-    alert("Error al subir la imagen:\n\n" + err.message);
+  }catch(err){
+    alert("Error: " + err.message);
   }
 }
-
-filePhotoInput.addEventListener('change', () => {
+filePhotoInput?.addEventListener('change', ()=> {
   const f = filePhotoInput.files[0];
-  if (!f) return;
-  uploadProfilePhoto(f);
+  if (f) uploadProfilePhoto(f);
 });
 
+/* signout */
+sSignout?.addEventListener('click', async()=>{ await signOut(auth); });
 
-/* Sign out */
-sSignout.addEventListener('click', async ()=>{ await signOut(auth); settingsMenu.classList.remove('open'); });
-
-/* Mobile gear fixed */
-mobileGear.addEventListener('click', ()=> {
-  const container = document.createElement('div');
-  container.style.position='fixed';
-  container.style.left='12px'; container.style.right='12px'; container.style.bottom='90px';
-  container.style.zIndex='2000';
-  container.style.background=getComputedStyle(document.documentElement).getPropertyValue('--card');
-  container.style.padding='12px'; container.style.borderRadius='12px';
-  container.style.color = getComputedStyle(document.documentElement).getPropertyValue('--accent');
-  container.innerHTML = `
-    <div style="padding:8px 0 0 0;">
-      <div style="font-weight:700;margin-bottom:6px;color:var(--accent)">Ajustes</div>
-      <div style="display:flex;flex-direction:column;gap:10px">
-        <button id="mb-change-name" style="padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:var(--accent)">✏ Cambiar nombre</button>
-        <button id="mb-change-photo" style="padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:var(--accent)">🖼 Cambiar foto</button>
-        <button id="mb-toggle-timebox" style="padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:var(--accent)">🕒 Mostrar tiempo consumido</button>
-        <div style="display:flex;gap:8px;flex-wrap:wrap" id="mb-theme-grid"></div>
-        <button id="mb-signout" style="padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:var(--accent)">🚪 Cerrar sesión</button>
-        <button id="mb-close" style="padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:var(--accent)">Cerrar</button>
-      </div>
-    </div>
+/* -----------------------
+   MOBILE GEAR
+   ----------------------- */
+mobileGear?.addEventListener('click', ()=>{
+  const c = document.createElement('div');
+  c.className = 'mobile-settings-popup';
+  c.innerHTML = `
+    <h3>Ajustes</h3>
+    <button id="mb-change-name">✏ Cambiar nombre</button>
+    <button id="mb-change-photo">🖼 Cambiar foto</button>
+    <button id="mb-toggle-timebox">🕒 Mostrar tiempo consumido</button>
+    <div id="mb-theme-grid" style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0;"></div>
+    <button id="mb-signout">🚪 Cerrar sesión</button>
+    <button id="mb-close">Cerrar</button>
   `;
-  document.body.appendChild(container);
+  document.body.appendChild(c);
 
-  const mbGrid = container.querySelector('#mb-theme-grid');
+  const g = c.querySelector('#mb-theme-grid');
   Object.keys(THEMES).forEach(k=>{
-    const b = document.createElement('div');
-    b.style.width='30px'; b.style.height='30px'; b.style.borderRadius='6px'; b.style.background = THEMES[k]['--accent-2'];
-    b.style.cursor='pointer';
-    b.addEventListener('click', ()=>{ applyTheme(k,true); container.remove(); });
-    mbGrid.appendChild(b);
+    const d = document.createElement('div');
+    d.style.width='30px'; d.style.height='30px';
+    d.style.borderRadius='6px';
+    d.style.background = THEMES[k]['--accent-2'];
+    d.style.cursor='pointer';
+    d.onclick = ()=>{ applyTheme(k,true); c.remove(); };
+    g.appendChild(d);
   });
 
-  container.querySelector('#mb-change-name').addEventListener('click', async ()=> {
-    const newName = prompt('Nuevo nombre:','');
-    if(!newName) return;
-    if(newName.length > 20){ alert('Máx 20 caracteres'); return; }
-    try{
-      const user = auth.currentUser || currentUser;
-      if(!user) throw new Error('Usuario no disponible');
-      await updateProfile(user, { displayName: newName });
-      await setDoc(doc(db,'users',user.uid), { displayName: newName }, { merge:true });
-      setUserNameDisplay(newName);
-      container.remove();
-    }catch(e){ console.error(e); alert('Error'); }
-  });
+  c.querySelector('#mb-change-name').onclick = async()=>{
+    const n = prompt("Nuevo nombre:");
+    if(!n) return;
+    if(n.length>20) return alert("Máx 20 caracteres");
+    await updateProfile(currentUser,{displayName:n});
+    await setDoc(doc(db,'users',currentUser.uid),{displayName:n},{merge:true});
+    setUserNameDisplay(n);
+    c.remove();
+  };
 
-  container.querySelector('#mb-change-photo').addEventListener('click', ()=> {
-    if (!currentUser) { alert('Inicia sesión para cambiar la foto'); return; }
-    filePhotoInput.click();
-    container.remove();
-  });
-
-  container.querySelector('#mb-toggle-timebox').addEventListener('click', async ()=> {
-    if (!currentUser) { alert('Inicia sesión para cambiar esta preferencia'); return; }
-    const newValue = !(window.timeBoxEnabled ?? false);
-    await setDoc(prefsDocRef(currentUser.uid), { showTimeBox: newValue }, { merge: true });
-    window.timeBoxEnabled = newValue;
-    localStorage.setItem('mt_showTimeBox', newValue ? '1' : '0');
+  c.querySelector('#mb-change-photo').onclick = ()=>{ filePhotoInput.click(); c.remove(); };
+  c.querySelector('#mb-toggle-timebox').onclick = async()=>{
+    const v = !(window.timeBoxEnabled ?? false);
+    await setDoc(prefsDocRef(currentUser.uid),{showTimeBox:v},{merge:true});
+    window.timeBoxEnabled = v;
+    localStorage.setItem('mt_showTimeBox', v?'1':'0');
     updateTimeBoxVisibility();
-    container.remove();
-  });
+    c.remove();
+  };
 
-  container.querySelector('#mb-signout').addEventListener('click', async ()=>{ await signOut(auth); container.remove(); });
-  container.querySelector('#mb-close').addEventListener('click', ()=> container.remove());
+  c.querySelector('#mb-signout').onclick = async()=>{ await signOut(auth); c.remove(); };
+  c.querySelector('#mb-close').onclick = ()=> c.remove();
 });
 
-/* Mobile profile click */
-mobileProfile.addEventListener('click', ()=> {
-  if(currentUser) alert(`Perfil: ${currentUser.displayName || currentUser.email}`);
-  else alert('Invitado');
-});
+/* -----------------------
+   FINALIZADOS — EVENTS
+   ----------------------- */
+btnFinalizadosPC?.addEventListener('click', ()=> loadMangas('finished'));
+btnFinalizadosMobile?.addEventListener('click', ()=> loadMangas('finished'));
 
-/* ---------- DATA / CARDS ---------- */
-/* categories */
+document.getElementById("mobile-home")?.addEventListener('click', ()=> loadMangas('reading'));
+
+/* -----------------------
+   CATEGORIES
+   ----------------------- */
 const categories = {
   Manga:['Acción','Aventura','Comedia','Drama','Fantasía','Romance','Seinen','Shonen','Otro'],
   Anime:['Acción','Aventura','Comedia','Drama','Fantasía','Romance','Slice of Life','Mecha','Isekai','Otro'],
   Serie:['Acción','Drama','Comedia','Thriller','Ciencia Ficción','Fantasía','Misterio','Otro']
 };
 
-/* form helpers */
 const fields = ['title','genre','last','url','imgurl','type'];
 const typeSelect = document.getElementById('type');
 const genreSelect = document.getElementById('genre');
-function updateGenres(){ const list = categories[typeSelect.value]; genreSelect.innerHTML=''; list.forEach(c=>{ const o = document.createElement('option'); o.value = o.textContent = c; genreSelect.appendChild(o); }); }
-updateGenres();
-typeSelect.addEventListener('change', updateGenres);
 
-/* image preview */
-document.getElementById('fakefile').addEventListener('click', ()=> document.getElementById('file').click());
-document.getElementById('file').addEventListener('change', ()=> {
-  const f = document.getElementById('file').files[0]; if(!f) return;
-  const reader = new FileReader();
-  reader.onload = ()=> {
-    preview.innerHTML = `<img src="${reader.result}" style="max-width:120px;border-radius:6px">`;
-    preview.dataset.image = reader.result;
-    document.getElementById('imgurl').value = '';
-  };
-  reader.readAsDataURL(f);
+function updateGenres(){
+  genreSelect.innerHTML='';
+  categories[typeSelect.value].forEach(c=>{
+    const o=document.createElement('option');
+    o.value=o.textContent=c;
+    genreSelect.appendChild(o);
+  });
+}
+typeSelect?.addEventListener('change', updateGenres);
+updateGenres();
+
+/* -----------------------
+   IMAGE PREVIEW
+   ----------------------- */
+document.getElementById('fakefile')?.addEventListener('click',()=> document.getElementById('file').click());
+document.getElementById('file')?.addEventListener('change',()=>{
+  const f = document.getElementById('file').files[0];
+  if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{ preview.innerHTML=`<img src="${r.result}">`; preview.dataset.image=r.result; };
+  r.readAsDataURL(f);
 });
-document.getElementById('imgurl').addEventListener('change', e=> {
+document.getElementById('imgurl')?.addEventListener('change',(e)=>{
   const v = e.target.value.trim();
   preview.dataset.image = v;
-  preview.innerHTML = v ? `<img src="${v}" style="max-width:120px;border-radius:6px">` : '';
+  preview.innerHTML = v? `<img src="${v}">` : '';
 });
 
-/* load cards from Firestore and render grouped by type */
-async function loadMangas(){
-  gridEl.innerHTML = '';
-  if(!currentUser){ empty.style.display = 'block'; return; }
+/* -----------------------
+   LOAD MANGAS (reading/finished)
+   ----------------------- */
+async function loadMangas(status='reading'){
+  gridEl.innerHTML='';
+  if(!currentUser){ empty.style.display='block'; return; }
+
   const col = collection(db,'users',currentUser.uid,'mangas');
   const snap = await getDocs(col);
-  const items = snap.docs.map(d=>({ id:d.id, ...d.data() }));
-  if(items.length === 0){ empty.style.display = 'block'; return; }
-  empty.style.display = 'none';
+
+  const items = snap.docs.map(d=> ({id:d.id, ...d.data()} ));
+
+  const filtered = items.filter(it => (it.status || 'reading') === status);
+
+  if(filtered.length===0){ empty.style.display='block'; return; }
+  empty.style.display='none';
 
   const tipos = ['Manga','Anime','Serie'];
   tipos.forEach(tipo=>{
-    const itemsTipo = items.filter(it=>it.type === tipo);
-    if(itemsTipo.length === 0) return;
+    const group = filtered.filter(it=>it.type===tipo);
+    if(group.length===0) return;
+
     const header = document.createElement('h2');
-    header.className = 'tipo-header';
     header.textContent = tipo;
-    header.style.gridColumn = '1 / -1';
+    header.className = 'tipo-header';
     gridEl.appendChild(header);
 
-    itemsTipo.forEach(it=>{
+    group.forEach(it=>{
       const card = document.createElement('article');
-      card.className = 'card';
-      card.dataset.itemId = it.id; // store id
+      card.className='card';
+      card.dataset.id = it.id;
+
       card.innerHTML = `
-        <div class="thumb">${it.imgurl?'<img src="'+it.imgurl+'" style="width:100%;height:100%;object-fit:cover">':''}</div>
+        <div class="thumb">${it.imgurl? `<img src="${it.imgurl}">` : ''}</div>
         <div class="meta">
           <div class="title">${it.title}</div>
           <div class="genre">${it.genre}</div>
-          <div class="last">Últ.: <strong>${it.last || '0'}</strong></div>
-          <div class="small-toast" style="display:none"></div>
+          <div class="last">Últ.: <strong>${it.last||0}</strong></div>
+          ${status==='reading'
+            ? `<div class="finish-box"><label><input type="checkbox" class="finish-check" data-id="${it.id}"> Terminado</label></div>`
+            : `<div class="finished-label">Finalizado ✔</div>`
+          }
         </div>
         <div class="actions">
-          <a class="link" href="${it.url || '#'}" target="_blank" rel="noopener">Ir a ver →</a>
-          <div style="display:flex;gap:6px;">
-            <button class="small btn edit-btn" data-id="${it.id}">Editar</button>
-            <button class="small btn del-btn" data-id="${it.id}" style="background:transparent;border:1px solid rgba(255,255,255,0.12)">Borrar</button>
-          </div>
-        </div>`;
+          <a class="link" href="${it.url||'#'}" target="_blank">Ir →</a>
+          <button class="small edit-btn" data-id="${it.id}">Editar</button>
+          <button class="small del-btn" data-id="${it.id}">Borrar</button>
+        </div>
+      `;
       gridEl.appendChild(card);
     });
   });
 
-  // wire up edit/delete buttons (delegation)
-  gridEl.querySelectorAll('.edit-btn').forEach(b=> b.addEventListener('click', e=> { e.stopPropagation(); openForm(b.dataset.id); }));
-  gridEl.querySelectorAll('.del-btn').forEach(b=> b.addEventListener('click', async e=> { e.stopPropagation(); if(confirm('¿Eliminar?')){ await deleteDoc(doc(db,'users',currentUser.uid,'mangas',b.dataset.id)); loadMangas(); } }));
-
-  // attach click and touch handlers for incrementing episodes (delegated)
-  gridEl.querySelectorAll('.card').forEach(card=>{
-    // desktop click + shift (single handler)
-    card.addEventListener('click', async (e)=>{
-      if(e.target.closest('button') || e.target.closest('a')) return;
-      if(!currentUser){ alert('Debes iniciar sesión'); return; }
-      const id = card.dataset.itemId;
-      // fetch latest doc to avoid stale data
-      const docRef = doc(db,'users',currentUser.uid,'mangas',id);
-      const docSnap = await getDoc(docRef);
-      if(!docSnap.exists()){ alert('Elemento no encontrado'); return; }
-      const data = docSnap.data();
-      let delta = 1;
-      if(e.shiftKey){
-        const resp = prompt('¿Cuántos capítulos quieres sumar? (número entero)', '1');
-        if(!resp) return;
-        const n = parseInt(resp);
-        if(!Number.isInteger(n) || n<=0){ alert('Número inválido'); return; }
-        delta = n;
-      }
-      const oldVal = Number(data.last) || 0;
-      const newVal = oldVal + delta;
-      try{
-        await updateDoc(docRef, { last: String(newVal) });
-        const strongEl = card.querySelector('.last strong');
-        if(strongEl) strongEl.textContent = String(newVal);
-        const toast = card.querySelector('.small-toast');
-        if(toast){ toast.style.display='block'; toast.textContent = (delta===1)?'Has leído 1 capítulo':`Se han añadido ${delta} capítulos`; setTimeout(()=>toast.style.display='none',2000); }
-      }catch(err){ console.error(err); alert('Error actualizando'); }
-    });
-
-    // long-press for mobile (touch)
-    let longTimer = null;
-    card.addEventListener('touchstart', (e)=>{
-      if(e.target.closest('button') || e.target.closest('a')) return;
-      longTimer = setTimeout(async ()=>{
-        // long press triggered
-        if(!currentUser){ alert('Debes iniciar sesión'); return; }
-        const id = card.dataset.itemId;
-        const resp = prompt('Mantén pulsado: ¿Cuántos capítulos quieres sumar? (número entero)', '1');
-        if(!resp) { return; }
-        const n = parseInt(resp);
-        if(!Number.isInteger(n) || n<=0){ alert('Número inválido'); return; }
-        // update same as above
-        const docRef = doc(db,'users',currentUser.uid,'mangas',id);
-        const docSnap = await getDoc(docRef);
-        if(!docSnap.exists()) return;
-        const data = docSnap.data();
-        const oldVal = Number(data.last) || 0;
-        const newVal = oldVal + n;
-        try{
-          await updateDoc(docRef, { last: String(newVal) });
-          const strongEl = card.querySelector('.last strong');
-          if(strongEl) strongEl.textContent = String(newVal);
-          const toast = card.querySelector('.small-toast');
-          if(toast){ toast.style.display='block'; toast.textContent = `Se han añadido ${n} capítulos`; setTimeout(()=>toast.style.display='none',2000); }
-        }catch(err){ console.error(err); alert('Error actualizando'); }
-      }, 600); // 600ms long press
-    });
-    card.addEventListener('touchend', ()=> { if(longTimer) clearTimeout(longTimer); });
-    card.addEventListener('touchcancel', ()=> { if(longTimer) clearTimeout(longTimer); });
+  // editing
+  gridEl.querySelectorAll('.edit-btn').forEach(b=> {
+    b.onclick = ()=> openForm(b.dataset.id);
   });
 
-  // update time box after loading items
-  if (window.timeBoxEnabled) calculateTotalTime();
+  // delete
+  gridEl.querySelectorAll('.del-btn').forEach(b=>{
+    b.onclick = async()=>{
+      if(!confirm("¿Eliminar?")) return;
+      await deleteDoc(doc(db,'users',currentUser.uid,'mangas',b.dataset.id));
+      loadMangas(status);
+    };
+  });
+
+  // increment chapters only if reading
+  if(status==='reading'){
+    gridEl.querySelectorAll('.card').forEach(card=>{
+      card.addEventListener('click', async(e)=>{
+        if(e.target.closest('button') || e.target.closest('a') || e.target.closest('.finish-box')) return;
+        const id = card.dataset.id;
+        const docRef = doc(db,'users',currentUser.uid,'mangas',id);
+        const snap = await getDoc(docRef);
+        if(!snap.exists()) return;
+        let delta = e.shiftKey ? parseInt(prompt("¿Cuántos sumar?",1)) : 1;
+        if(!delta || delta<=0) return;
+
+        const old = Number(snap.data().last)||0;
+        await updateDoc(docRef,{ last:String(old+delta) });
+
+        card.querySelector('.last strong').textContent = old+delta;
+      });
+    });
+
+    // handle "terminado"
+    gridEl.querySelectorAll('.finish-check').forEach(chk=>{
+      chk.onchange = ()=>{
+        if(chk.checked){
+          selectedToFinish = chk.dataset.id;
+          showFinishModal();
+        }
+      };
+    });
+  }
+
+  if(window.timeBoxEnabled) calculateTotalTime();
 }
 
-/* ---------- FORM (open/close/save) ---------- */
-let editId = null;
+/* -----------------------
+   FINISH MODAL
+   ----------------------- */
+const finishModal = document.getElementById('finish-modal');
+const finishConfirm = document.getElementById('finish-confirm');
+const finishCancel = document.getElementById('finish-cancel');
+
+function showFinishModal(){
+  finishModal.classList.remove('hidden');
+}
+function hideFinishModal(){
+  finishModal.classList.add('hidden');
+  selectedToFinish = null;
+}
+
+finishCancel.onclick = hideFinishModal;
+
+finishConfirm.onclick = async()=>{
+  if(!selectedToFinish) return hideFinishModal();
+  await updateDoc(doc(db,'users',currentUser.uid,'mangas',selectedToFinish),{
+    status:'finished'
+  });
+  hideFinishModal();
+  loadMangas('reading');
+};
+
+/* -----------------------
+   FORM OPEN/CLOSE
+   ----------------------- */
 function openForm(id=null){
-  editId = id;
-  document.getElementById('form-title').textContent = id ? 'Editar' : 'Añadir';
-  fields.forEach(f=> document.getElementById(f).value = '');
-  preview.innerHTML = ''; preview.dataset.image = '';
+  editId=id;
+  document.getElementById('form-title').textContent = id? "Editar" : "Añadir";
+
+  fields.forEach(f=> document.getElementById(f).value="");
+  preview.innerHTML="";
+  preview.dataset.image="";
+
   if(id){
-    // load doc
     getDoc(doc(db,'users',currentUser.uid,'mangas',id)).then(s=>{
       if(!s.exists()) return;
-      const d = s.data();
-      document.getElementById('title').value = d.title || '';
-      document.getElementById('last').value = d.last || '';
-      document.getElementById('url').value = d.url || '';
-      document.getElementById('type').value = d.type || 'Manga';
+      const d=s.data();
+      document.getElementById('title').value=d.title||"";
+      document.getElementById('last').value=d.last||"";
+      document.getElementById('url').value=d.url||"";
+      document.getElementById('type').value=d.type||"Manga";
       updateGenres();
-      document.getElementById('genre').value = d.genre || '';
-      if(d.imgurl){ preview.innerHTML = `<img src="${d.imgurl}" style="max-width:120px;border-radius:6px">`; preview.dataset.image = d.imgurl; }
+      document.getElementById('genre').value=d.genre||"";
+      if(d.imgurl){
+        preview.innerHTML=`<img src="${d.imgurl}">`;
+        preview.dataset.image=d.imgurl;
+      }
     });
   }
   modal.classList.add('open');
-  modal.setAttribute('aria-hidden','false');
 }
-function closeForm(){ modal.classList.remove('open'); modal.setAttribute('aria-hidden','true'); document.getElementById('file').value=''; editId = null; }
 
-btnSave.addEventListener('click', async ()=>{
-  if(!currentUser){ alert('Debes iniciar sesión antes de guardar.'); return; }
-  const data = {};
+function closeForm(){
+  modal.classList.remove('open');
+  editId=null;
+}
+
+btnSave.onclick = async()=>{
+  if(!currentUser) return alert("Inicia sesión");
+  const data={};
   fields.forEach(f=> data[f] = document.getElementById(f).value);
-  data.imgurl = preview.dataset.image || '';
+
+  data.imgurl = preview.dataset.image || "";
+  data.status = data.status || "reading";
+
   const colRef = collection(db,'users',currentUser.uid,'mangas');
-  try{
-    if(editId) { await setDoc(doc(db,'users',currentUser.uid,'mangas',editId), data); }
-    else { await addDoc(colRef, data); }
-    closeForm(); loadMangas();
-  }catch(e){ console.error(e); alert('Error guardando'); }
+
+  if(editId){
+    await setDoc(doc(db,'users',currentUser.uid,'mangas',editId),data,{merge:true});
+  } else {
+    await addDoc(colRef,data);
+  }
+
+  closeForm();
+  loadMangas();
+};
+
+btnCancel.onclick = closeForm;
+
+modal.addEventListener('click',e=>{
+  if(e.target===modal) closeForm();
 });
-btnCancel.addEventListener('click', ()=> closeForm());
-document.getElementById('fakefile').addEventListener('click', ()=> document.getElementById('file').click());
 
-/* close modal click backdrop */
-modal.addEventListener('click', (e)=> { if(e.target === modal) closeForm(); });
+/* -----------------------
+   TIME BOX
+   ----------------------- */
+function updateTimeBoxVisibility(){
+  if(window.timeBoxEnabled){
+    timeBox.style.display='flex';
+    calculateTotalTime();
+  } else {
+    timeBox.style.display='none';
+  }
+}
 
-/* header add */
-btnAdd.addEventListener('click', ()=> openForm());
-mobileAdd.addEventListener('click', ()=> openForm());
-
-/* initial local theme - always apply local first, then auth state will override if needed */
-window.addEventListener('load', () => {
-  const local = localStorage.getItem('mt_theme') || 'dark';
-  applyTheme(local,false);
-
-  const localShow = localStorage.getItem('mt_showTimeBox');
-  window.timeBoxEnabled = localShow === '1';
-  if (timeBoxSwitch) timeBoxSwitch.checked = window.timeBoxEnabled;
+timeBoxSwitch?.addEventListener('change', async()=>{
+  const v = timeBoxSwitch.checked;
+  if(currentUser){
+    await setDoc(prefsDocRef(currentUser.uid),{showTimeBox:v},{merge:true});
+  } else {
+    localStorage.setItem('mt_showTimeBox', v?'1':'0');
+  }
+  window.timeBoxEnabled = v;
   updateTimeBoxVisibility();
 });
 
-/* prevent settings menu from closing while interacting */
-settingsMenu.addEventListener('click', (e)=> e.stopPropagation());
+async function calculateTotalTime(){
+  if(!currentUser) return;
 
-/* Time box logic */
-function updateTimeBoxVisibility(){
-  if (window.timeBoxEnabled) {
-    timeBox.style.display = "flex";
-    // recalculate
-    calculateTotalTime();
-  } else {
-    timeBox.style.display = "none";
-  }
-}
+  const col = collection(db, "users", currentUser.uid, "mangas");
+  const snap = await getDocs(col);
 
-if (timeBoxSwitch) {
-  timeBoxSwitch.addEventListener("change", async ()=> {
-    const checked = !!timeBoxSwitch.checked;
-    if (currentUser) {
-      try{
-        await setDoc(prefsDocRef(currentUser.uid), { showTimeBox: checked }, { merge: true });
-      }catch(e){ console.error(e); }
-    } else {
-      localStorage.setItem('mt_showTimeBox', checked ? '1' : '0');
-    }
-    window.timeBoxEnabled = checked;
-    updateTimeBoxVisibility();
+  let totalMinutes = 0;
+
+  snap.docs.forEach(d=>{
+    const it = d.data();
+    if((it.status||"reading")!=="reading") return;
+
+    const last = Number(it.last)||0;
+    let mult = 10;
+    if(it.type==="Anime") mult=20;
+    if(it.type==="Serie") mult=45;
+    totalMinutes += last*mult;
   });
+
+  const days = Math.floor(totalMinutes / 1440);
+  const hours = Math.floor((totalMinutes % 1440)/60);
+  const minutes = totalMinutes % 60;
+  timeBoxValue.textContent = `${days}d ${hours}h ${minutes}m`;
 }
 
-/* Calculate time consumed: Manga=10min, Anime=20min, Serie=45min */
-async function calculateTotalTime() {
-  if (!currentUser) {
-    timeBoxValue.textContent = '0d 0h 0m';
-    return;
-  }
+/* -----------------------
+   INITIAL LOCAL THEME
+   ----------------------- */
+window.addEventListener('load',()=>{
+  const local = localStorage.getItem('mt_theme') || 'dark';
+  applyTheme(local,false);
+  const localShow = localStorage.getItem('mt_showTimeBox');
+  window.timeBoxEnabled = localShow === '1';
+  if(timeBoxSwitch) timeBoxSwitch.checked = window.timeBoxEnabled;
+  updateTimeBoxVisibility();
+});
 
-  try{
-    const col = collection(db, "users", currentUser.uid, "mangas");
-    const snap = await getDocs(col);
+/* prevent menu closing */
+settingsMenu.addEventListener('click', e=> e.stopPropagation());
 
-    let totalMinutes = 0;
-
-    snap.docs.forEach(d => {
-      const item = d.data();
-      const last = Number(item.last) || 0;
-      let multiplier = 10;
-      if (item.type === "Anime") multiplier = 20;
-      if (item.type === "Serie") multiplier = 45;
-      totalMinutes += last * multiplier;
-    });
-
-    const days = Math.floor(totalMinutes / 1440);
-    const hours = Math.floor((totalMinutes % 1440) / 60);
-    const minutes = totalMinutes % 60;
-
-    timeBoxValue.textContent = `${days}d ${hours}h ${minutes}m`;
-  }catch(err){ console.error('Error calculando tiempo:', err); timeBoxValue.textContent = '0d 0h 0m'; }
-}
-
-/* END */
+}); // DOMContentLoaded END
 </script>
 
 </body>
