@@ -548,7 +548,7 @@ function setButtonsForFilter(filter){
   if(btnFinalizadosPC) btnFinalizadosPC.style.display = (filter==='finished') ? 'none' : 'inline-block';
   if(btnVolverPC) btnVolverPC.style.display = (filter==='finished') ? 'inline-block' : 'none';
   // Mobile
-  if(btnFinalizadosMobile) btnFinalizadosMobile.style.display = (filter==='finished') ? 'none' : 'flex';
+  if(btnFinalizadosMobile) btnFinalizadosMobile.style.display = (filter==='finished') ? 'flex' : 'flex';
   if(btnHomeMobile) btnHomeMobile.style.opacity = (filter==='finished') ? 1 : 0.5;
 }
 
