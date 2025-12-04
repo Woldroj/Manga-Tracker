@@ -522,7 +522,6 @@ mobileGear?.addEventListener('click', ()=> {
   c.querySelector('#mb-close').onclick = ()=> c.remove();
 });
 
-<<<<<<< HEAD
 /* Mobile profile click */
 mobileProfile.addEventListener('click', ()=> {
   if(currentUser) alert(`Perfil: ${currentUser.displayName || currentUser.email}`);
@@ -537,14 +536,6 @@ const categories = {
   Serie:['Acción','Drama','Comedia','Thriller','Ciencia Ficción','Fantasía','Misterio','Otro']
 };
 
-/* form helpers */
-=======
-/* -------- CATEGORIES / FORM HELPERS -------- */
-const categories = { 
-  Manga:['Acción','Aventura','Comedia','Drama','Fantasía','Romance','Seinen','Shonen','Otro'], 
-  Anime:['Acción','Aventura','Comedia','Drama','Fantasía','Romance','Slice of Life','Mecha','Isekai','Otro'], 
-  Serie:['Acción','Drama','Comedia','Thriller','Ciencia Ficción','Fantasía','Misterio','Otro']
-};
 const fields = ['title','genre','last','url','imgurl','type'];
 const typeSelect = document.getElementById('type');
 const genreSelect = document.getElementById('genre');
