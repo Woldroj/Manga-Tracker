@@ -543,6 +543,50 @@ function updateGenres(){ if(!typeSelect || !genreSelect) return; genreSelect.inn
 typeSelect?.addEventListener('change', updateGenres);
 updateGenres();
 
+/* ====== AGRUPACIÓN DE SAGAS / SAGA DETECTION ====== */
+
+function getBaseName(title){
+  if(!title) return "";
+
+  let t = title.toLowerCase();
+
+  // quitar palabras de temporada / parte
+  t = t.replace(/\b(season|temporada|temp|part|parte|saga|arc|chapter|capítulo|capitulo|ova|special|movie|film)\b/g, "");
+
+  // quitar S1 / T2 / etc
+  t = t.replace(/\b(s|t)\d+\b/g, "");
+
+  // quitar 1st, 2nd, etc
+  t = t.replace(/\b(\d+st|\d+nd|\d+rd|\d+th)\b/g, "");
+
+  // quitar números sueltos
+  t = t.replace(/\b\d+\b/g, "");
+
+  // quitar símbolos y extra espacios
+  t = t.replace(/[\.\-–:_]/g, " ");
+  t = t.replace(/\s+/g, " ").trim();
+
+  return t;
+}
+
+function extractSeasonNumber(title){
+  const t = title.toLowerCase();
+
+  let m = t.match(/season\s*(\d+)/) || t.match(/temporada\s*(\d+)/);
+  if(m) return parseInt(m[1]);
+
+  m = t.match(/\bs(\d+)\b/);
+  if(m) return parseInt(m[1]);
+
+  m = t.match(/part\s*(\d+)/) || t.match(/parte\s*(\d+)/);
+  if(m) return parseInt(m[1]) + 0.01;
+
+  if(t.includes("final season")) return 999;
+
+  return 0;
+}
+
+
 /* IMAGE PREVIEW */
 document.getElementById('fakefile')?.addEventListener('click',()=> document.getElementById('file')?.click());
 document.getElementById('file')?.addEventListener('change',()=>{
@@ -584,7 +628,19 @@ async function loadMangas(status='reading'){
 
   const tipos = ['Manga','Anime','Serie'];
   tipos.forEach(tipo=>{
-    const group = filtered.filter(it=>it.type===tipo);
+    const group = filtered
+      .filter(it => it.type === tipo)
+      .sort((a,b)=>{
+        const baseA = getBaseName(a.title);
+        const baseB = getBaseName(b.title);
+        if(baseA < baseB) return -1;
+        if(baseA > baseB) return 1;
+
+        const sA = extractSeasonNumber(a.title);
+        const sB = extractSeasonNumber(b.title);
+        return sA - sB;
+      });
+
     if(group.length===0) return;
 
     const header = document.createElement('h2');
