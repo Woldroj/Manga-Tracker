@@ -359,3 +359,33 @@ input:checked + .slider:before {
 .mobile-settings-popup button:hover {
   background: rgba(255,255,255,0.05);
 }
+
+/* ZonaTMO search UI */
+.zonatmo-search{margin:12px 0 18px;display:flex;flex-direction:column;gap:8px}
+.zm-row{display:flex;gap:8px;align-items:center}
+#zm-query{flex:1;padding:8px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:var(--card);color:var(--accent)}
+#zm-search-btn{padding:8px 12px;border-radius:8px;background:var(--accent-2);color:#fff;border:none}
+.zm-filters{display:flex;gap:8px;flex-wrap:wrap}
+.zm-filters select{padding:8px;border-radius:8px;background:var(--card);color:var(--accent);border:1px solid rgba(255,255,255,0.04)}
+.zm-results{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:8px}
+.zm-card{background:var(--card);border-radius:12px;overflow:hidden;box-shadow:0 6px 18px var(--shadow);display:flex;flex-direction:column}
+.zm-card .thumb{height:140px;background:linear-gradient(135deg,#3b82f6,#2563eb);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.zm-card img{width:100%;height:100%;object-fit:cover}
+.zm-card .meta{padding:10px;display:flex;flex-direction:column;gap:6px}
+.zm-card .title{font-weight:700;color:var(--accent);font-size:15px}
+.zm-card .sub{font-size:13px;color:var(--muted)}
+.zm-card .actions{display:flex;gap:8px;padding:10px;align-items:center;justify-content:space-between;border-top:1px solid rgba(255,255,255,0.03)}
+.zm-card .actions .left{display:flex;gap:8px;align-items:center}
+.zm-card .btn-add-zm{padding:6px 8px;border-radius:8px;border:none;background:var(--accent-2);color:#fff;cursor:pointer}
+.zm-card .new-dot{width:14px;height:14px;border-radius:50%;display:inline-block;vertical-align:middle;margin-left:6px;box-shadow:0 2px 6px rgba(0,0,0,.25)}
+/* personalizado: gradiente circular con icono "nuevo" */
+.zm-card .new-dot.custom {
+  background: conic-gradient(from 0deg,#ff5f6d,#ffc371);
+  position:relative;
+  display:inline-flex;align-items:center;justify-content:center;color:#111;font-size:10px;font-weight:700;
+}
+.zm-card .new-dot.custom::after{content:"NEW";font-size:9px;color:#111}
+
+/* small helper */
+.zm-small{font-size:13px;color:var(--muted)}
+
