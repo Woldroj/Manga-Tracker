@@ -1063,6 +1063,12 @@ zmSearchBtn?.addEventListener('click', async ()=>{
   }
 });
 
+async function searchZonaTMO(query) {
+  const res = await fetch(`https://<TU_WORKER>.workers.dev/?q=${encodeURIComponent(query)}`);
+  return await res.json();
+}
+
+
 /* check updates for mangas with zonatmo_id and show "new" badge in UI (non-destructive) */
 async function checkZonatmoUpdatesForUser(uid){
   if(!uid) return;
