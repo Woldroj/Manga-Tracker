@@ -1064,7 +1064,7 @@ zmSearchBtn?.addEventListener('click', async ()=>{
 });
 
 async function searchZonaTMO(query) {
-  const res = await fetch(`https://<TU_WORKER>.workers.dev/?q=${encodeURIComponent(query)}`);
+  const res = await fetch(`https://manga-tracker.r2r2eydeitaca.workers.dev/?q=${encodeURIComponent(query)}`);
   return await res.json();
 }
 
