@@ -111,6 +111,44 @@
     <!-- desktop logged controls -->
     <div class="controls" id="user-controls" style="display:none">
       <button id="btn-add" class="btn primary">＋ Añadir</button>
+      <!-- 🔍 Buscador de mangas -->
+      <section id="zm-search" class="search-box">
+        <div class="search-bar">
+          <input id="zm-query" type="text" placeholder="Buscar manga o anime…">
+
+          <button id="filter-btn" class="btn">Filtrar</button>
+
+          <button id="zm-search-btn">Buscar</button>
+        </div>
+
+        <div id="filter-panel" class="filter-panel hidden">
+          <div class="filter-group">
+            <label>Tipo</label>
+            <select id="filter-type">
+              <option value="manga">Manga</option>
+              <option value="anime">Anime</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label>Ordenar por</label>
+            <select id="filter-order">
+              <option value="chapters">Capítulos</option>
+              <option value="title">Título</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label>Orden</label>
+            <select id="filter-sort">
+              <option value="desc">Descendente</option>
+              <option value="asc">Ascendente</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="zm-results" class="grid"></div>
+      </section>
     </div>
 
     <!-- time box (total consumed) -->
@@ -281,6 +319,19 @@ const btnVolverPC = document.getElementById("btn-volver-pc"); // puede ser null 
 const btnFinalizadosMobile = document.getElementById('btn-finalizados-mobile');
 const btnHomeMobile = document.getElementById('mobile-home');
 
+// 🔍 Buscador Jikan
+const zmQueryInput = document.getElementById('zm-query');
+const zmSearchBtn  = document.getElementById('zm-search-btn');
+const zmResults    = document.getElementById('zm-results');
+
+const filterToggle = document.getElementById('filter-btn');
+const filterBox = document.getElementById('filter-panel');
+
+const filterType = document.getElementById('filter-type');
+const filterOrder = document.getElementById('filter-order');
+const filterSort = document.getElementById('filter-sort');
+
+
 /* -------- STATE -------- */
 let currentUser = null;
 let editId = null;
@@ -347,6 +398,129 @@ function setUserNameDisplay(name){
   const mobileInitial = document.getElementById("mobile-profile-initial");
   if (mobileInitial) mobileInitial.textContent = initial;
 }
+
+async function searchJikan(query, type = 'manga') {
+  const endpoint =
+    type === 'anime'
+      ? `https://api.jikan.moe/v4/anime?q=${encodeURIComponent(query)}&limit=20`
+      : `https://api.jikan.moe/v4/manga?q=${encodeURIComponent(query)}&limit=20`;
+
+  const res = await fetch(endpoint);
+  if (!res.ok) throw new Error("Jikan error");
+
+  const json = await res.json();
+
+  return (json.data || []).map(item => ({
+    id: item.mal_id,
+    title: item.title,
+    img: item.images?.jpg?.image_url || '',
+    chapters:
+      type === 'anime'
+        ? item.episodes ?? 0
+        : item.chapters ?? 0,
+    status: item.status || 'Desconocido',
+    type
+  }));
+}
+
+function zonatmoLink(title) {
+  return `https://zonatmo.com/search?keyword=${encodeURIComponent(title)}`;
+}
+
+function animeflvLink(title) {
+  return `https://www3.animeflv.net/browse?q=${encodeURIComponent(title)}`;
+}
+
+function renderJikanResults(results) {
+  if (!zmResults) return;
+
+  zmResults.innerHTML = "";
+
+  if (results.length === 0) {
+    zmResults.innerHTML =
+      `<p style="padding:10px;color:var(--muted)">Sin resultados</p>`;
+    return;
+  }
+
+  results.forEach(m => {
+    const card = document.createElement("article");
+    card.className = "card";
+
+    card.innerHTML = `
+      <div class="thumb">
+        ${m.img ? `<img src="${m.img}" loading="lazy">` : ""}
+      </div>
+
+      <div class="meta">
+        <div class="title">${m.title}</div>
+        <div class="genre">${m.status}</div>
+        <div class="last">
+          Capítulos: <strong>${m.chapters ?? "?"}</strong>
+        </div>
+      </div>
+
+      <div class="actions">
+        <a class="link" href="${zonatmoLink(m.title)}" target="_blank">ZonaTMO</a>
+        ${m.type === 'anime'
+          ? `<a class="link" href="${animeflvLink(m.title)}" target="_blank">AnimeFLV</a>`
+          : ''
+        }
+        <button class="small add-jikan">＋ Añadir</button>
+      </div>
+    `;
+
+    card.querySelector(".add-jikan").onclick = () => addFromJikan(m);
+    zmResults.appendChild(card);
+  });
+}
+
+
+async function addFromJikan(m) {
+  if (!currentUser) return alert("Inicia sesión");
+
+  await addDoc(
+    collection(db,'users',currentUser.uid,'mangas'),
+    {
+      title: m.title,
+      type: "Manga",
+      genre: m.genres?.[0]?.name || "Otro",
+      last: "0",
+      imgurl: m.img || "",
+      url: zonatmoLink(m.title),
+      status: "reading",
+      jikanId: m.mal_id,
+      lastKnownChapters: m.chapters || 0
+    }
+  );
+
+  alert("Manga añadido ✔");
+}
+
+zmSearchBtn.addEventListener('click', async () => {
+  const q = zmQueryInput.value.trim();
+  if (!q) return;
+
+  const type = filterType.value;
+  const orderBy = filterOrder.value;
+  const sort = filterSort.value;
+
+  zmResults.innerHTML = 'Buscando…';
+
+  const results = await searchJikan(q, type);
+
+  results.sort((a, b) => {
+    let av = orderBy === 'chapters' ? (a.chapters || 0) : a.title;
+    let bv = orderBy === 'chapters' ? (b.chapters || 0) : b.title;
+
+    if (sort === 'asc') return av > bv ? 1 : -1;
+    return av < bv ? 1 : -1;
+  });
+
+  renderJikanResults(results, type);
+});
+
+
+
 
 /* -------- LOAD PREFS -------- */
 async function loadPrefsForUser(uid){
@@ -607,6 +781,18 @@ function setButtonsForFilter(filter){
   if(btnFinalizadosMobile) btnFinalizadosMobile.style.display = (filter==='finished') ? 'flex' : 'flex';
   if(btnHomeMobile) btnHomeMobile.style.opacity = (filter==='finished') ? 1 : 0.5;
 }
+
+filterToggle.addEventListener('click', (e) => {
+  e.stopPropagation();
+  filterBox.classList.toggle('hidden');
+});
+
+filterBox?.addEventListener('click', e => e.stopPropagation());
+filterBox?.addEventListener('mousedown', e => e.stopPropagation());
+
+document.addEventListener('click', () => {
+  filterBox?.classList.add('hidden');
+});
 
 /* -------- LOAD MANGAS (reading | finished) -------- */
 async function loadMangas(status='reading'){

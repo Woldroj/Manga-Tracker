@@ -155,6 +155,71 @@ input:checked + .slider:before {
   margin: 20px 0 10px 0;
 }
 
+.search-box {
+  margin-top: 16px;
+  min-width: 40%;
+}
+
+.search-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.search-bar input {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: var(--card);
+  color: var(--accent);
+}
+
+.search-bar button {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: none;
+  background: var(--accent-2);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  width: 20%;
+}
+
+.filter-panel {
+  position: absolute;
+  background: var(--card);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  padding: 12px;
+  margin-top: 8px;
+  z-index: 1000;
+  width: 220px;
+}
+
+.filter-panel.hidden {
+  display: none;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.filter-group label {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.filter-group select {
+  padding: 6px;
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--accent);
+  border: 1px solid rgba(255,255,255,0.1);
+}
 
 
 /* responsive */
