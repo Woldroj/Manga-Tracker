@@ -448,7 +448,7 @@ function renderJikanResults(results) {
 
     card.innerHTML = `
       <div class="thumb">
-        ${m.img ? `<img src="${m.img}" loading="lazy">` : ""}
+        <img src="${m.img || ''}"
       </div>
 
       <div class="meta">
