@@ -110,45 +110,45 @@
 
     <!-- desktop logged controls -->
     <div class="controls" id="user-controls" style="display:none">
-      <!-- SEARCH FROM ZONATMO -->
-      <div id="zonatmo-search" class="zonatmo-search">
-        <div class="zm-row">
-          <input id="zm-query" type="search" placeholder="Buscar Contenido" />
-          <button id="zm-search-btn" class="btn">Buscar</button>
-        </div>
-
-        <div class="zm-filters">
-          <select id="zm-state">
-            <option value="">Estado (todos)</option>
-            <option value="emision">En emisión</option>
-            <option value="finalizado">Finalizado</option>
-          </select>
-
-          <select id="zm-genre">
-            <option value="">Género (todos)</option>
-            <!-- se rellenará dinámicamente con categorías (si quieres puedes pre-popular) -->
-          </select>
-
-          <select id="zm-demography">
-            <option value="">Demografía (todos)</option>
-            <option value="shonen">Shōnen</option>
-            <option value="seinen">Seinen</option>
-            <option value="shojo">Shōjo</option>
-            <option value="josei">Josei</option>
-          </select>
-
-          <select id="zm-sort">
-            <option value="relevance">Ordenar: Relevancia</option>
-            <option value="chapters_desc">Capítulos ↓</option>
-            <option value="chapters_asc">Capítulos ↑</option>
-          </select>
-        </div>
-
-        <div id="zm-results" class="zm-results"></div>
-        <div id="zm-empty" style="display:none;color:var(--muted);margin-top:10px;">No se encontraron resultados.</div>
-      </div>
-
       <button id="btn-add" class="btn primary">＋ Añadir</button>
+      <!-- 🔍 Buscador de mangas -->
+      <section id="zm-search" class="search-box">
+        <div class="search-bar">
+          <input id="zm-query" type="text" placeholder="Buscar manga o anime…">
+
+          <button id="filter-btn" class="btn">Filtrar</button>
+
+          <button id="zm-search-btn">Buscar</button>
+        </div>
+
+        <div id="filter-panel" class="filter-panel hidden">
+          <div class="filter-group">
+            <label>Tipo</label>
+            <select id="filter-type">
+              <option value="manga">Manga</option>
+              <option value="anime">Anime</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label>Ordenar por</label>
+            <select id="filter-order">
+              <option value="chapters">Capítulos</option>
+              <option value="title">Título</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label>Orden</label>
+            <select id="filter-sort">
+              <option value="desc">Descendente</option>
+              <option value="asc">Ascendente</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="zm-results" class="grid"></div>
+      </section>
     </div>
 
     <!-- time box (total consumed) -->
@@ -250,8 +250,6 @@
 <script type="module">
 /* ===================================================
    Manga Tracker - Script unificado, limpio y optimizado
-   - Incluye integración básica ZonaTMO (búsqueda, prefill, marcar nuevos caps)
-   - Añade zonatmo_id al guardar si procede
    =================================================== */
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-app.js";
@@ -321,15 +319,18 @@ const btnVolverPC = document.getElementById("btn-volver-pc"); // puede ser null 
 const btnFinalizadosMobile = document.getElementById('btn-finalizados-mobile');
 const btnHomeMobile = document.getElementById('mobile-home');
 
-/* ZonaTMO elements (may be null if HTML not added yet) */
+// 🔍 Buscador Jikan
 const zmQueryInput = document.getElementById('zm-query');
-const zmSearchBtn = document.getElementById('zm-search-btn');
-const zmResults = document.getElementById('zm-results');
-const zmEmpty = document.getElementById('zm-empty');
-const zmState = document.getElementById('zm-state');
-const zmGenre = document.getElementById('zm-genre');
-const zmDemo = document.getElementById('zm-demography');
-const zmSort = document.getElementById('zm-sort');
+const zmSearchBtn  = document.getElementById('zm-search-btn');
+const zmResults    = document.getElementById('zm-results');
+
+const filterToggle = document.getElementById('filter-btn');
+const filterBox = document.getElementById('filter-panel');
+
+const filterType = document.getElementById('filter-type');
+const filterOrder = document.getElementById('filter-order');
+const filterSort = document.getElementById('filter-sort');
+
 
 /* -------- STATE -------- */
 let currentUser = null;
@@ -341,7 +342,6 @@ window.timeBoxEnabled = false;
 /* -------- THEMES (igual que antes) -------- */
 const THEMES = { dark: { '--bg':'#0f172a','--card':'#1e293b','--accent':'#f1f5f9','--accent-2':'#3b82f6','--muted':'#94a3b8' }, black: { '--bg':'#0f0f0f','--card':'#1a1a1a','--accent':'#f5f5f5','--accent-2':'#888888','--muted':'#5a5a5a' }, light: { '--bg':'#ffffff','--card':'#f8fafc','--accent':'#0f172a','--accent-2':'#f0f1f5','--muted':'#6b7280' }, pink: { '--bg':'#fff0f6','--card':'#fff1f2','--accent':'#2b2a2a','--accent-2':'#ec4899','--muted':'#7c4a5b' }, blue: { '--bg':'#eff6ff','--card':'#e0f2fe','--accent':'#0b1220','--accent-2':'#3b82f6','--muted':'#64748b' }, purple: { '--bg':'#faf5ff','--card':'#f3e8ff','--accent':'#211634','--accent-2':'#7c3aed','--muted':'#6b5b7a' }, green: { '--bg':'#f0fdf4','--card':'#dcfce7','--accent':'#04260f','--accent-2':'#10b981','--muted':'#4b6b53' }, red: { '--bg':'#fff5f5','--card':'#ffe5e5','--accent':'#2a0a0a','--accent-2':'#ef4444','--muted':'#a64b4b' }, orange: { '--bg':'#fffaf0','--card':'#fff3e0','--accent':'#2b1a00','--accent-2':'#f97316','--muted':'#b36b3b' }, teal: { '--bg':'#f0fdfa','--card':'#ccfbf1','--accent':'#042f2e','--accent-2':'#14b8a6','--muted':'#4a7c79' }, yellow: { '--bg':'#fffbeb','--card':'#fef3c7','--accent':'#2b2a00','--accent-2':'#facc15','--muted':'#a68c4b' } };
 
-/* helper to get prefs doc ref for a user */
 function prefsDocRef(uid){ return doc(db, 'users', uid, 'prefs', 'ui'); }
 
 /* render swatches */
@@ -399,6 +399,129 @@ function setUserNameDisplay(name){
   if (mobileInitial) mobileInitial.textContent = initial;
 }
 
+async function searchJikan(query, type = 'manga') {
+  const endpoint =
+    type === 'anime'
+      ? `https://api.jikan.moe/v4/anime?q=${encodeURIComponent(query)}&limit=20`
+      : `https://api.jikan.moe/v4/manga?q=${encodeURIComponent(query)}&limit=20`;
+
+  const res = await fetch(endpoint);
+  if (!res.ok) throw new Error("Jikan error");
+
+  const json = await res.json();
+
+  return (json.data || []).map(item => ({
+    id: item.mal_id,
+    title: item.title,
+    img: item.images?.jpg?.image_url || '',
+    chapters:
+      type === 'anime'
+        ? item.episodes ?? 0
+        : item.chapters ?? 0,
+    status: item.status || 'Desconocido',
+    type
+  }));
+}
+
+function zonatmoLink(title) {
+  return `https://zonatmo.com/search?keyword=${encodeURIComponent(title)}`;
+}
+
+function animeflvLink(title) {
+  return `https://www3.animeflv.net/browse?q=${encodeURIComponent(title)}`;
+}
+
+function renderJikanResults(results) {
+  if (!zmResults) return;
+
+  zmResults.innerHTML = "";
+
+  if (results.length === 0) {
+    zmResults.innerHTML =
+      `<p style="padding:10px;color:var(--muted)">Sin resultados</p>`;
+    return;
+  }
+
+  results.forEach(m => {
+    const card = document.createElement("article");
+    card.className = "card";
+
+    card.innerHTML = `
+      <div class="thumb">
+        ${m.img ? `<img src="${m.img}" loading="lazy">` : ""}
+      </div>
+
+      <div class="meta">
+        <div class="title">${m.title}</div>
+        <div class="genre">${m.status}</div>
+        <div class="last">
+          Capítulos: <strong>${m.chapters ?? "?"}</strong>
+        </div>
+      </div>
+
+      <div class="actions">
+        <a class="link" href="${zonatmoLink(m.title)}" target="_blank">ZonaTMO</a>
+        ${m.type === 'anime'
+          ? `<a class="link" href="${animeflvLink(m.title)}" target="_blank">AnimeFLV</a>`
+          : ''
+        }
+        <button class="small add-jikan">＋ Añadir</button>
+      </div>
+    `;
+
+    card.querySelector(".add-jikan").onclick = () => addFromJikan(m);
+    zmResults.appendChild(card);
+  });
+}
+
+
+async function addFromJikan(m) {
+  if (!currentUser) return alert("Inicia sesión");
+
+  await addDoc(
+    collection(db,'users',currentUser.uid,'mangas'),
+    {
+      title: m.title,
+      type: "Manga",
+      genre: m.genres?.[0]?.name || "Otro",
+      last: "0",
+      imgurl: m.img || "",
+      url: zonatmoLink(m.title),
+      status: "reading",
+      jikanId: m.mal_id,
+      lastKnownChapters: m.chapters || 0
+    }
+  );
+
+  alert("Manga añadido ✔");
+}
+
+zmSearchBtn.addEventListener('click', async () => {
+  const q = zmQueryInput.value.trim();
+  if (!q) return;
+
+  const type = filterType.value;
+  const orderBy = filterOrder.value;
+  const sort = filterSort.value;
+
+  zmResults.innerHTML = 'Buscando…';
+
+  const results = await searchJikan(q, type);
+
+  results.sort((a, b) => {
+    let av = orderBy === 'chapters' ? (a.chapters || 0) : a.title;
+    let bv = orderBy === 'chapters' ? (b.chapters || 0) : b.title;
+
+    if (sort === 'asc') return av > bv ? 1 : -1;
+    return av < bv ? 1 : -1;
+  });
+
+  renderJikanResults(results, type);
+});
+
+
+
+
 /* -------- LOAD PREFS -------- */
 async function loadPrefsForUser(uid){
   try{
@@ -447,8 +570,6 @@ onAuthStateChanged(auth, async (user) => {
 
     await loadPrefsForUser(user.uid);
     await loadMangas(currentFilter); // load current filter (default reading)
-    // after loading, check zonatmo updates for this user
-    checkZonatmoUpdatesForUser(user.uid).catch(e=>console.error(e));
 
   } else {
     authControls && (authControls.style.display = 'flex');
@@ -575,14 +696,70 @@ mobileGear?.addEventListener('click', ()=> {
   c.querySelector('#mb-close').onclick = ()=> c.remove();
 });
 
-/* -------- CATEGORIES / FORM HELPERS -------- */
-const categories = { Manga:['Acción','Aventura','Comedia','Drama','Fantasía','Romance','Seinen','Shonen','Otro'], Anime:['Acción','Aventura','Comedia','Drama','Fantasía','Romance','Slice of Life','Mecha','Isekai','Otro'], Serie:['Acción','Drama','Comedia','Thriller','Ciencia Ficción','Fantasía','Misterio','Otro'] };
+/* Mobile profile click */
+mobileProfile.addEventListener('click', ()=> {
+  if(currentUser) alert(`Perfil: ${currentUser.displayName || currentUser.email}`);
+  else alert('Invitado');
+});
+
+/* ---------- DATA / CARDS ---------- */
+/* categories */
+const categories = {
+  Manga:['Acción','Aventura','Comedia','Drama','Misterio','Fantasía','Romance','Seinen','Shonen','Otro'],
+  Anime:['Acción','Aventura','Comedia','Drama','Misterio','Fantasía','Romance','Slice of Life','Mecha','Isekai','Otro'],
+  Serie:['Acción','Drama','Comedia','Thriller','Ciencia Ficción','Fantasía','Misterio','Otro']
+};
+
 const fields = ['title','genre','last','url','imgurl','type'];
 const typeSelect = document.getElementById('type');
 const genreSelect = document.getElementById('genre');
 function updateGenres(){ if(!typeSelect || !genreSelect) return; genreSelect.innerHTML=''; categories[typeSelect.value].forEach(c=>{ const o=document.createElement('option'); o.value=o.textContent=c; genreSelect.appendChild(o); }); }
 typeSelect?.addEventListener('change', updateGenres);
 updateGenres();
+
+/* ====== AGRUPACIÓN DE SAGAS / SAGA DETECTION ====== */
+
+function getBaseName(title){
+  if(!title) return "";
+
+  let t = title.toLowerCase();
+
+  // quitar palabras de temporada / parte
+  t = t.replace(/\b(season|temporada|temp|part|parte|saga|arc|chapter|capítulo|capitulo|ova|special|movie|film)\b/g, "");
+
+  // quitar S1 / T2 / etc
+  t = t.replace(/\b(s|t)\d+\b/g, "");
+
+  // quitar 1st, 2nd, etc
+  t = t.replace(/\b(\d+st|\d+nd|\d+rd|\d+th)\b/g, "");
+
+  // quitar números sueltos
+  t = t.replace(/\b\d+\b/g, "");
+
+  // quitar símbolos y extra espacios
+  t = t.replace(/[\.\-–:_]/g, " ");
+  t = t.replace(/\s+/g, " ").trim();
+
+  return t;
+}
+
+function extractSeasonNumber(title){
+  const t = title.toLowerCase();
+
+  let m = t.match(/season\s*(\d+)/) || t.match(/temporada\s*(\d+)/);
+  if(m) return parseInt(m[1]);
+
+  m = t.match(/\bs(\d+)\b/);
+  if(m) return parseInt(m[1]);
+
+  m = t.match(/part\s*(\d+)/) || t.match(/parte\s*(\d+)/);
+  if(m) return parseInt(m[1]) + 0.01;
+
+  if(t.includes("final season")) return 999;
+
+  return 0;
+}
+
 
 /* IMAGE PREVIEW */
 document.getElementById('fakefile')?.addEventListener('click',()=> document.getElementById('file')?.click());
@@ -601,9 +778,21 @@ function setButtonsForFilter(filter){
   if(btnFinalizadosPC) btnFinalizadosPC.style.display = (filter==='finished') ? 'none' : 'inline-block';
   if(btnVolverPC) btnVolverPC.style.display = (filter==='finished') ? 'inline-block' : 'none';
   // Mobile
-  if(btnFinalizadosMobile) btnFinalizadosMobile.style.display = (filter==='finished') ? 'none' : 'flex';
+  if(btnFinalizadosMobile) btnFinalizadosMobile.style.display = (filter==='finished') ? 'flex' : 'flex';
   if(btnHomeMobile) btnHomeMobile.style.opacity = (filter==='finished') ? 1 : 0.5;
 }
+
+filterToggle.addEventListener('click', (e) => {
+  e.stopPropagation();
+  filterBox.classList.toggle('hidden');
+});
+
+filterBox?.addEventListener('click', e => e.stopPropagation());
+filterBox?.addEventListener('mousedown', e => e.stopPropagation());
+
+document.addEventListener('click', () => {
+  filterBox?.classList.add('hidden');
+});
 
 /* -------- LOAD MANGAS (reading | finished) -------- */
 async function loadMangas(status='reading'){
@@ -625,7 +814,19 @@ async function loadMangas(status='reading'){
 
   const tipos = ['Manga','Anime','Serie'];
   tipos.forEach(tipo=>{
-    const group = filtered.filter(it=>it.type===tipo);
+    const group = filtered
+      .filter(it => it.type === tipo)
+      .sort((a,b)=>{
+        const baseA = getBaseName(a.title);
+        const baseB = getBaseName(b.title);
+        if(baseA < baseB) return -1;
+        if(baseA > baseB) return 1;
+
+        const sA = extractSeasonNumber(a.title);
+        const sB = extractSeasonNumber(b.title);
+        return sA - sB;
+      });
+
     if(group.length===0) return;
 
     const header = document.createElement('h2');
@@ -640,8 +841,6 @@ async function loadMangas(status='reading'){
       const card = document.createElement('article');
       card.className='card';
       card.dataset.id = it.id;
-      // Add data-item-id also (some code uses different selectors)
-      card.dataset.itemId = it.id;
 
       card.innerHTML = `
         <div class="thumb">${it.imgurl? `<img src="${it.imgurl}" style="width:100%;height:100%;object-fit:cover">` : ''}</div>
@@ -703,26 +902,23 @@ async function loadMangas(status='reading'){
     });
   }
 
-  // RESTAURAR (solo en finalizados)
   if(status === 'finished'){
-    gridEl.querySelectorAll('.restore-btn').forEach(btn=>{
-      btn.onclick = async (e)=>{
-        e.stopPropagation();
-        const id = btn.dataset.id;
-        await updateDoc(doc(db,'users',currentUser.uid,'mangas',id), {
-          status: 'reading'
-        });
-        // recargar para que desaparezca de finalizados y vuelva a reading
-        await loadMangas('reading');
-      };
-    });
-  }
+      gridEl.querySelectorAll('.restore-btn').forEach(btn=>{
+        btn.onclick = async (e)=>{
+          e.stopPropagation();
+          const id = btn.dataset.id;
+
+          await updateDoc(doc(db,'users',currentUser.uid,'mangas',id), {
+            status: 'reading'
+          });
+
+          // recargar para que desaparezca de finalizados
+          await loadMangas('reading');
+        };
+      });
+    }
 
   if(window.timeBoxEnabled) calculateTotalTime();
-
-  // after rendering, check zonatmo updates for UI badges
-  // run but don't block UI
-  if(currentUser) checkZonatmoUpdatesForUser(currentUser.uid).catch(e=>console.error(e));
 }
 
 /* -------- FINISH MODAL HANDLERS -------- */
@@ -738,10 +934,9 @@ finishConfirm?.addEventListener('click', async ()=> {
   if(!selectedToFinish) { hideFinishModal(); return; }
   try {
     await updateDoc(doc(db,'users',currentUser.uid,'mangas',selectedToFinish), { status: 'finished' });
-    // reload view
-    const nextView = (currentFilter === 'reading') ? 'reading' : 'finished';
+    // reload view according to currentFilter (setButtonsForFilter already updates currentFilter)
     hideFinishModal();
-    await loadMangas(nextView);
+    await loadMangas(currentFilter);
   } catch (e) { console.error(e); hideFinishModal(); }
 });
 
@@ -755,42 +950,35 @@ function openForm(id=null){
     getDoc(doc(db,'users',currentUser.uid,'mangas',id)).then(s=>{
       if(!s.exists()) return;
       const d = s.data();
-      document.getElementById('title').value = d.title || "";
-      document.getElementById('last').value = d.last || "";
-      document.getElementById('url').value = d.url || "";
-      document.getElementById('type').value = d.type || "Manga";
+      const t = document.getElementById('title'); if(t) t.value = d.title || "";
+      const l = document.getElementById('last'); if(l) l.value = d.last || "";
+      const u = document.getElementById('url'); if(u) u.value = d.url || "";
+      const tp = document.getElementById('type'); if(tp) tp.value = d.type || "Manga";
       updateGenres();
-      document.getElementById('genre').value = d.genre || "";
+      const g = document.getElementById('genre'); if(g) g.value = d.genre || "";
       if(d.imgurl){ preview.innerHTML = `<img src="${d.imgurl}" style="max-width:120px;border-radius:6px">`; preview.dataset.image = d.imgurl; }
     }).catch(e=>console.error(e));
   }
-  modal.classList.add('open');
+  modal && modal.classList.add('open');
 }
-function closeForm(){ modal.classList.remove('open'); editId = null; }
+function closeForm(){ modal && modal.classList.remove('open'); editId = null; }
 
-/* Augmented btnSave: if window.__mt_prefill_zonatmo exists, include it in data.zonatmo_id */
+/* --- IMPORTANT: listeners for Add buttons (fix for the issue) --- */
+btnAdd?.addEventListener('click', ()=> { openForm(); });
+mobileAdd?.addEventListener('click', ()=> { openForm(); });
+
 btnSave?.addEventListener('click', async ()=>{
   if(!currentUser) return alert("Inicia sesión");
   const data = {};
   fields.forEach(f=> { const el = document.getElementById(f); data[f] = el ? el.value : ""; });
   data.imgurl = preview.dataset.image || "";
   data.status = data.status || "reading";
-
-  if(window.__mt_prefill_zonatmo){
-    data.zonatmo_id = window.__mt_prefill_zonatmo;
-    // once used, delete it so it doesn't leak to future saves
-    delete window.__mt_prefill_zonatmo;
-  }
-
   const colRef = collection(db,'users',currentUser.uid,'mangas');
   try {
     if(editId) { await setDoc(doc(db,'users',currentUser.uid,'mangas',editId), data, { merge:true }); }
     else { await addDoc(colRef, data); }
     closeForm();
-    // reload current filter
     await loadMangas(currentFilter);
-    // after save, check updates (especially useful if zonatmo_id was attached)
-    if(currentUser) checkZonatmoUpdatesForUser(currentUser.uid).catch(e=>console.error(e));
   } catch(e){ console.error(e); alert("Error guardando"); }
 });
 btnCancel?.addEventListener('click', closeForm);
@@ -811,29 +999,43 @@ timeBoxSwitch?.addEventListener('change', async ()=>{
 });
 
 async function calculateTotalTime(){
-  if(!currentUser || !timeBoxValue) { if(timeBoxValue) timeBoxValue.textContent = '0d 0h 0m'; return; }
+  if(!currentUser || !timeBoxValue) {
+    if(timeBoxValue) timeBoxValue.textContent = '0d 0h 0m';
+    return;
+  }
+
   const col = collection(db, "users", currentUser.uid, "mangas");
   const snap = await getDocs(col);
   let totalMinutes = 0;
-  snap.docs.forEach(d=>{
+
+  snap.docs.forEach(d => {
     const it = d.data();
-    // Count both reading and finished as requested (include finished too)
-    // previous behaviour counted only reading; now include all items
+
+    // ❗️ANTES filtrabas aquí por "reading"
+    // ❗️AHORA se cuentan TODOS (reading + finished)
+
     const last = Number(it.last) || 0;
-    let mult = 10; if(it.type==="Anime") mult=20; if(it.type==="Serie") mult=45;
+
+    let mult = 10;
+    if(it.type === "Anime") mult = 20;
+    if(it.type === "Serie") mult = 45;
+
     totalMinutes += last * mult;
   });
+
   const days = Math.floor(totalMinutes / 1440);
   const hours = Math.floor((totalMinutes % 1440) / 60);
   const minutes = totalMinutes % 60;
+
   timeBoxValue.textContent = `${days}d ${hours}h ${minutes}m`;
 }
 
+
 /* -------- BUTTONS: finalizados / volver / mobile home -------- */
-btnFinalizadosPC?.addEventListener('click', ()=> { currentFilter = 'finished'; loadMangas('finished'); });
-btnFinalizadosMobile?.addEventListener('click', ()=> { currentFilter = 'finished'; loadMangas('finished'); });
-btnVolverPC?.addEventListener('click', ()=> { currentFilter = 'reading'; loadMangas('reading'); });
-btnHomeMobile?.addEventListener('click', ()=> { currentFilter = 'reading'; loadMangas('reading'); });
+btnFinalizadosPC?.addEventListener('click', ()=> { loadMangas('finished'); });
+btnFinalizadosMobile?.addEventListener('click', ()=> { loadMangas('finished'); });
+btnVolverPC?.addEventListener('click', ()=> { loadMangas('reading'); });
+btnHomeMobile?.addEventListener('click', ()=> { loadMangas('reading'); });
 
 /* -------- INITIAL LOCAL THEME & TIMEBOX ON PAGE LOAD -------- */
 window.addEventListener('load', ()=>{
@@ -848,266 +1050,8 @@ window.addEventListener('load', ()=>{
 /* prevent settings menu from closing while interacting */
 settingsMenu?.addEventListener('click', e=> e.stopPropagation());
 
-/* ===========================
-   ZonaTMO search & add helpers
-   (integrated below; optional if you haven't added the search HTML)
-   =========================== */
-
-/* helper utilities */
-function escapeHtml(s){ return String(s||'').replaceAll('<','&lt;').replaceAll('>','&gt;'); }
-function decodeHtml(s){ const txt = document.createElement('textarea'); txt.innerHTML = s; return txt.value; }
-function extractZMTIdFromURL(url) {
-  const m = url.match(/\/library\/manga\/(\d+)\//);
-  return m ? m[1] : null;
-}
-
-/* Search attempts (several heuristics) */
-async function searchZonaTMO(q, { state='', genre='', demo='', sort='relevance' } = {}) {
-  if(!q) return [];
-  const attempts = [
-    `https://zonatmo.com/wp-json/wp/v2/search?search=${encodeURIComponent(q)}&per_page=30`,
-    `https://zonatmo.com/wp-json/zt/v1/search?query=${encodeURIComponent(q)}`,
-    `https://zonatmo.com/?s=${encodeURIComponent(q)}&rest_route=/wp/v2/search`
-  ];
-
-  for (const url of attempts) {
-    try {
-      const res = await fetch(url);
-      if (!res.ok) continue;
-      const json = await res.json();
-      const results = (Array.isArray(json) ? json : []).map(it => {
-        return {
-          title: it.title || it[0] || it.name || it.title?.rendered || '',
-          link: it.url || it.link || it.permalink || '',
-          id: it.id || (it.url ? extractZMTIdFromURL(it.url) : null),
-          raw: it
-        };
-      }).filter(r => r.title);
-      if (results.length) return results;
-    } catch (err) {
-      continue;
-    }
-  }
-
-  // Fallback: scrape search HTML (may be blocked by CORS when testing locally)
-  try {
-    const htmlRes = await fetch(`https://zonatmo.com/?s=${encodeURIComponent(q)}`);
-    const text = await htmlRes.text();
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(text, 'text/html');
-    const anchors = Array.from(doc.querySelectorAll('a'));
-    const mangas = [];
-    anchors.forEach(a => {
-      const href = a.href || '';
-      const match = href.match(/\/library\/manga\/(\d+)\/([^\/]+)/i);
-      if (match) {
-        mangas.push({
-          title: (a.textContent || a.title || '').trim(),
-          link: href,
-          id: match[1]
-        });
-      }
-    });
-    const uniq = [];
-    const seen = new Set();
-    mangas.forEach(m => { if(!seen.has(m.id)){ seen.add(m.id); uniq.push(m); } });
-    if (uniq.length) return uniq;
-  } catch (err) {
-    // ignore
-  }
-
-  return [];
-}
-
-/* Get details for a manga (tries JSON endpoints then HTML parsing) */
-async function getZonatmoMangaDetails(zid, linkFallback='') {
-  if(!zid && !linkFallback) return { title: '', img:'', chapters:0, status:'', link:linkFallback || '' };
-  const tries = [
-    zid ? `https://zonatmo.com/wp-json/wp/v2/posts/${zid}` : null,
-    zid ? `https://zonatmo.com/wp-json/zt/v1/manga/${zid}` : null
-  ].filter(Boolean);
-
-  for(const u of tries){
-    try{
-      const r = await fetch(u);
-      if(!r.ok) continue;
-      const j = await r.json();
-      return {
-        title: j.title?.rendered || j.name || j.post_title || '',
-        img: (j.featured_media_url || j.image || j.cover || j.imgurl || '').toString(),
-        chapters: Number(j.chapter_count || j.chapters || j.meta?.chapters || 0),
-        status: (j.status || j.post_status || j.meta?.status || '').toString().toLowerCase(),
-        raw: j,
-        link: j.link || linkFallback
-      };
-    }catch(e){ continue; }
-  }
-
-  // HTML parse fallback
-  try{
-    const page = await fetch(linkFallback || `https://zonatmo.com/library/manga/${zid}/`);
-    const t = await page.text();
-    const d = new DOMParser().parseFromString(t,'text/html');
-    const imgEl = d.querySelector('.cover img, .thumb img, .poster img, .manga-cover img');
-    const titleEl = d.querySelector('h1, .title, .manga-title');
-    let chapters = 0;
-    const chapEls = d.querySelectorAll('a.chapter, .chapters-list li, .chapter-list li');
-    if (chapEls && chapEls.length) chapters = chapEls.length;
-    const statText = (d.textContent || '').match(/(En emisión|Finalizado|Finalizado\.)/i) || [];
-    const status = (statText[0] || '').toLowerCase();
-
-    return {
-      title: titleEl ? titleEl.textContent.trim() : (zid || ''),
-      img: imgEl ? imgEl.src : '',
-      chapters,
-      status,
-      rawHtml: t,
-      link: linkFallback || `https://zonatmo.com/library/manga/${zid}/`
-    };
-  }catch(err){
-    return { title: zid || '', img:'', chapters:0, status:'', link:linkFallback || '' };
-  }
-}
-
-/* Render search results (if user added the HTML) */
-function renderZonatmoResults(list){
-  if(!zmResults) return;
-  zmResults.innerHTML = '';
-  if(!list || list.length===0){ if(zmEmpty) zmEmpty.style.display='block'; return; }
-  if(zmEmpty) zmEmpty.style.display='none';
-
-  const frag = document.createDocumentFragment();
-
-  list.forEach(item => {
-    const card = document.createElement('div');
-    card.className = 'zm-card';
-    const imgHtml = item.img ? `<img loading="lazy" src="${item.img}" alt="${escapeHtml(item.title)}">` : '';
-    const chaptersText = typeof item.chapters !== 'undefined' ? `${item.chapters} cap.` : '—';
-    const statusText = item.status ? (item.status.includes('emision') ? 'En emisión' : (item.status.includes('final') ? 'Finalizado' : item.status)) : '';
-
-    card.innerHTML = `
-      <div class="thumb">${imgHtml}</div>
-      <div class="meta">
-        <div class="title">${escapeHtml(item.title)}</div>
-        <div class="sub zm-small">${escapeHtml(statusText)} · ${chaptersText}</div>
-      </div>
-      <div class="actions">
-        <div class="left">
-          <a class="link zm-small" href="${item.link || '#'}" target="_blank" rel="noopener">Ver en ZonaTMO</a>
-        </div>
-        <div class="right">
-          <button class="btn-add-zm" data-zid="${item.id}" data-title="${escapeHtml(item.title)}" data-img="${encodeURIComponent(item.img||'')}" data-ch="${item.chapters||0}" data-status="${escapeHtml(item.status||'')}">＋ Añadir</button>
-        </div>
-      </div>
-    `;
-    frag.appendChild(card);
-  });
-
-  zmResults.appendChild(frag);
-
-  // add handlers for add buttons
-  zmResults.querySelectorAll('.btn-add-zm').forEach(b=>{
-    b.addEventListener('click', async (e)=>{
-      const zid = b.dataset.zid;
-      const title = decodeHtml(b.dataset.title);
-      const img = decodeURIComponent(b.dataset.img);
-      const chapters = Number(b.dataset.ch) || 0;
-      const status = b.dataset.status || 'reading';
-      // open form auto-filled (zonatmo id stored in window.__mt_prefill_zonatmo)
-      window.__mt_prefill_zonatmo = zid || null;
-      openFormFromSearch({ zonatmo_id: zid, title, imgurl: img, last: String(chapters), type: 'Manga', genre: '', status });
-    });
-  });
-}
-
-/* open form with prefilled values */
-function openFormFromSearch(prefill){
-  document.getElementById('form-title').textContent = 'Añadir desde ZonaTMO';
-  ['title','genre','last','url','imgurl','type'].forEach(k=>{
-    const el = document.getElementById(k);
-    if(!el) return;
-    if(prefill[k] !== undefined) el.value = prefill[k];
-  });
-  if(prefill.imgurl) {
-    preview.innerHTML = `<img src="${prefill.imgurl}" style="max-width:120px;border-radius:6px">`;
-    preview.dataset.image = prefill.imgurl;
-  } else preview.innerHTML = '';
-  // store zonatmo id
-  if(prefill.zonatmo_id) window.__mt_prefill_zonatmo = prefill.zonatmo_id;
-  editId = null;
-  modal.classList.add('open');
-  const t = document.getElementById('title'); if(t) t.focus();
-}
-
-/* Attach search handler (if HTML exists) */
-zmSearchBtn?.addEventListener('click', async ()=>{
-  const q = (zmQueryInput?.value || '').trim();
-  if(!q) return;
-  if(zmResults) zmResults.innerHTML = '<div style="padding:10px;color:var(--muted)">Buscando…</div>';
-  const filters = { state: zmState?.value || '', genre: zmGenre?.value || '', demo: zmDemo?.value || '', sort: zmSort?.value || '' };
-  try {
-    const raw = await searchZonaTMO(q, filters);
-    const limited = raw.slice(0, 20);
-    const withDetails = await Promise.all(limited.map(async r=>{
-      if(!r.img || !r.chapters || !r.status){
-        const details = await getZonatmoMangaDetails(r.id, r.link);
-        return { title: r.title || details.title, id: r.id, img: details.img || r.img || '', chapters: details.chapters || 0, status: details.status || '', link: details.link || r.link };
-      } else {
-        return { title: r.title, id: r.id, img: r.img, chapters: r.chapters, status: r.status, link: r.link };
-      }
-    }));
-    renderZonatmoResults(withDetails);
-  } catch (err){
-    console.error('search error', err);
-    if(zmResults) zmResults.innerHTML = '<div style="padding:10px;color:var(--muted)">Error al buscar. Revisa la consola.</div>';
-  }
-});
-
-async function searchZonaTMO(query) {
-  const res = await fetch(`https://manga-tracker.r2r2eydeitaca.workers.dev/?q=${encodeURIComponent(query)}`);
-  return await res.json();
-}
-
-
-/* check updates for mangas with zonatmo_id and show "new" badge in UI (non-destructive) */
-async function checkZonatmoUpdatesForUser(uid){
-  if(!uid) return;
-  try{
-    const col = collection(db, 'users', uid, 'mangas');
-    const snap = await getDocs(col);
-    if(snap.empty) return;
-    const docs = snap.docs.map(d=>({ id:d.id, ...d.data() }));
-    for(const it of docs){
-      if(!it.zonatmo_id) continue;
-      let details = await getZonatmoMangaDetails(it.zonatmo_id, it.url || '');
-      const latest = Number(details.chapters || 0);
-      const storedLast = Number(it.last || 0);
-      if(latest > storedLast){
-        // attach badge
-        // try various selectors
-        const card = document.querySelector(`[data-item-id="${it.id}"], [data-id="${it.id}"], [data-id="${it.id}"]`);
-        if(card){
-          const title = card.querySelector('.title');
-          if(title && !title.querySelector('.new-dot')){
-            const dot = document.createElement('span');
-            dot.className = 'new-dot custom';
-            dot.title = `ZonaTMO: ${latest} capítulos (tu: ${storedLast})`;
-            title.appendChild(dot);
-          }
-        }
-      }
-    }
-  }catch(e){ console.error('check zonatmo updates failed', e); }
-}
-
-
-/* ===========================
-   END ZonaTMO integration
-   =========================== */
-
 }); // DOMContentLoaded end
 </script>
-
 
 </body>
 </html>
