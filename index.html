@@ -323,6 +323,7 @@ const btnHomeMobile = document.getElementById('mobile-home');
 const zmQueryInput = document.getElementById('zm-query');
 const zmSearchBtn  = document.getElementById('zm-search-btn');
 const zmResults    = document.getElementById('zm-results');
+const searchBox = document.querySelector('.search-box');
 
 const filterToggle = document.getElementById('filter-btn');
 const filterBox = document.getElementById('filter-panel');
@@ -331,8 +332,8 @@ const filterType = document.getElementById('filter-type');
 const filterOrder = document.getElementById('filter-order');
 const filterSort = document.getElementById('filter-sort');
 
-
 /* -------- STATE -------- */
+let currentView = 'home'; 
 let currentUser = null;
 let editId = null;
 let selectedToFinish = null;
@@ -390,6 +391,7 @@ function setProfileImage(url) {
     if (mobileInitial) mobileInitial.style.display = "inline-block";
   }
 }
+
 function setUserNameDisplay(name){
   if (!userDisplay) return;
   userDisplay.textContent = name || 'Invitado';
@@ -398,6 +400,25 @@ function setUserNameDisplay(name){
   const mobileInitial = document.getElementById("mobile-profile-initial");
   if (mobileInitial) mobileInitial.textContent = initial;
 }
+
+function applyView() {
+  if (currentView === 'finished') {
+    // En finalizados no se busca ni se añade
+    searchBox && (searchBox.style.display = 'none');
+    btnAdd && (btnAdd.style.display = 'none');
+  }
+  else if (currentView === 'search') {
+    // En búsqueda: sí buscador, sí añadir (como dijiste)
+    searchBox && (searchBox.style.display = '');
+    btnAdd && (btnAdd.style.display = '');
+  }
+  else if (currentView === 'home') {
+    // HOME normal
+    searchBox && (searchBox.style.display = '');
+    btnAdd && (btnAdd.style.display = '');
+  }
+}
+
 
 async function searchJikan(query, type = 'manga') {
   const endpoint =
@@ -448,7 +469,7 @@ function renderJikanResults(results) {
 
     card.innerHTML = `
       <div class="thumb">
-        <img src="${m.img || ''}"
+        ${m.img ? `<img data-src="${m.img}" loading="lazy">` : ""}
       </div>
 
       <div class="meta">
@@ -469,6 +490,14 @@ function renderJikanResults(results) {
       </div>
     `;
 
+    const img = card.querySelector("img");
+    if (img) {
+      img.src = img.dataset.src;
+      img.onload = () => {
+        img.classList.add("loaded");
+      };
+    }
+
     card.querySelector(".add-jikan").onclick = () => addFromJikan(m);
     zmResults.appendChild(card);
   });
@@ -488,7 +517,7 @@ async function addFromJikan(m) {
       imgurl: m.img || "",
       url: zonatmoLink(m.title),
       status: "reading",
-      jikanId: m.mal_id,
+      jikanId: m.id,
       lastKnownChapters: m.chapters || 0
     }
   );
@@ -499,6 +528,10 @@ async function addFromJikan(m) {
 zmSearchBtn.addEventListener('click', async () => {
   const q = zmQueryInput.value.trim();
   if (!q) return;
+
+  currentView = 'search';
+  applyView();
+  gridEl.innerHTML = '';
 
   const type = filterType.value;
   const orderBy = filterOrder.value;
@@ -1032,8 +1065,27 @@ async function calculateTotalTime(){
 
 
 /* -------- BUTTONS: finalizados / volver / mobile home -------- */
-btnFinalizadosPC?.addEventListener('click', ()=> { loadMangas('finished'); });
-btnFinalizadosMobile?.addEventListener('click', ()=> { loadMangas('finished'); });
+function toggleFinishedView() {
+  if (currentView === 'finished') {
+    currentView = 'home';
+    zmResults && (zmResults.innerHTML = '');
+    loadMangas('reading');
+  }
+  else if (currentView === 'search') {
+    currentView = 'home';
+    zmResults && (zmResults.innerHTML = '');
+    loadMangas('reading');
+  }
+  else {
+    currentView = 'finished';
+    zmResults && (zmResults.innerHTML = '');
+    loadMangas('finished');
+  }
+  applyView();
+}
+
+btnFinalizadosPC?.addEventListener('click', toggleFinishedView);
+btnFinalizadosMobile?.addEventListener('click', toggleFinishedView);
 btnVolverPC?.addEventListener('click', ()=> { loadMangas('reading'); });
 btnHomeMobile?.addEventListener('click', ()=> { loadMangas('reading'); });
 
