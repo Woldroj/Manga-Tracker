@@ -121,7 +121,7 @@ img[loading="lazy"].loaded {
   height: 22px;
 }
 .switch input { display:none; }
-.slider {
+.sDlider {
   position: absolute;
   cursor: pointer;
   inset: 0;
@@ -155,11 +155,11 @@ input:checked + .slider:before {
   margin: 20px 0 10px 0;
 }
 
-<<<<<<< HEAD
 .search-box {
   margin-top: 16px;
   min-width: 40%;
-=======
+}
+
 #user-control {
   align-items: stretch;
 }
@@ -177,27 +177,20 @@ input:checked + .slider:before {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 12px;
->>>>>>> desarrollo
 }
 
 .search-bar {
   display: flex;
   gap: 8px;
-<<<<<<< HEAD
-=======
   width: 100%;
   max-width: 40%;
   margin: 0 auto 12px auto;
->>>>>>> desarrollo
   margin-bottom: 12px;
 }
 
 .search-bar input {
   flex: 1;
-<<<<<<< HEAD
-=======
   width: auto;
->>>>>>> desarrollo
   padding: 10px 12px;
   border-radius: 10px;
   border: 1px solid rgba(255,255,255,0.1);
@@ -206,10 +199,7 @@ input:checked + .slider:before {
 }
 
 .search-bar button {
-<<<<<<< HEAD
-=======
   white-space: nowrap;
->>>>>>> desarrollo
   padding: 10px 14px;
   border-radius: 10px;
   border: none;
@@ -220,8 +210,6 @@ input:checked + .slider:before {
   width: 20%;
 }
 
-<<<<<<< HEAD
-=======
 .controls #zm-search input,
 .controls #zm-search button,
 .controls #zm-search select {
@@ -232,7 +220,6 @@ input:checked + .slider:before {
   align-items: center;
 }
 
->>>>>>> desarrollo
 .filter-panel {
   position: absolute;
   background: var(--card);

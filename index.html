@@ -335,10 +335,6 @@ const btnHomeMobile = document.getElementById('mobile-home');
 const zmQueryInput = document.getElementById('zm-query');
 const zmSearchBtn  = document.getElementById('zm-search-btn');
 const zmResults    = document.getElementById('zm-results');
-<<<<<<< HEAD
-=======
-const searchBox = document.querySelector('.search-box');
->>>>>>> desarrollo
 
 const filterToggle = document.getElementById('filter-btn');
 const filterBox = document.getElementById('filter-panel');
@@ -347,10 +343,6 @@ const filterType = document.getElementById('filter-type');
 const filterOrder = document.getElementById('filter-order');
 const filterSort = document.getElementById('filter-sort');
 
-<<<<<<< HEAD
-
-=======
->>>>>>> desarrollo
 /* -------- STATE -------- */
 let currentView = 'home'; 
 let currentUser = null;
@@ -420,8 +412,6 @@ function setUserNameDisplay(name){
   if (mobileInitial) mobileInitial.textContent = initial;
 }
 
-<<<<<<< HEAD
-=======
 function applyView() {
   if (currentView === 'finished') {
     searchBox && (searchBox.style.display = 'none');
@@ -442,7 +432,6 @@ function applyView() {
   }
 }
 
->>>>>>> desarrollo
 async function searchJikan(query, type = 'manga') {
   const endpoint =
     type === 'anime'
@@ -492,11 +481,8 @@ function renderJikanResults(results) {
 
     card.innerHTML = `
       <div class="thumb">
-<<<<<<< HEAD
         ${m.img ? `<img src="${m.img}" loading="lazy">` : ""}
-=======
         ${m.img ? `<img data-src="${m.img}" loading="lazy">` : ""}
->>>>>>> desarrollo
       </div>
 
       <div class="meta">
@@ -517,8 +503,6 @@ function renderJikanResults(results) {
       </div>
     `;
 
-<<<<<<< HEAD
-=======
     const img = card.querySelector("img");
     if (img) {
       img.src = img.dataset.src;
@@ -526,8 +510,6 @@ function renderJikanResults(results) {
         img.classList.add("loaded");
       };
     }
-
->>>>>>> desarrollo
     card.querySelector(".add-jikan").onclick = () => addFromJikan(m);
     zmResults.appendChild(card);
   });
@@ -547,11 +529,8 @@ async function addFromJikan(m) {
       imgurl: m.img || "",
       url: zonatmoLink(m.title),
       status: "reading",
-<<<<<<< HEAD
       jikanId: m.mal_id,
-=======
       jikanId: m.id,
->>>>>>> desarrollo
       lastKnownChapters: m.chapters || 0
     }
   );
@@ -562,12 +541,8 @@ async function addFromJikan(m) {
 zmSearchBtn.addEventListener('click', async () => {
   const q = zmQueryInput.value.trim();
   if (!q) return;
-
-<<<<<<< HEAD
-=======
   goSearch();
 
->>>>>>> desarrollo
   const type = filterType.value;
   const orderBy = filterOrder.value;
   const sort = filterSort.value;
