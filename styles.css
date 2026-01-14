@@ -121,7 +121,7 @@ img[loading="lazy"].loaded {
   height: 22px;
 }
 .switch input { display:none; }
-.sDlider {
+.slider {
   position: absolute;
   cursor: pointer;
   inset: 0;
@@ -153,11 +153,6 @@ input:checked + .slider:before {
   display: flex;             /* 🔥 Necesario para que la línea vuelva */
   align-items: center;
   margin: 20px 0 10px 0;
-}
-
-.search-box {
-  margin-top: 16px;
-  min-width: 40%;
 }
 
 #user-control {
