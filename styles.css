@@ -155,6 +155,12 @@ input:checked + .slider:before {
   margin: 20px 0 10px 0;
 }
 
+#zm-results {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px; /* usa el mismo gap que tu grid principal */
+}
+
 .search-box {
   margin-top: 16px;
   min-width: 40%;
@@ -184,6 +190,32 @@ input:checked + .slider:before {
   font-weight: 600;
   cursor: pointer;
   width: 20%;
+}
+
+/* ==== BUSCADOR FIJO, NO SE ESTIRA ==== */
+
+.search-bar {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  max-width: 120%;
+}
+
+.search-bar input {
+  flex: 1;
+  width: auto;
+}
+
+.search-bar button {
+  width: auto;
+  white-space: nowrap;
+}
+
+/* Quitar reglas generales que rompen el buscador */
+.controls .search-box input,
+.controls .search-box button,
+.controls .search-box select {
+  width: auto;
 }
 
 .filter-panel {
