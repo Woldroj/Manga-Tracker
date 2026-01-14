@@ -155,25 +155,37 @@ input:checked + .slider:before {
   margin: 20px 0 10px 0;
 }
 
-#zm-results {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px; /* usa el mismo gap que tu grid principal */
+#user-control {
+  align-items: stretch;
 }
 
-.search-box {
-  margin-top: 16px;
-  min-width: 40%;
+#zm-search {
+  width: 100%;
+  margin: 0 auto;
+  min-width: unset !important;
+}
+
+#zm-results { 
+  max-width: 1100px;
+  width: 100%;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
 }
 
 .search-bar {
   display: flex;
   gap: 8px;
+  width: 100%;
+  max-width: 40%;
+  margin: 0 auto 12px auto;
   margin-bottom: 12px;
 }
 
 .search-bar input {
   flex: 1;
+  width: auto;
   padding: 10px 12px;
   border-radius: 10px;
   border: 1px solid rgba(255,255,255,0.1);
@@ -182,6 +194,7 @@ input:checked + .slider:before {
 }
 
 .search-bar button {
+  white-space: nowrap;
   padding: 10px 14px;
   border-radius: 10px;
   border: none;
@@ -192,30 +205,14 @@ input:checked + .slider:before {
   width: 20%;
 }
 
-/* ==== BUSCADOR FIJO, NO SE ESTIRA ==== */
-
-.search-bar {
-  display: flex;
-  gap: 8px;
-  width: 100%;
-  max-width: 120%;
+.controls #zm-search input,
+.controls #zm-search button,
+.controls #zm-search select {
+  width: auto !important;
 }
 
-.search-bar input {
-  flex: 1;
-  width: auto;
-}
-
-.search-bar button {
-  width: auto;
-  white-space: nowrap;
-}
-
-/* Quitar reglas generales que rompen el buscador */
-.controls .search-box input,
-.controls .search-box button,
-.controls .search-box select {
-  width: auto;
+.controls {
+  align-items: center;
 }
 
 .filter-panel {

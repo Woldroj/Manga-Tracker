@@ -34,6 +34,8 @@
     gtag('js', new Date());
     gtag('config', 'G-1VY5WJG76J');
   </script>
+
+<!-- HTML -->
 </head>
 <body data-theme="dark">
   <div class="app">
@@ -46,10 +48,16 @@
       <!-- Desktop profile + gear -->
       <div class="profile-area" id="profile-area" aria-hidden="false">
         <div class="top-actions">
+
+          <!-- BOTONES TOP -->
+
           <button id="btn-volver-search" style="display:none" class="top-btn">Volver</button>
           <button id="btn-finalizados-pc" class="top-btn">Finalizados</button>
           <button id="btn-volver-pc" class="top-btn" style="display:none;">Volver</button>
         </div>
+
+        <!-- PROFILE -->
+
         <div class="profile-pic" id="profile-pic" title="Ver perfil / ajustes">
           <img id="profile-img" src="" alt="avatar" style="display:none">
           <span id="profile-initial" class="profile-initial">I</span>
@@ -60,6 +68,8 @@
             <span id="user-display">Invitado</span>
           </div>
         </div>
+
+        <!-- SETTINGS -->
 
         <button class="gear-btn" id="gear-btn" aria-label="Ajustes" title="Ajustes">
           <!-- gear SVG (simple, well-proportioned) -->
@@ -413,11 +423,13 @@ function applyView() {
     searchBox && (searchBox.style.display = '');
     btnAdd && (btnAdd.style.display = '');
     btnVolverSearch && (btnVolverSearch.style.display = 'inline-block');
+    timeBox && (timeBox.style.display = 'none');
   }
   else { // home
     searchBox && (searchBox.style.display = '');
     btnAdd && (btnAdd.style.display = '');
     btnVolverSearch && (btnVolverSearch.style.display = 'none');
+    timeBox && (timeBox.style.display = '');
   }
 }
 
