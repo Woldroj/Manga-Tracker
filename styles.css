@@ -121,7 +121,7 @@ img[loading="lazy"].loaded {
   height: 22px;
 }
 .switch input { display:none; }
-.slider {
+.sDlider {
   position: absolute;
   cursor: pointer;
   inset: 0;
@@ -153,6 +153,11 @@ input:checked + .slider:before {
   display: flex;             /* 🔥 Necesario para que la línea vuelva */
   align-items: center;
   margin: 20px 0 10px 0;
+}
+
+.search-box {
+  margin-top: 16px;
+  min-width: 40%;
 }
 
 #user-control {
@@ -219,7 +224,6 @@ input:checked + .slider:before {
   position: absolute;
   background: var(--card);
   border: 1px solid rgba(255,255,255,0.08);
-  left: 50%;
   border-radius: 12px;
   padding: 12px;
   margin-top: 8px;

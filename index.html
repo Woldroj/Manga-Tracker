@@ -335,7 +335,6 @@ const btnHomeMobile = document.getElementById('mobile-home');
 const zmQueryInput = document.getElementById('zm-query');
 const zmSearchBtn  = document.getElementById('zm-search-btn');
 const zmResults    = document.getElementById('zm-results');
-const searchBox = document.querySelector('.search-box');
 
 const filterToggle = document.getElementById('filter-btn');
 const filterBox = document.getElementById('filter-panel');
@@ -482,6 +481,7 @@ function renderJikanResults(results) {
 
     card.innerHTML = `
       <div class="thumb">
+        ${m.img ? `<img src="${m.img}" loading="lazy">` : ""}
         ${m.img ? `<img data-src="${m.img}" loading="lazy">` : ""}
       </div>
 
@@ -510,7 +510,6 @@ function renderJikanResults(results) {
         img.classList.add("loaded");
       };
     }
-
     card.querySelector(".add-jikan").onclick = () => addFromJikan(m);
     zmResults.appendChild(card);
   });
@@ -530,6 +529,7 @@ async function addFromJikan(m) {
       imgurl: m.img || "",
       url: zonatmoLink(m.title),
       status: "reading",
+      jikanId: m.mal_id,
       jikanId: m.id,
       lastKnownChapters: m.chapters || 0
     }
@@ -541,7 +541,6 @@ async function addFromJikan(m) {
 zmSearchBtn.addEventListener('click', async () => {
   const q = zmQueryInput.value.trim();
   if (!q) return;
-
   goSearch();
 
   const type = filterType.value;
