@@ -439,8 +439,18 @@ async function searchJikan(query, type = 'manga') {
       ? `https://api.jikan.moe/v4/anime?q=${encodeURIComponent(query)}&limit=20`
       : `https://api.jikan.moe/v4/manga?q=${encodeURIComponent(query)}&limit=20`;
 
-  const res = await fetch(endpoint);
-  if (!res.ok) throw new Error("Jikan error");
+  let res;
+  try {
+    res = await fetch(endpoint);
+  } catch (e) {
+    zmResults.innerHTML = "Error de conexión con Jikan";
+    return [];
+  }
+
+  if (!res.ok) {
+    zmResults.innerHTML = "Jikan está saturado, prueba en unos segundos";
+    return [];
+  }
 
   const json = await res.json();
 
