@@ -34,6 +34,8 @@
     gtag('js', new Date());
     gtag('config', 'G-1VY5WJG76J');
   </script>
+
+<!-- HTML -->
 </head>
 <body data-theme="dark">
   <div class="app">
@@ -46,9 +48,16 @@
       <!-- Desktop profile + gear -->
       <div class="profile-area" id="profile-area" aria-hidden="false">
         <div class="top-actions">
+
+          <!-- BOTONES TOP -->
+
+          <button id="btn-volver-search" style="display:none" class="top-btn">Volver</button>
           <button id="btn-finalizados-pc" class="top-btn">Finalizados</button>
           <button id="btn-volver-pc" class="top-btn" style="display:none;">Volver</button>
         </div>
+
+        <!-- PROFILE -->
+
         <div class="profile-pic" id="profile-pic" title="Ver perfil / ajustes">
           <img id="profile-img" src="" alt="avatar" style="display:none">
           <span id="profile-initial" class="profile-initial">I</span>
@@ -59,6 +68,8 @@
             <span id="user-display">Invitado</span>
           </div>
         </div>
+
+        <!-- SETTINGS -->
 
         <button class="gear-btn" id="gear-btn" aria-label="Ajustes" title="Ajustes">
           <!-- gear SVG (simple, well-proportioned) -->
@@ -316,6 +327,7 @@ const timeBoxSwitch = document.getElementById('timebox-switch');
 
 const btnFinalizadosPC = document.getElementById('btn-finalizados-pc');
 const btnVolverPC = document.getElementById("btn-volver-pc"); // puede ser null si no lo añadiste
+const btnVolverSearch = document.getElementById('btn-volver-search');
 const btnFinalizadosMobile = document.getElementById('btn-finalizados-mobile');
 const btnHomeMobile = document.getElementById('mobile-home');
 
@@ -323,6 +335,7 @@ const btnHomeMobile = document.getElementById('mobile-home');
 const zmQueryInput = document.getElementById('zm-query');
 const zmSearchBtn  = document.getElementById('zm-search-btn');
 const zmResults    = document.getElementById('zm-results');
+const searchBox = document.querySelector('.search-box');
 
 const filterToggle = document.getElementById('filter-btn');
 const filterBox = document.getElementById('filter-panel');
@@ -331,8 +344,8 @@ const filterType = document.getElementById('filter-type');
 const filterOrder = document.getElementById('filter-order');
 const filterSort = document.getElementById('filter-sort');
 
-
 /* -------- STATE -------- */
+let currentView = 'home'; 
 let currentUser = null;
 let editId = null;
 let selectedToFinish = null;
@@ -390,6 +403,7 @@ function setProfileImage(url) {
     if (mobileInitial) mobileInitial.style.display = "inline-block";
   }
 }
+
 function setUserNameDisplay(name){
   if (!userDisplay) return;
   userDisplay.textContent = name || 'Invitado';
@@ -397,6 +411,26 @@ function setUserNameDisplay(name){
   if (profileInitial) profileInitial.textContent = initial;
   const mobileInitial = document.getElementById("mobile-profile-initial");
   if (mobileInitial) mobileInitial.textContent = initial;
+}
+
+function applyView() {
+  if (currentView === 'finished') {
+    searchBox && (searchBox.style.display = 'none');
+    btnAdd && (btnAdd.style.display = 'none');
+    btnVolverSearch && (btnVolverSearch.style.display = 'none');
+  }
+  else if (currentView === 'search') {
+    searchBox && (searchBox.style.display = '');
+    btnAdd && (btnAdd.style.display = '');
+    btnVolverSearch && (btnVolverSearch.style.display = 'inline-block');
+    timeBox && (timeBox.style.display = 'none');
+  }
+  else { // home
+    searchBox && (searchBox.style.display = '');
+    btnAdd && (btnAdd.style.display = '');
+    btnVolverSearch && (btnVolverSearch.style.display = 'none');
+    timeBox && (timeBox.style.display = '');
+  }
 }
 
 async function searchJikan(query, type = 'manga') {
@@ -448,7 +482,7 @@ function renderJikanResults(results) {
 
     card.innerHTML = `
       <div class="thumb">
-        ${m.img ? `<img src="${m.img}" loading="lazy">` : ""}
+        ${m.img ? `<img data-src="${m.img}" loading="lazy">` : ""}
       </div>
 
       <div class="meta">
@@ -469,6 +503,14 @@ function renderJikanResults(results) {
       </div>
     `;
 
+    const img = card.querySelector("img");
+    if (img) {
+      img.src = img.dataset.src;
+      img.onload = () => {
+        img.classList.add("loaded");
+      };
+    }
+
     card.querySelector(".add-jikan").onclick = () => addFromJikan(m);
     zmResults.appendChild(card);
   });
@@ -488,7 +530,7 @@ async function addFromJikan(m) {
       imgurl: m.img || "",
       url: zonatmoLink(m.title),
       status: "reading",
-      jikanId: m.mal_id,
+      jikanId: m.id,
       lastKnownChapters: m.chapters || 0
     }
   );
@@ -499,6 +541,8 @@ async function addFromJikan(m) {
 zmSearchBtn.addEventListener('click', async () => {
   const q = zmQueryInput.value.trim();
   if (!q) return;
+
+  goSearch();
 
   const type = filterType.value;
   const orderBy = filterOrder.value;
@@ -569,7 +613,7 @@ onAuthStateChanged(auth, async (user) => {
     }
 
     await loadPrefsForUser(user.uid);
-    await loadMangas(currentFilter); // load current filter (default reading)
+    await goHome();
 
   } else {
     authControls && (authControls.style.display = 'flex');
@@ -1032,10 +1076,46 @@ async function calculateTotalTime(){
 
 
 /* -------- BUTTONS: finalizados / volver / mobile home -------- */
-btnFinalizadosPC?.addEventListener('click', ()=> { loadMangas('finished'); });
-btnFinalizadosMobile?.addEventListener('click', ()=> { loadMangas('finished'); });
-btnVolverPC?.addEventListener('click', ()=> { loadMangas('reading'); });
-btnHomeMobile?.addEventListener('click', ()=> { loadMangas('reading'); });
+async function goHome() {
+  currentView = 'home';
+  zmResults && (zmResults.innerHTML = '');
+  await loadMangas('reading');
+  applyView();
+}
+
+async function goFinished() {
+  currentView = 'finished';
+  zmResults && (zmResults.innerHTML = '');
+  await loadMangas('finished');
+  applyView();
+}
+
+function goSearch() {
+  currentView = 'search';
+  gridEl.innerHTML = '';
+  applyView();
+}
+
+function volverDesdeBusqueda() {
+  currentView = 'home';
+  zmResults && (zmResults.innerHTML = '');
+  loadMangas('reading');
+  applyView();
+}
+
+btnVolverSearch?.addEventListener('click', volverDesdeBusqueda);
+
+btnFinalizadosPC?.addEventListener('click', () => {
+  if (currentView === 'finished') goHome();
+  else goFinished();
+});
+
+btnFinalizadosMobile?.addEventListener('click', () => {
+  if (currentView === 'finished') goHome();
+  else goFinished();
+});
+btnVolverPC?.addEventListener('click', goHome);
+btnHomeMobile?.addEventListener('click', goHome);
 
 /* -------- INITIAL LOCAL THEME & TIMEBOX ON PAGE LOAD -------- */
 window.addEventListener('load', ()=>{

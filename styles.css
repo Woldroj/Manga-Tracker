@@ -150,9 +150,15 @@ input:checked + .slider:before {
 .grid h2.tipo-header {
   grid-column: 1 / -1 !important;
   width: 100%;
-  display: flex;             /* 🔥 Necesario para que la línea vuelva */
+  display: flex;             
   align-items: center;
   margin: 20px 0 10px 0;
+}
+
+#zm-results {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px; 
 }
 
 .search-box {
@@ -186,10 +192,37 @@ input:checked + .slider:before {
   width: 20%;
 }
 
+/* ==== BUSCADOR FIJO, NO SE ESTIRA ==== */
+
+.search-bar {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  max-width: 120%;
+}
+
+.search-bar input {
+  flex: 1;
+  width: auto;
+}
+
+.search-bar button {
+  width: auto;
+  white-space: nowrap;
+}
+
+/* Quitar reglas generales que rompen el buscador */
+.controls .search-box input,
+.controls .search-box button,
+.controls .search-box select {
+  width: auto;
+}
+
 .filter-panel {
   position: absolute;
   background: var(--card);
   border: 1px solid rgba(255,255,255,0.08);
+  left: 40%;
   border-radius: 12px;
   padding: 12px;
   margin-top: 8px;
