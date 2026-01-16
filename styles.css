@@ -150,7 +150,7 @@ input:checked + .slider:before {
 .grid h2.tipo-header {
   grid-column: 1 / -1 !important;
   width: 100%;
-  display: flex;             /* 🔥 Necesario para que la línea vuelva */
+  display: flex;             
   align-items: center;
   margin: 20px 0 10px 0;
 }
@@ -158,7 +158,7 @@ input:checked + .slider:before {
 #zm-results {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 12px; /* usa el mismo gap que tu grid principal */
+  gap: 12px; 
 }
 
 .search-box {
@@ -222,6 +222,7 @@ input:checked + .slider:before {
   position: absolute;
   background: var(--card);
   border: 1px solid rgba(255,255,255,0.08);
+  left: 50%;
   border-radius: 12px;
   padding: 12px;
   margin-top: 8px;
