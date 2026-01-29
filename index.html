@@ -504,11 +504,10 @@ function renderJikanResults(results) {
       </div>
 
       <div class="actions">
-        <a class="link" href="${zonatmoLink(m.title)}" target="_blank">ZonaTMO</a>
-        ${m.type === 'anime'
-          ? `<a class="link" href="${animeflvLink(m.title)}" target="_blank">AnimeFLV</a>`
-          : ''
-        }
+        ${m.type === 'manga'
+          ? `<a class="link" href="${zonatmoLink(m.title)}" target="_blank">ZonaTMO</a>`
+          : `<a class="link" href="${animeflvLink(m.title)}" target="_blank">AnimeFLV</a>`
+}
         <button class="small add-jikan">＋ Añadir</button>
       </div>
     `;
@@ -530,23 +529,28 @@ function renderJikanResults(results) {
 async function addFromJikan(m) {
   if (!currentUser) return alert("Inicia sesión");
 
+  const isAnime = m.type === 'anime';
+
   await addDoc(
-    collection(db,'users',currentUser.uid,'mangas'),
+    collection(db, 'users', currentUser.uid, isAnime ? 'animes' : 'mangas'),
     {
       title: m.title,
-      type: "Manga",
-      genre: m.genres?.[0]?.name || "Otro",
+      type: isAnime ? "Anime" : "Manga",
+      genre: "Otro",
       last: "0",
       imgurl: m.img || "",
-      url: zonatmoLink(m.title),
-      status: "reading",
+      url: isAnime
+        ? animeflvLink(m.title)
+        : zonatmoLink(m.title),
+      status: "watching",
       jikanId: m.id,
       lastKnownChapters: m.chapters || 0
     }
   );
 
-  alert("Manga añadido ✔");
+  alert(`${isAnime ? 'Anime' : 'Manga'} añadido ✔`);
 }
+
 
 zmSearchBtn.addEventListener('click', async () => {
   const q = zmQueryInput.value.trim();
