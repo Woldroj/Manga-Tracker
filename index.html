@@ -18,7 +18,7 @@
   <!-- MANIFEST -->
   <link rel="manifest" href="manifest.json">
 
-  <meta name="description" content="Lleva seguimiento de tus mangas, anime y series con carga instantánea, sincronización en la nube y detección de nuevos capítulos.">
+  <meta name="description" content="Lleva seguimiento de tus mangas y animes con carga instantánea, sincronización en la nube y detección de nuevos capítulos.">
   <meta name="keywords" content="manga tracker, zonatmo, anime tracker, seguimiento manga, capitulos nuevos">
 
   <!-- OpenGraph para redes -->
@@ -42,7 +42,7 @@
     <header class="app-header">
       <div class="brand">
         <div class="title">Manga Tracker</div>
-        <div class="subtitle">Registra mangas, animes y series</div>
+        <div class="subtitle">Registra Mangas y Animes</div>
       </div>
 
       <!-- Desktop profile + gear -->
@@ -218,7 +218,7 @@
       <h3 id="form-title">Añadir</h3>
       <div>
         <div class="form-row">
-          <div class="col"><label for="type">Tipo</label><select id="type"><option>Manga</option><option>Anime</option><option>Serie</option></select></div>
+          <div class="col"><label for="type">Tipo</label><select id="type"><option>Manga</option><option>Anime</option></select></div>
           <div class="col"><label for="genre">Categoría</label><select id="genre"></select></div>
         </div>
         <div class="form-row">
@@ -765,7 +765,6 @@ mobileProfile.addEventListener('click', ()=> {
 const categories = {
   Manga:['Acción','Aventura','Comedia','Drama','Misterio','Fantasía','Romance','Seinen','Shonen','Otro'],
   Anime:['Acción','Aventura','Comedia','Drama','Misterio','Fantasía','Romance','Slice of Life','Mecha','Isekai','Otro'],
-  Serie:['Acción','Drama','Comedia','Thriller','Ciencia Ficción','Fantasía','Misterio','Otro']
 };
 
 const fields = ['title','genre','last','url','imgurl','type'];
@@ -870,7 +869,7 @@ async function loadMangas(status='reading'){
   empty && (empty.style.display='none');
   setButtonsForFilter(status);
 
-  const tipos = ['Manga','Anime','Serie'];
+  const tipos = ['Manga','Anime'];
   tipos.forEach(tipo=>{
     const group = filtered
       .filter(it => it.type === tipo)
@@ -1076,7 +1075,6 @@ async function calculateTotalTime(){
 
     let mult = 10;
     if(it.type === "Anime") mult = 20;
-    if(it.type === "Serie") mult = 45;
 
     totalMinutes += last * mult;
   });
