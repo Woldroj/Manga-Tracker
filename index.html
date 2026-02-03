@@ -686,7 +686,7 @@ btnLogin?.addEventListener('click', async () => {
 });
 
 /* -------- SETTINGS / PROFILE actions -------- */
-gearBtn?.addEventListener('click', (e)=> { e.stopPropagation(); if(window.innerWidth > 520){ settingsMenu.classList.toggle('open'); } });
+gearBtn?.addEventListener('click', (e)=> { e.stopPropagation(); if(window.innerWidth > 520){ settingsMenu.classList.toggle('open');}});
 document.addEventListener('click', ()=> settingsMenu && settingsMenu.classList.remove('open'));
 
 sChangeName?.addEventListener('click', async () => {
