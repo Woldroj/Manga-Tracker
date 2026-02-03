@@ -279,9 +279,10 @@ input:checked + .slider:before {
   .search-bar button {width: 100%;}
   #zm-results {width: 100%; margin: 0 auto; grid-template-columns: repeat(1, 1fr);}
   .controls {align-items: stretch;}
+  .filter-panel {left: auto; width: 86.98%;}
 }
 
-/* ============================================
+/* ============================================X
    AÑADIDO — MODAL "MOVER A FINALIZADOS"
    ============================================ */ 
 #finish-modal {
