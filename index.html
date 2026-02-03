@@ -350,6 +350,7 @@ let currentUser = null;
 let editId = null;
 let selectedToFinish = null;
 let currentFilter = 'reading'; // 'reading' or 'finished'
+let userJikanIds = new Set(); 
 window.timeBoxEnabled = false;
 
 /* -------- THEMES (igual que antes) -------- */
@@ -488,6 +489,7 @@ function renderJikanResults(results) {
 
   results.forEach(m => {
     const card = document.createElement("article");
+    const alreadyAdded = userJikanIds.has(m.id);
     card.className = "card";
 
     card.innerHTML = `
@@ -508,7 +510,7 @@ function renderJikanResults(results) {
           ? `<a class="link" href="${zonatmoLink(m.title)}" target="_blank">ZonaTMO</a>`
           : `<a class="link" href="${animeflvLink(m.title)}" target="_blank">AnimeFLV</a>`
 }
-        <button class="small add-jikan">＋ Añadir</button>
+        <button class="small add-jikan" ${alreadyAdded ? 'disabled' : ''}>${alreadyAdded ? '✔ Añadido' : 'Añadir'}</button>
       </div>
     `;
 
@@ -551,6 +553,29 @@ async function addFromJikan(m) {
   alert(`${isAnime ? 'Anime' : 'Manga'} añadido ✔`);
 }
 
+async function loadUserJikanIds() {
+  if (!currentUser) return;
+
+  userJikanIds.clear();
+
+  const mangaSnap = await getDocs(
+    collection(db, 'users', currentUser.uid, 'mangas')
+  );
+
+  mangaSnap.forEach(doc => {
+    const data = doc.data();
+    if (data.jikanId) userJikanIds.add(data.jikanId);
+  });
+
+  const animeSnap = await getDocs(
+    collection(db, 'users', currentUser.uid, 'animes')
+  );
+
+  animeSnap.forEach(doc => {
+    const data = doc.data();
+    if (data.jikanId) userJikanIds.add(data.jikanId);
+  });
+}
 
 zmSearchBtn.addEventListener('click', async () => {
   const q = zmQueryInput.value.trim();
