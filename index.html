@@ -522,7 +522,18 @@ function renderJikanResults(results) {
       };
     }
 
-    card.querySelector(".add-jikan").onclick = () => addFromJikan(m);
+    const addBtn = card.querySelector(".add-jikan");
+
+    if (!alreadyAdded) {
+      addBtn.onclick = async () => {
+        await addFromJikan(m);
+
+        userJikanIds.add(m.id); // 🔥 actualizar memoria
+
+        addBtn.textContent = "✔ Añadido";
+        addBtn.disabled = true;
+      };
+    }
     zmResults.appendChild(card);
   });
 }
@@ -531,31 +542,31 @@ function renderJikanResults(results) {
 async function addFromJikan(m) {
   if (!currentUser) return alert("Inicia sesión");
 
-  const isAnime = m.type === 'anime';
-
   await addDoc(
-    collection(db, 'users', currentUser.uid, isAnime ? 'animes' : 'mangas'),
+    collection(db, 'users', currentUser.uid, 'mangas'),
     {
       title: m.title,
-      type: isAnime ? "Anime" : "Manga",
+      type:  m.type === 'anime' ? "Anime" : "Manga",
       genre: "Otro",
       last: "0",
       imgurl: m.img || "",
-      url: isAnime
+      url: m.type === 'anime'
         ? animeflvLink(m.title)
         : zonatmoLink(m.title),
-      status: "watching",
+      status: "reading",
       jikanId: m.id,
       lastKnownChapters: m.chapters || 0
     }
   );
 
-  alert(`${isAnime ? 'Anime' : 'Manga'} añadido ✔`);
+  if (currentView === "home") {
+  loadMangas("reading");
+}
 }
 
 async function loadUserJikanIds() {
   if (!currentUser) return;
-
+  
   userJikanIds.clear();
 
   const mangaSnap = await getDocs(
@@ -589,6 +600,7 @@ zmSearchBtn.addEventListener('click', async () => {
 
   zmResults.innerHTML = 'Buscando…';
 
+  await loadUserJikanIds();
   const results = await searchJikan(q, type);
 
   results.sort((a, b) => {
