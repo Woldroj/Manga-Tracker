@@ -998,7 +998,7 @@ finishConfirm?.addEventListener('click', async ()=> {
 });
 
 /* -------- FORM OPEN/CLOSE/SAVE -------- */
-function openForm(id=null){
+function openForm(id=null) {
   editId = id;
   document.getElementById('form-title').textContent = id? "Editar" : "Añadir";
   fields.forEach(f=> { const el = document.getElementById(f); if(el) el.value = ''; });
