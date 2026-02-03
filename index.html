@@ -831,9 +831,11 @@ document.getElementById('imgurl')?.addEventListener('change',(e)=>{ const v = e.
 /* -------- UI helper: toggle buttons according to filter -------- */
 function setButtonsForFilter(filter){
   currentFilter = filter;
+  
   // PC
   if(btnFinalizadosPC) btnFinalizadosPC.style.display = (filter==='finished') ? 'none' : 'inline-block';
   if(btnVolverPC) btnVolverPC.style.display = (filter==='finished') ? 'inline-block' : 'none';
+
   // Mobile
   if(btnFinalizadosMobile) btnFinalizadosMobile.style.display = (filter==='finished') ? 'flex' : 'flex';
   if(btnHomeMobile) btnHomeMobile.style.opacity = (filter==='finished') ? 1 : 0.5;
@@ -1067,9 +1069,6 @@ async function calculateTotalTime(){
 
   snap.docs.forEach(d => {
     const it = d.data();
-
-    // ❗️ANTES filtrabas aquí por "reading"
-    // ❗️AHORA se cuentan TODOS (reading + finished)
 
     const last = Number(it.last) || 0;
 
