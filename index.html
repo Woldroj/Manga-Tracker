@@ -469,11 +469,11 @@ async function searchJikan(query, type = 'manga') {
 }
 
 function zonatmoLink(title) {
-  return `https://zonatmo.com/search?keyword=${encodeURIComponent(title)}`;
+  return `https://zonatmo.com/library?title=${encodeURIComponent(title)}&_pg=1`;
 }
 
 function animeflvLink(title) {
-  return `https://www3.animeflv.net/browse?q=${encodeURIComponent(title)}`;
+  return `https://m.animeflv.net/anime/${slug}`;
 }
 
 function renderJikanResults(results) {
