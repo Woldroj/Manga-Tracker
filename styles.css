@@ -121,32 +121,45 @@ img[loading="lazy"].loaded {
   width: 42px;
   height: 22px;
 }
-.switch input { display:none; }
-.sDlider {
+
+.switch input { 
+  display: none; 
+}
+
+/* Slider visible */
+.slider {
   position: absolute;
   cursor: pointer;
   inset: 0;
-  background: var(--muted);
+  background: var(--switch-off, var(--muted)); /* color apagado según tema */
   border-radius: 22px;
-  transition: .3s;
+  transition: 0.3s;
+  box-shadow: inset 0 0 2px rgba(0,0,0,0.5); /* un poquito de sombra para contraste */
 }
-.slider:before {
+
+/* Circulito */
+.slider::before {
   position: absolute;
   content: "";
   height: 16px;
   width: 16px;
   left: 3px;
   top: 3px;
-  background: var(--bg);
+  background: var(--switch-circle, #fff); /* siempre visible sobre cualquier fondo */
   border-radius: 50%;
-  transition: .3s;
+  transition: 0.3s;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.3);
 }
+
+/* Cuando está activo */
 input:checked + .slider {
-  background: var(--accent-2);
+  background: var(--switch-on, var(--accent-2)); /* color destacado del tema */
 }
-input:checked + .slider:before {
+
+input:checked + .slider::before {
   transform: translateX(20px);
 }
+
 
 .grid h2.tipo-header {
   grid-column: 1 / -1 !important;

@@ -369,6 +369,21 @@ yellow: { '--bg':'#fffbeb','--card':'#fef3c7','--accent':'#2b2a00','--accent-2':
 
 function prefsDocRef(uid){ return doc(db, 'users', uid, 'prefs', 'ui'); }
 
+function updateSwitchColors(themeName) {
+  const theme = THEMES[themeName];
+  if (!theme) return;
+  const root = document.documentElement;
+
+  // color del switch apagado
+  root.style.setProperty('--switch-off', themeName === 'dark' || themeName === 'black' ? '#555' : '#ccc');
+  
+  // color del switch encendido
+  root.style.setProperty('--switch-on', theme['--accent-2']);
+  
+  // color del circulito para siempre contraste
+  root.style.setProperty('--switch-circle', themeName === 'dark' || themeName === 'black' ? '#f1f5f9' : '#fff');
+}
+
 /* render swatches */
 if (themeGrid) {
   Object.keys(THEMES).forEach(key=>{
