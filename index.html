@@ -1055,9 +1055,13 @@ function openForm(id=null) {
       if(d.imgurl){ preview.innerHTML = `<img src="${d.imgurl}" style="max-width:120px;border-radius:6px">`; preview.dataset.image = d.imgurl; }
     }).catch(e=>console.error(e));
   }
+  document.getElementById('mobile-bar').style.display = 'none';
   modal && modal.classList.add('open');
 }
-function closeForm(){ modal && modal.classList.remove('open'); editId = null; }
+function closeForm(){ 
+  modal && modal.classList.remove('open'); editId = null; 
+  document.getElementById('mobile-bar').style.display = 'flex';
+}
 
 /* --- IMPORTANT: listeners for Add buttons (fix for the issue) --- */
 btnAdd?.addEventListener('click', ()=> { openForm(); });
