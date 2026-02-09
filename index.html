@@ -292,9 +292,13 @@ const db = getFirestore(app);
 const storage = getStorage(app);
 
 /* -------- BOOTSTRAP -------- */
+
 document.addEventListener('DOMContentLoaded', () => {
 
+
 /* -------- DOM REFS -------- */
+
+// Areas and Displays
 const authControls = document.getElementById('auth-controls');
 const userControls = document.getElementById('user-controls');
 const userDisplay = document.getElementById('user-display');
@@ -307,33 +311,39 @@ const sChangePhoto = document.getElementById('s-change-photo');
 const sSignout = document.getElementById('s-signout');
 const themeGrid = document.getElementById('theme-grid');
 
+// Buttons
 const btnLogin = document.getElementById('btn-login');
 const btnAdd = document.getElementById('btn-add');
 const btnSave = document.getElementById('btn-save');
 const btnCancel = document.getElementById('btn-cancel');
 
+// Mobile
 const mobileAdd = document.getElementById('mobile-add');
 const mobileGear = document.getElementById('mobile-gear');
 const mobileProfile = document.getElementById('mobile-profile');
 const filePhotoInput = document.getElementById('file-photo');
 
+// Main Grid and Empry States
 const gridEl = document.getElementById('grid');
 const empty = document.getElementById('empty');
 
+// Modal
 const modal = document.getElementById('modal');
 const preview = document.getElementById('preview');
 
+// Time Box
 const timeBox = document.getElementById('time-box');
 const timeBoxValue = document.getElementById('time-box-value');
 const timeBoxSwitch = document.getElementById('timebox-switch');
 
+// Buttons navigation PC/Mobile
 const btnFinalizadosPC = document.getElementById('btn-finalizados-pc');
 const btnVolverPC = document.getElementById("btn-volver-pc"); // puede ser null si no lo añadiste
 const btnVolverSearch = document.getElementById('btn-volver-search');
 const btnFinalizadosMobile = document.getElementById('btn-finalizados-mobile');
 const btnHomeMobile = document.getElementById('mobile-home');
 
-// 🔍 Buscador Jikan
+// API JIKAN
 const zmQueryInput = document.getElementById('zm-query');
 const zmSearchBtn  = document.getElementById('zm-search-btn');
 const zmResults    = document.getElementById('zm-results');
