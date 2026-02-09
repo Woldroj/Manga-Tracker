@@ -544,8 +544,7 @@ function renderJikanResults(results) {
       <div class="actions">
         ${m.type === 'manga'
           ? `<a class="link" href="${zonatmoLink(m.title)}" target="_blank">ZonaTMO</a>`
-          : `<a class="link" href="${animeflvLink(m.title)}" target="_blank">AnimeFLV</a>`
-}
+          : `<a class="link" href="${animeflvLink(m.title)}" target="_blank">AnimeFLV</a>`}
         <button class="small add-jikan" ${alreadyAdded ? 'disabled' : ''}>${alreadyAdded ? '✔ Añadido' : 'Añadir'}</button>
       </div>
     `;
