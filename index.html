@@ -205,7 +205,9 @@
 
     <button class="mobile-btn" id="mobile-gear" title="Ajustes" aria-label="Ajustes">
       <!-- Usa el mismo SVG de engranaje que el escritorio -->
-      <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M19.14 12.936c.04-.303.06-.61.06-.936s-.02-.633-.06-.936l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.03 7.03 0 0 0-1.62-.94l-.36-2.54A.5.5 0 0 0 13.8 2h-3.6a.5.5 0 0 0-.5.42l-.36 2.54a7.03 7.03 0 0 0-1.62.94l-2.39-.96a.5.5 0 0 0-.6.22L2.7 8.84a.5.5 0 0 0 .12.64l2.03 1.58c-.04.303-.06.61-.06.936s.02.633.06.936L2.82 15.56a.5.5 0 0 0-.12.64l1.92 3.32c.14.24.45.34.7.22l2.39-.96c.5.38 1.05.69 1.62.94l.36 2.54c.05.28.28.49.56.49h3.6c.28 0 .51-.21.56-.49l.36-2.54c.57-.25 1.12-.56 1.62-.94l2.39.96c.25.1.55.02.7-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58zM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7z"/></svg>
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+        <path d="M19.14 12.936c.04-.303.06-.61.06-.936s-.02-.633-.06-.936l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.03 7.03 0 0 0-1.62-.94l-.36-2.54A.5.5 0 0 0 13.8 2h-3.6a.5.5 0 0 0-.5.42l-.36 2.54a7.03 7.03 0 0 0-1.62.94l-2.39-.96a.5.5 0 0 0-.6.22L2.7 8.84a.5.5 0 0 0 .12.64l2.03 1.58c-.04.303-.06.61-.06.936s.02.633.06.936L2.82 15.56a.5.5 0 0 0-.12.64l1.92 3.32c.14.24.45.34.7.22l2.39-.96c.5.38 1.05.69 1.62.94l.36 2.54c.05.28.28.49.56.49h3.6c.28 0 .51-.21.56-.49l.36-2.54c.57-.25 1.12-.56 1.62-.94l2.39.96c.25.1.55.02.7-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58zM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7z"/>
+      </svg>
     </button>
   </div>
 
@@ -396,12 +398,24 @@ if (themeGrid) {
     themeGrid.appendChild(sw);
   });
 }
-function setCssVarsFromTheme(themeKey){ const vars = THEMES[themeKey] || THEMES.dark; Object.entries(vars).forEach(([k,v])=> document.documentElement.style.setProperty(k,v)); }
+function setCssVarsFromTheme(themeKey){ 
+  const vars = THEMES[themeKey] || THEMES.dark; 
+  Object.entries(vars).forEach(([k,v])=> document.documentElement.style.setProperty(k,v)); 
+}
 async function applyTheme(themeKey, save=true){
   document.body.dataset.theme = themeKey;
   setCssVarsFromTheme(themeKey);
   if(save){
-    try{ if(currentUser){ await setDoc(prefsDocRef(currentUser.uid), { theme: themeKey }, { merge: true }); } else { localStorage.setItem('mt_theme', themeKey); } }catch(e){ console.error('Error guardando tema:', e); }
+    try{ 
+      if(currentUser){ 
+        await setDoc(prefsDocRef(currentUser.uid), 
+        { theme: themeKey }, 
+        { merge: true }); 
+      } else { 
+        localStorage.setItem('mt_theme', themeKey); } 
+      }catch(e){ 
+        console.error('Error guardando tema:', e); 
+      }
   }
 }
 
@@ -783,7 +797,16 @@ sChangeName?.addEventListener('click', async () => {
     nameSpan.style.display = 'inline';
     if (!newName || newName === original) return;
     if (newName.length > 20) return alert("Máx 20 caracteres");
-    try { await updateProfile(currentUser, { displayName: newName }); await setDoc(doc(db,'users',currentUser.uid), { displayName: newName }, { merge:true }); setUserNameDisplay(newName); } catch (e) { console.error(e); alert("Error actualizando nombre"); }
+    try { 
+      await updateProfile(currentUser, 
+      { displayName: newName }); 
+      await setDoc(doc(db,'users',currentUser.uid), 
+      { displayName: newName }, 
+      { merge:true }); 
+      setUserNameDisplay(newName); 
+    } catch (e) { 
+      console.error(e); alert("Error actualizando nombre"); 
+    }
   });
   nameSpan.style.display = 'none';
   nameSpan.parentElement.prepend(input);
@@ -824,10 +847,28 @@ mobileGear?.addEventListener('click', ()=> {
     d.style.background = THEMES[k]['--accent-2']; d.style.cursor='pointer'; d.onclick = ()=>{ applyTheme(k,true); c.remove(); }; g.appendChild(d);
   });
 
-  c.querySelector('#mb-change-name').onclick = async()=>{ const n = prompt("Nuevo nombre:"); if(!n) return; if(n.length>20) return alert("Máx 20 caracteres"); await updateProfile(currentUser,{displayName:n}); await setDoc(doc(db,'users',currentUser.uid),{displayName:n},{merge:true}); setUserNameDisplay(n); c.remove(); };
+  c.querySelector('#mb-change-name').onclick = async()=>{ 
+    const n = prompt("Nuevo nombre:"); 
+    if(!n) return; 
+    if(n.length>20) return alert("Máx 20 caracteres"); 
+    await updateProfile(currentUser,{displayName:n}); 
+    await setDoc(doc(db,'users',currentUser.uid),{displayName:n},{merge:true}); 
+    setUserNameDisplay(n); c.remove(); 
+  };
+
   c.querySelector('#mb-change-photo').onclick = ()=>{ filePhotoInput.click(); c.remove(); };
-  c.querySelector('#mb-toggle-timebox').onclick = async()=>{ const v = !(window.timeBoxEnabled ?? false); if(currentUser) await setDoc(prefsDocRef(currentUser.uid),{showTimeBox:v},{merge:true}); window.timeBoxEnabled = v; localStorage.setItem('mt_showTimeBox', v?'1':'0'); updateTimeBoxVisibility(); c.remove(); };
-  c.querySelector('#mb-signout').onclick = async()=>{ await signOut(auth); c.remove(); };
+
+  c.querySelector('#mb-toggle-timebox').onclick = async()=>{ 
+    const v = !(window.timeBoxEnabled ?? false); 
+    if(currentUser) await setDoc(prefsDocRef(currentUser.uid),{showTimeBox:v},{merge:true}); 
+    window.timeBoxEnabled = v; localStorage.setItem('mt_showTimeBox', v?'1':'0'); 
+    updateTimeBoxVisibility(); c.remove(); 
+  };
+
+  c.querySelector('#mb-signout').onclick = async()=>{ 
+    await signOut(auth); c.remove(); 
+  };
+
   c.querySelector('#mb-close').onclick = ()=> c.remove();
 });
 
@@ -847,7 +888,12 @@ const categories = {
 const fields = ['title','genre','last','url','imgurl','type'];
 const typeSelect = document.getElementById('type');
 const genreSelect = document.getElementById('genre');
-function updateGenres(){ if(!typeSelect || !genreSelect) return; genreSelect.innerHTML=''; categories[typeSelect.value].forEach(c=>{ const o=document.createElement('option'); o.value=o.textContent=c; genreSelect.appendChild(o); }); }
+function updateGenres() { 
+  if(!typeSelect || !genreSelect) return; 
+  genreSelect.innerHTML=''; 
+  categories[typeSelect.value].forEach(c=>{ const o=document.createElement('option'); 
+  o.value=o.textContent=c; genreSelect.appendChild(o); }); 
+}
 typeSelect?.addEventListener('change', updateGenres);
 updateGenres();
 
