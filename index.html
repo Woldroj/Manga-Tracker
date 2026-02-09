@@ -21,7 +21,7 @@
   <meta name="description" content="Lleva seguimiento de tus mangas y animes con carga instantánea, sincronización en la nube y detección de nuevos capítulos.">
   <meta name="keywords" content="manga tracker, zonatmo, anime tracker, seguimiento manga, capitulos nuevos">
 
-  <!-- OpenGraph para redes -->
+  <!-- OpenGraph for social -->
   <meta property="og:title" content="MangaTracker – Tu biblioteca personalizada">
   <meta property="og:description" content="Organiza tu progreso de manga y anime fácilmente.">
   <meta property="og:image" content="icon.png">
@@ -49,7 +49,7 @@
       <div class="profile-area" id="profile-area" aria-hidden="false">
         <div class="top-actions">
 
-          <!-- BOTONES TOP -->
+          <!-- BUTTONS TOP -->
 
           <button id="btn-volver-search" style="display:none" class="top-btn">Volver</button>
           <button id="btn-finalizados-pc" class="top-btn">Finalizados</button>
@@ -94,7 +94,7 @@
           <div style="padding-top:8px;color:var(--muted);font-size:13px;padding-bottom:6px;">Temas</div>
           <div class="theme-grid" id="theme-grid"></div>
 
-          <!-- Nuevo: switch mostrar tiempo consumido -->
+          <!-- SWITCH TO SHOW TIME BOX -->
           <div class="settings-item" id="s-toggle-timebox" title="Mostrar tiempo consumido" style="margin-top:8px;">
             <div class="label">Mostrar tiempo consumido</div>
             <label class="switch" title="Mostrar tiempo">
@@ -122,7 +122,7 @@
     <!-- desktop logged controls -->
     <div class="controls" id="user-controls" style="display:none">
       <button id="btn-add" class="btn primary">＋ Añadir</button>
-      <!-- 🔍 Buscador de mangas -->
+      <!-- 🔍 MANGA SEARCHER -->
       <section id="zm-search" class="search-box">
         <div class="search-bar">
           <input id="zm-query" type="text" placeholder="Buscar manga o anime…">
@@ -191,20 +191,20 @@
       </div>
     </button>
 
-    <!-- BOTÓN INICIO (MÓVIL) -->
+    <!-- BUTTON HOME (MÓVIL) -->
     <button class="mobile-btn" id="mobile-home" title="Inicio" aria-label="Inicio">
       <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 3l9 8h-3v10H6V11H3l9-8z"></path></svg>
     </button>
 
     <button class="mobile-add" id="mobile-add" title="Añadir" aria-label="Añadir">＋</button>
 
-    <!-- BOTÓN FINALIZADOS (MÓVIL) -->
+    <!-- BUTTON FINISHED (MÓVIL) -->
     <button class="mobile-btn" id="btn-finalizados-mobile" title="Finalizados" aria-label="Finalizados">
       <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M9 16.2l-3.5-3.5L4 14.2l5 5 11-11-1.5-1.5L9 16.2z"></path></svg>
     </button>
 
     <button class="mobile-btn" id="mobile-gear" title="Ajustes" aria-label="Ajustes">
-      <!-- Usa el mismo SVG de engranaje que el escritorio -->
+      <!-- SVG To Mobile -->
       <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
         <path d="M19.14 12.936c.04-.303.06-.61.06-.936s-.02-.633-.06-.936l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.03 7.03 0 0 0-1.62-.94l-.36-2.54A.5.5 0 0 0 13.8 2h-3.6a.5.5 0 0 0-.5.42l-.36 2.54a7.03 7.03 0 0 0-1.62.94l-2.39-.96a.5.5 0 0 0-.6.22L2.7 8.84a.5.5 0 0 0 .12.64l2.03 1.58c-.04.303-.06.61-.06.936s.02.633.06.936L2.82 15.56a.5.5 0 0 0-.12.64l1.92 3.32c.14.24.45.34.7.22l2.39-.96c.5.38 1.05.69 1.62.94l.36 2.54c.05.28.28.49.56.49h3.6c.28 0 .51-.21.56-.49l.36-2.54c.57-.25 1.12-.56 1.62-.94l2.39.96c.25.1.55.02.7-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58zM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7z"/>
       </svg>
@@ -247,7 +247,7 @@
     </div>
   </div>
 
-  <!-- MODAL MOVER A FINALIZADOS -->
+  <!-- MODAL MOVE TO FINISHED -->
   <div id="finish-modal" class="finish-modal hidden">
     <div class="finish-panel">
       <h3>¿Mover a finalizados?</h3>
@@ -261,9 +261,9 @@
   </div>
 
 <script type="module">
-/* ===================================================
-   Manga Tracker - Script unificado, limpio y optimizado
-   =================================================== */
+/* ================================
+   Manga Tracker - Script principal
+   ================================ */
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-app.js";
 import {
@@ -366,7 +366,7 @@ let userJikanIds = new Set();
 window.timeBoxEnabled = false;
 window.addEventListener('resize', mobileBarDisplayCheck);
 
-/* -------- THEMES (igual que antes) -------- */
+/* -------- THEMES -------- */
 const THEMES = { dark: { '--bg':'#0f172a','--card':'#1e293b','--accent':'#f1f5f9','--accent-2':'#3b82f6','--muted':'#94a3b8' }, 
 black: { '--bg':'#0f0f0f','--card':'#1a1a1a','--accent':'#f5f5f5','--accent-2':'#888888','--muted':'#5a5a5a' }, 
 light: { '--bg':'#ffffff','--card':'#f8fafc','--accent':'#0f172a','--accent-2':'#f0f1f5','--muted':'#6b7280' }, 
@@ -386,13 +386,13 @@ function updateSwitchColors(themeName) {
   if (!theme) return;
   const root = document.documentElement;
 
-  // color del switch apagado
+  // Switch Color off
   root.style.setProperty('--switch-off', themeName === 'dark' || themeName === 'black' ? '#555' : '#ccc');
   
-  // color del switch encendido
+  // Switch Color on
   root.style.setProperty('--switch-on', theme['--accent-2']);
   
-  // color del circulito para siempre contraste
+  // Switch Circle Color
   root.style.setProperty('--switch-circle', themeName === 'dark' || themeName === 'black' ? '#f1f5f9' : '#fff');
 }
 
@@ -587,7 +587,7 @@ function renderJikanResults(results) {
       addBtn.onclick = async () => {
         await addFromJikan(m);
 
-        userJikanIds.add(m.id); // 🔥 actualizar memoria
+        userJikanIds.add(m.id);
 
         addBtn.textContent = "✔ Añadido";
         addBtn.disabled = true;
@@ -907,26 +907,26 @@ function updateGenres() {
 typeSelect?.addEventListener('change', updateGenres);
 updateGenres();
 
-/* ====== AGRUPACIÓN DE SAGAS / SAGA DETECTION ====== */
+/* ======= SAGA DETECTION ====== */
 
 function getBaseName(title){
   if(!title) return "";
 
   let t = title.toLowerCase();
 
-  // quitar palabras de temporada / parte
+  // Delete common saga/season words
   t = t.replace(/\b(season|temporada|temp|part|parte|saga|arc|chapter|capítulo|capitulo|ova|special|movie|film)\b/g, "");
 
-  // quitar S1 / T2 / etc
+  // Delete S1 / T2 / etc
   t = t.replace(/\b(s|t)\d+\b/g, "");
 
-  // quitar 1st, 2nd, etc
+  // Delete 1st, 2nd, etc
   t = t.replace(/\b(\d+st|\d+nd|\d+rd|\d+th)\b/g, "");
 
-  // quitar números sueltos
+  //  Delete standalone numbers (to avoid confusion with titles that have numbers but are not seasons, e.g. "One Piece")
   t = t.replace(/\b\d+\b/g, "");
 
-  // quitar símbolos y extra espacios
+  // Delete special characters and extra spaces
   t = t.replace(/[\.\-–:_]/g, " ");
   t = t.replace(/\s+/g, " ").trim();
 
@@ -1104,7 +1104,7 @@ async function loadMangas(status='reading'){
             status: 'reading'
           });
 
-          // recargar para que desaparezca de finalizados
+          // Reload view according to currentFilter (setButtonsForFilter already updates currentFilter)
           await loadMangas('reading');
         };
       });
@@ -1223,7 +1223,7 @@ async function calculateTotalTime(){
 }
 
 
-/* -------- BUTTONS: finalizados / volver / mobile home -------- */
+/* -------- BUTTONS: Finished / Come Back / mobile home -------- */
 async function goHome() {
   currentView = 'home';
   zmResults && (zmResults.innerHTML = '');
@@ -1281,21 +1281,20 @@ settingsMenu?.addEventListener('click', e=> e.stopPropagation());
 }); // DOMContentLoaded end
 
 const orgiginalTitle = document.title;
-// Escuchar clics en toda la página
 document.body.addEventListener('click', (e) => {
-  const target = e.target.closest('a'); // detecta si se hizo clic en un enlace
+  const target = e.target.closest('a'); // Detecting if the click was on a link or inside a link
   if (!target) return;
 
-  const href = target.getAttribute('href'); // obtenemos el enlace
+  const href = target.getAttribute('href');
   if (!href) return;
 
-  // Cambiar el título según el tipo de enlace
+  // Change title based on link type
   if (href.includes('manga')) {
     document.title = 'Leyendo...';
   } else if (href.includes('anime')) {
     document.title = 'Viendo...';
   } else {
-    document.title = 'Manga Tracker'; // título por defecto
+    document.title = 'Manga Tracker'; // Default title for other links
   } 
 });
 
