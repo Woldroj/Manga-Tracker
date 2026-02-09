@@ -352,6 +352,7 @@ let selectedToFinish = null;
 let currentFilter = 'reading'; // 'reading' or 'finished'
 let userJikanIds = new Set(); 
 window.timeBoxEnabled = false;
+window.addEventListener('resize', mobileBarDisplayCheck);
 
 /* -------- THEMES (igual que antes) -------- */
 const THEMES = { dark: { '--bg':'#0f172a','--card':'#1e293b','--accent':'#f1f5f9','--accent-2':'#3b82f6','--muted':'#94a3b8' }, black: { '--bg':'#0f0f0f','--card':'#1a1a1a','--accent':'#f5f5f5','--accent-2':'#888888','--muted':'#5a5a5a' }, light: { '--bg':'#ffffff','--card':'#f8fafc','--accent':'#0f172a','--accent-2':'#f0f1f5','--muted':'#6b7280' }, pink: { '--bg':'#fff0f6','--card':'#fff1f2','--accent':'#2b2a2a','--accent-2':'#ec4899','--muted':'#7c4a5b' }, blue: { '--bg':'#eff6ff','--card':'#e0f2fe','--accent':'#0b1220','--accent-2':'#3b82f6','--muted':'#64748b' }, purple: { '--bg':'#faf5ff','--card':'#f3e8ff','--accent':'#211634','--accent-2':'#7c3aed','--muted':'#6b5b7a' }, green: { '--bg':'#f0fdf4','--card':'#dcfce7','--accent':'#04260f','--accent-2':'#10b981','--muted':'#4b6b53' }, red: { '--bg':'#fff5f5','--card':'#ffe5e5','--accent':'#2a0a0a','--accent-2':'#ef4444','--muted':'#a64b4b' }, orange: { '--bg':'#fffaf0','--card':'#fff3e0','--accent':'#2b1a00','--accent-2':'#f97316','--muted':'#b36b3b' }, teal: { '--bg':'#f0fdfa','--card':'#ccfbf1','--accent':'#042f2e','--accent-2':'#14b8a6','--muted':'#4a7c79' }, yellow: { '--bg':'#fffbeb','--card':'#fef3c7','--accent':'#2b2a00','--accent-2':'#facc15','--muted':'#a68c4b' } };
@@ -378,16 +379,6 @@ async function applyTheme(themeKey, save=true){
     try{ if(currentUser){ await setDoc(prefsDocRef(currentUser.uid), { theme: themeKey }, { merge: true }); } else { localStorage.setItem('mt_theme', themeKey); } }catch(e){ console.error('Error guardando tema:', e); }
   }
 }
-
-function toAnimeflvSlug(title) {
-  return title
-    .toLowerCase()
-    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9\s]/g, "")
-    .trim()
-    .replace(/\s+/g, "-");
-}
-
 
 /* -------- PROFILE HELPERS -------- */
 function setProfileImage(url) {
@@ -483,7 +474,6 @@ function zonatmoLink(title) {
 }
 
 function animeflvLink(title) {
-  const slug = toAnimeflvSlug(title);
   return `https://m.animeflv.net/anime/${slug}`;
 }
 
@@ -625,8 +615,13 @@ zmSearchBtn.addEventListener('click', async () => {
   renderJikanResults(results, type);
 });
 
-
-
+async function mobileBarDisplayCheck() {
+  if (window.innerWidth <= 520) {
+    document.getElementById('mobile-bar').style.display = 'flex';
+  } else {
+    document.getElementById('mobile-bar').style.display = 'none';
+  }
+}
 
 /* -------- LOAD PREFS -------- */
 async function loadPrefsForUser(uid){
@@ -1066,12 +1061,12 @@ function openForm(id=null) {
       if(d.imgurl){ preview.innerHTML = `<img src="${d.imgurl}" style="max-width:120px;border-radius:6px">`; preview.dataset.image = d.imgurl; }
     }).catch(e=>console.error(e));
   }
-  document.getElementById('mobile-bar').style.display = 'none';
+  if(window.innerWidth <= 520){ document.getElementById('mobile-bar').style.display = 'none'; }
   modal && modal.classList.add('open');
 }
 function closeForm(){ 
   modal && modal.classList.remove('open'); editId = null; 
-  document.getElementById('mobile-bar').style.display = 'flex';
+  if(window.innerWidth <= 520){ document.getElementById('mobile-bar').style.display = 'flex'; }
 }
 
 /* --- IMPORTANT: listeners for Add buttons (fix for the issue) --- */
