@@ -1199,7 +1199,32 @@ window.addEventListener('load', ()=>{
 settingsMenu?.addEventListener('click', e=> e.stopPropagation());
 
 }); // DOMContentLoaded end
-</script>
 
+const orgiginalTitle = document.title;
+// Escuchar clics en toda la página
+document.body.addEventListener('click', (e) => {
+  const target = e.target.closest('a'); // detecta si se hizo clic en un enlace
+  if (!target) return;
+
+  const href = target.getAttribute('href'); // obtenemos el enlace
+  if (!href) return;
+
+  // Cambiar el título según el tipo de enlace
+  if (href.includes('manga')) {
+    document.title = 'Leyendo...';
+  } else if (href.includes('anime')) {
+    document.title = 'Viendo...';
+  } else {
+    document.title = 'Manga Tracker'; // título por defecto
+  } 
+});
+
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) {
+    document.title = orgiginalTitle;
+  }
+});
+
+</script>
 </body>
 </html>
