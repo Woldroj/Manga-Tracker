@@ -842,9 +842,22 @@ filePhotoInput?.addEventListener('change', ()=> { const f = filePhotoInput.files
 
 sSignout?.addEventListener('click', async()=>{ await signOut(auth); });
 
-/* MOBILE GEAR POPUP */
-mobileGear?.addEventListener('click', ()=> {
-  const c = document.createElement('div'); c.className = 'mobile-settings-popup';
+let mobileSettingsPopup = null;
+
+mobileGear?.addEventListener('click', (e) => {
+  e.stopPropagation();
+
+  // Si ya existe → toggle
+  if (mobileSettingsPopup) {
+    mobileSettingsPopup.remove();
+    mobileSettingsPopup = null;
+    return;
+  }
+
+  // Crear popup
+  const c = document.createElement('div');
+  c.className = 'mobile-settings-popup';
+
   c.innerHTML = `
     <h3>Ajustes</h3>
     <button id="mb-change-name">✏ Cambiar nombre</button>
@@ -854,38 +867,70 @@ mobileGear?.addEventListener('click', ()=> {
     <button id="mb-signout">🚪 Cerrar sesión</button>
     <button id="mb-close">Cerrar</button>
   `;
-  document.body.appendChild(c);
 
+  document.body.appendChild(c);
+  mobileSettingsPopup = c;
+
+  // Evita que al tocar dentro se cierre
+  c.addEventListener('click', ev => ev.stopPropagation());
+
+  /* THEMES */
   const g = c.querySelector('#mb-theme-grid');
   Object.keys(THEMES).forEach(k=>{
-    const d = document.createElement('div'); d.style.width='30px'; d.style.height='30px'; d.style.borderRadius='6px';
-    d.style.background = THEMES[k]['--accent-2']; d.style.cursor='pointer'; d.onclick = ()=>{ applyTheme(k,true); c.remove(); }; g.appendChild(d);
+    const d = document.createElement('div');
+    d.style.width='30px';
+    d.style.height='30px';
+    d.style.borderRadius='6px';
+    d.style.background = THEMES[k]['--accent-2'];
+    d.style.cursor='pointer';
+    d.onclick = ()=>{ applyTheme(k,true); closeMobileSettings(); };
+    g.appendChild(d);
   });
 
   c.querySelector('#mb-change-name').onclick = async()=>{ 
-    const n = prompt("Nuevo nombre:"); 
-    if(!n) return; 
-    if(n.length>20) return alert("Máx 20 caracteres"); 
-    await updateProfile(currentUser,{displayName:n}); 
-    await setDoc(doc(db,'users',currentUser.uid),{displayName:n},{merge:true}); 
-    setUserNameDisplay(n); c.remove(); 
+    const n = prompt("Nuevo nombre:");
+    if(!n || n.length>20) return;
+    await updateProfile(currentUser,{displayName:n});
+    await setDoc(doc(db,'users',currentUser.uid),{displayName:n},{merge:true});
+    setUserNameDisplay(n);
+    closeMobileSettings();
   };
 
-  c.querySelector('#mb-change-photo').onclick = ()=>{ filePhotoInput.click(); c.remove(); };
-
-  c.querySelector('#mb-toggle-timebox').onclick = async()=>{ 
-    const v = !(window.timeBoxEnabled ?? false); 
-    if(currentUser) await setDoc(prefsDocRef(currentUser.uid),{showTimeBox:v},{merge:true}); 
-    window.timeBoxEnabled = v; localStorage.setItem('mt_showTimeBox', v?'1':'0'); 
-    updateTimeBoxVisibility(); c.remove(); 
+  c.querySelector('#mb-change-photo').onclick = ()=>{
+    filePhotoInput.click();
+    closeMobileSettings();
   };
 
-  c.querySelector('#mb-signout').onclick = async()=>{ 
-    await signOut(auth); c.remove(); 
+  c.querySelector('#mb-toggle-timebox').onclick = async()=>{
+    const v = !window.timeBoxEnabled;
+    if(currentUser){
+      await setDoc(prefsDocRef(currentUser.uid),{showTimeBox:v},{merge:true});
+    }
+    window.timeBoxEnabled = v;
+    localStorage.setItem('mt_showTimeBox', v?'1':'0');
+    updateTimeBoxVisibility();
+    closeMobileSettings();
   };
 
-  c.querySelector('#mb-close').onclick = ()=> c.remove()
+  c.querySelector('#mb-signout').onclick = async()=>{
+    await signOut(auth);
+    closeMobileSettings();
+  };
+
+  c.querySelector('#mb-close').onclick = closeMobileSettings;
 });
+
+/* cerrar tocando fuera */
+document.addEventListener('click', () => {
+  if (mobileSettingsPopup) closeMobileSettings();
+});
+
+function closeMobileSettings(){
+  if(mobileSettingsPopup){
+    mobileSettingsPopup.remove();
+    mobileSettingsPopup = null;
+  }
+}
 
 /* Mobile profile click */
 mobileProfile.addEventListener('click', ()=> {
@@ -1237,6 +1282,7 @@ async function goHome() {
 }
 
 async function goFinished() {
+  closeMobileSettings();
   currentView = 'finished';
   zmResults && (zmResults.innerHTML = '');
   await loadMangas('finished');
@@ -1244,6 +1290,7 @@ async function goFinished() {
 }
 
 function goSearch() {
+  closeMobileSettings();
   currentView = 'search';
   gridEl.innerHTML = '';
   applyView();
