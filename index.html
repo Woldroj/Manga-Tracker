@@ -362,7 +362,8 @@ let currentUser = null;
 let editId = null;
 let selectedToFinish = null;
 let currentFilter = 'reading'; // 'reading' or 'finished'
-let userJikanIds = new Set(); 
+let userJikanIds = new Set();
+let mobileSettingsPopup = null; 
 window.timeBoxEnabled = false;
 window.addEventListener('resize', mobileBarDisplayCheck);
 
@@ -842,19 +843,17 @@ filePhotoInput?.addEventListener('change', ()=> { const f = filePhotoInput.files
 
 sSignout?.addEventListener('click', async()=>{ await signOut(auth); });
 
-let mobileSettingsPopup = null;
 
+
+// Mobile settings
 mobileGear?.addEventListener('click', (e) => {
   e.stopPropagation();
-
-  // Si ya existe → toggle
   if (mobileSettingsPopup) {
     mobileSettingsPopup.remove();
     mobileSettingsPopup = null;
     return;
   }
 
-  // Crear popup
   const c = document.createElement('div');
   c.className = 'mobile-settings-popup';
 
