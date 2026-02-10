@@ -787,7 +787,12 @@ btnLogin?.addEventListener('click', async () => {
 });
 
 /* -------- SETTINGS / PROFILE actions -------- */
-gearBtn?.addEventListener('click', (e)=> { e.stopPropagation(); if(window.innerWidth > 520){ settingsMenu.classList.toggle('open');}});
+gearBtn?.addEventListener('click', (e)=> { 
+  e.stopPropagation(); 
+  if(window.innerWidth > 520){ 
+    settingsMenu.classList.toggle('open');
+  }
+});
 document.addEventListener('click', ()=> settingsMenu && settingsMenu.classList.remove('open'));
 
 sChangeName?.addEventListener('click', async () => {
@@ -879,7 +884,7 @@ mobileGear?.addEventListener('click', ()=> {
     await signOut(auth); c.remove(); 
   };
 
-  c.querySelector('#mb-close').onclick = ()=> c.remove();
+  c.querySelector('#mb-close').onclick = ()=> c.remove()
 });
 
 /* Mobile profile click */
