@@ -272,6 +272,12 @@ input:checked + .slider::before {
 
 
 /* responsive */
+@media(max-width:920px) {
+  .search-box {width: 100%; margin: 0 auto; padding: 0 10px;}
+  .search-bar {flex-direction: column; align-items: stretch; width: 100%; gap: 8px;}
+  .search-bar input {width: 100%; flex: none;}
+  .search-bar button {width: 100%;}
+}
 @media(max-width:720px){ .brand .title{font-size:18px} }
 @media(max-width:520px){
   header.app-header{justify-content:center}
