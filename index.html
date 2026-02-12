@@ -674,17 +674,17 @@ zmSearchBtn.addEventListener('click', async () => {
 });
 
 async function mobileBarDisplayCheck() {
-  // 1. Verificamos si hay algún input o select enfocado (teclado abierto)
   const activeEl = document.activeElement;
-  const isTyping = activeEl && ((activeEl.tagName === 'INPUT' || activeEl.tagName === 'SELECT' || activeEl.tagName === 'TEXTAREA') && activeEl.id !== 'zm-query');
+  
+  const isTyping = activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'SELECT');
 
-  // 2. Si estamos escribiendo O el modal está abierto, escondemos la barra y no hacemos nada más
-  if (isTyping || modal.style.display === 'flex') {
+  const isSearching = activeEl && activeEl.id === 'zm-query';
+
+  if (modal.style.display === 'flex' || (isTyping && !isSearching)) {
     document.getElementById('mobile-bar').style.display = 'none';
     return;
   }
 
-  // 3. Si no estamos escribiendo, aplicamos la lógica normal de tamaño
   if (window.innerWidth <= 520) {
     document.getElementById('mobile-bar').style.display = 'flex';
   } else {
