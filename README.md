@@ -36,7 +36,7 @@
 > [!NOTE]
 > La aplicación está construida con un enfoque *Mobile-First*, garantizando que la gestión de tus mangas sea cómoda desde cualquier lugar con una sola mano.
 
-[Aquí puedes insertar una captura de pantalla de la interfaz de tu proyecto]
+---
 
 ## 🤝 Contribuciones
 
