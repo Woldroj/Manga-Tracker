@@ -1427,25 +1427,28 @@ settingsMenu?.addEventListener('click', e=> e.stopPropagation());
 
 }); // DOMContentLoaded end
 
+/* --- REEMPLAZA DESDE AQUÍ --- */
 const orgiginalTitle = document.title;
+
 document.body.addEventListener('click', (e) => {
-  // --- NUEVA LÓGICA: Si el clic es dentro del modal, no hagas nada ---
-  if (e.target.closest('.panel') || e.target.closest('.modal')) {
-    return;
+  // 1. SI EL MODAL ESTÁ ABIERTO, NO HACER NADA
+  // Comprobamos si el modal tiene display: flex o si el clic fue dentro del panel
+  const modalActivo = document.getElementById('modal').style.display === 'flex';
+  if (modalActivo || e.target.closest('.panel')) {
+    return; // Detiene la ejecución para que no se muestre la mobile-bar
   }
 
   const target = e.target.closest('a'); 
+  
+  // 2. SI NO ES UN ENLACE, SOLO CONTROLAR LA BARRA MÓVIL
   if (!target) {
-    // Si haces clic en cualquier otro lado que no sea un link y estás en home,
-    // verifica que el modal esté cerrado antes de mostrar la barra
-    if ((currentView === 'home' || currentView === 'finished') && modal.style.display !== 'flex') {
-      if (window.innerWidth <= 520) {
-          document.getElementById('mobile-bar').style.display = 'flex';
-      }
+    if (window.innerWidth <= 520 && (currentView === 'home' || currentView === 'finished')) {
+      document.getElementById('mobile-bar').style.display = 'flex';
     }
     return;
   }
 
+  // 3. LÓGICA DE TÍTULOS (Solo si es un enlace)
   const href = target.getAttribute('href');
   if (!href) return;
 
@@ -1457,6 +1460,7 @@ document.body.addEventListener('click', (e) => {
     document.title = 'Manga Tracker';
   }
 });
+/* --- HASTA AQUÍ --- */
 
 document.addEventListener('visibilitychange', () => {
   if (!document.hidden) {
