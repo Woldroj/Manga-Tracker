@@ -1429,20 +1429,33 @@ settingsMenu?.addEventListener('click', e=> e.stopPropagation());
 
 const orgiginalTitle = document.title;
 document.body.addEventListener('click', (e) => {
-  const target = e.target.closest('a'); // Detecting if the click was on a link or inside a link
-  if (!target) return;
+  // --- NUEVA LÓGICA: Si el clic es dentro del modal, no hagas nada ---
+  if (e.target.closest('.panel') || e.target.closest('.modal')) {
+    return;
+  }
+
+  const target = e.target.closest('a'); 
+  if (!target) {
+    // Si haces clic en cualquier otro lado que no sea un link y estás en home,
+    // verifica que el modal esté cerrado antes de mostrar la barra
+    if ((currentView === 'home' || currentView === 'finished') && modal.style.display !== 'flex') {
+      if (window.innerWidth <= 520) {
+          document.getElementById('mobile-bar').style.display = 'flex';
+      }
+    }
+    return;
+  }
 
   const href = target.getAttribute('href');
   if (!href) return;
 
-  // Change title based on link type
   if (href.includes('manga')) {
     document.title = 'Leyendo...';
   } else if (href.includes('anime')) {
     document.title = 'Viendo...';
   } else {
-    document.title = 'Manga Tracker'; // Default title for other links
-  } 
+    document.title = 'Manga Tracker';
+  }
 });
 
 document.addEventListener('visibilitychange', () => {
