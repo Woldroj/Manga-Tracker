@@ -1036,23 +1036,30 @@ document.addEventListener('click', () => {
 
 /* -------- LOAD MANGAS (reading | finished) -------- */
 async function loadMangas(status='reading'){
-  // status = 'reading' or 'finished'
   gridEl.innerHTML = '';
-  if(!currentUser){ empty && (empty.style.display='block'); return; }
 
-  // fetch all mangas for user (keeps it simple)
+  if(!currentUser){ 
+    if(empty) empty.style.display='block';
+    return; 
+  }
+
   const col = collection(db,'users',currentUser.uid,'mangas');
   const snap = await getDocs(col);
   const items = snap.docs.map(d=> ({ id:d.id, ...d.data() }) );
 
-  // filter by status
   const filtered = items.filter(it => (it.status || 'reading') === status);
 
-  if(filtered.length===0){ if(empty){ empty.style.display='block'; } setButtonsForFilter(status); return; }
-  empty && (empty.style.display='none');
+  if(filtered.length === 0){
+    if(empty) empty.style.display='block';
+    setButtonsForFilter(status);
+    return;
+  }
+
+  if(empty) empty.style.display='none';
   setButtonsForFilter(status);
 
   const tipos = ['Manga','Anime'];
+
   tipos.forEach(tipo=>{
     const group = filtered
       .filter(it => it.type === tipo)
@@ -1067,14 +1074,12 @@ async function loadMangas(status='reading'){
         return sA - sB;
       });
 
-    if(group.length===0) return;
+    if(group.length === 0) return;
 
     const header = document.createElement('h2');
     header.textContent = tipo;
     header.className = 'tipo-header';
-    // force full width inside grid (in case it's inside)
     header.style.gridColumn = '1 / -1';
-    header.style.display = 'flex';
     gridEl.appendChild(header);
 
     group.forEach(it=>{
@@ -1082,84 +1087,176 @@ async function loadMangas(status='reading'){
       card.className='card';
       card.dataset.id = it.id;
 
+      const last = Number(it.last) || 0;
+      const total = Number(it.lastKnownChapters) || 0;
+
+      let progressHTML = '';
+
+      if(total > 0){
+        const percent = Math.min((last / total) * 100, 100);
+        progressHTML = `
+          <div class="progress-wrapper">
+            <div class="progress-bar">
+              <div class="progress-fill" style="width:${percent}%"></div>
+            </div>
+            <div class="progress-text">
+              ${last} / ${total}
+            </div>
+          </div>
+        `;
+      } else {
+        progressHTML = `
+          <div class="progress-wrapper">
+            <div class="progress-bar">
+              <div class="progress-fill" style="width:0%"></div>
+            </div>
+            <div class="progress-text" style="opacity:0.7">
+              En emisión
+            </div>
+          </div>
+        `;
+      }
+
       card.innerHTML = `
-        <div class="thumb">${it.imgurl? `<img src="${it.imgurl}" style="width:100%;height:100%;object-fit:cover">` : ''}</div>
+        <div class="thumb">
+          ${it.imgurl ? `<img src="${it.imgurl}" style="width:100%;height:100%;object-fit:cover">` : ''}
+        </div>
+
         <div class="meta">
           <div class="title">${it.title}</div>
           <div class="genre">${it.genre}</div>
-          <div class="last">Últ.: <strong>${it.last||0}</strong></div>
+          <div class="last">Últ.: <strong>${last}</strong></div>
+
+          ${progressHTML}
+
           ${status==='reading'
-            ? `<div class="finish-box"><label><input type="checkbox" class="finish-check" data-id="${it.id}"> Terminado</label></div>`
-            : `<div class="finished-label">Finalizado ✔</div><button class="small restore-btn" data-id="${it.id}" style="margin-top:8px;">Restaurar</button>`
+            ? `<div class="finish-box">
+                 <label>
+                   <input type="checkbox" class="finish-check" data-id="${it.id}">
+                   Terminado
+                 </label>
+               </div>`
+            : `<div class="finished-label">Finalizado ✔</div>
+               <button type="button" class="small restore-btn" data-id="${it.id}" style="margin-top:8px;">
+                 Restaurar
+               </button>`
           }
         </div>
+
         <div class="actions">
           <a class="link" href="${it.url||'#'}" target="_blank" rel="noopener">Ir →</a>
           <div style="display:flex;gap:6px;">
-            <button class="small edit-btn" data-id="${it.id}">Editar</button>
-            <button class="small del-btn" data-id="${it.id}" style="background:transparent;border:1px solid rgba(255,255,255,0.12)">Borrar</button>
+            <button type="button" class="small edit-btn" data-id="${it.id}">Editar</button>
+            <button type="button" class="small del-btn" data-id="${it.id}"
+              style="background:transparent;border:1px solid rgba(255,255,255,0.12)">
+              Borrar
+            </button>
           </div>
         </div>
       `;
+
       gridEl.appendChild(card);
     });
   });
 
-  // delegate handlers (edit/delete/increment/finish)
-  // edit
-  gridEl.querySelectorAll('.edit-btn').forEach(b=> b.onclick = (e)=> { e.stopPropagation(); openForm(b.dataset.id); });
+  /* ===== EVENTOS ===== */
 
-  // delete
-  gridEl.querySelectorAll('.del-btn').forEach(b=> b.onclick = async (e)=> {
-    e.stopPropagation();
-    if(!confirm("¿Eliminar?")) return;
-    await deleteDoc(doc(db,'users',currentUser.uid,'mangas',b.dataset.id));
-    await loadMangas(status);
-  });
+  gridEl.querySelectorAll('.edit-btn')
+    .forEach(b=>{
+      b.onclick = (e)=>{
+        e.stopPropagation();
+        openForm(b.dataset.id);
+      };
+    });
 
-  // increment chapters (only reading)
+  gridEl.querySelectorAll('.del-btn')
+    .forEach(b=>{
+      b.onclick = async (e)=>{
+        e.stopPropagation();
+        if(!confirm("¿Eliminar?")) return;
+
+        await deleteDoc(doc(db,'users',currentUser.uid,'mangas',b.dataset.id));
+        await loadMangas(status);
+      };
+    });
+
   if(status === 'reading'){
+
     gridEl.querySelectorAll('.card').forEach(card=>{
       card.onclick = async (e)=>{
-        if(e.target.closest('button') || e.target.closest('a') || e.target.closest('.finish-box')) return;
+
+        if(
+          e.target.closest('button') ||
+          e.target.closest('a') ||
+          e.target.closest('.finish-box')
+        ) return;
+
         const id = card.dataset.id;
         const docRef = doc(db,'users',currentUser.uid,'mangas',id);
         const snap = await getDoc(docRef);
         if(!snap.exists()) return;
-        let delta = e.shiftKey ? parseInt(prompt("¿Cuántos sumar?", "1")) : 1;
+
+        let delta = e.shiftKey 
+          ? parseInt(prompt("¿Cuántos sumar?", "1")) 
+          : 1;
+
         if(!delta || delta <= 0) return;
+
         const old = Number(snap.data().last) || 0;
-        await updateDoc(docRef, { last: String(old + delta) });
+        const newValue = old + delta;
+
+        await updateDoc(docRef, { last: String(newValue) });
+
+        // 🔥 actualizar número sin reconstruir todo
         const strong = card.querySelector('.last strong');
-        if(strong) strong.textContent = String(old + delta);
+        if(strong) strong.textContent = String(newValue);
+
+        // 🔥 actualizar barra sin recargar
+        const total = Number(snap.data().lastKnownChapters) || 0;
+        if(total > 0){
+          const percent = Math.min((newValue / total) * 100, 100);
+
+          const fill = card.querySelector('.progress-fill');
+          const text = card.querySelector('.progress-text');
+
+          if(fill) fill.style.width = percent + "%";
+          if(text) text.textContent = `${newValue} / ${total}`;
+        }
+
         if(window.timeBoxEnabled) calculateTotalTime();
       };
     });
 
-    // finish checkbox handlers
-    gridEl.querySelectorAll('.finish-check').forEach(chk=>{
-      chk.onchange = ()=>{ if(chk.checked){ selectedToFinish = chk.dataset.id; showFinishModal(); } };
-    });
+    gridEl.querySelectorAll('.finish-check')
+      .forEach(chk=>{
+        chk.onchange = ()=>{
+          if(chk.checked){
+            selectedToFinish = chk.dataset.id;
+            showFinishModal();
+          }
+        };
+      });
   }
 
   if(status === 'finished'){
-      gridEl.querySelectorAll('.restore-btn').forEach(btn=>{
+    gridEl.querySelectorAll('.restore-btn')
+      .forEach(btn=>{
         btn.onclick = async (e)=>{
           e.stopPropagation();
-          const id = btn.dataset.id;
 
-          await updateDoc(doc(db,'users',currentUser.uid,'mangas',id), {
-            status: 'reading'
-          });
+          await updateDoc(
+            doc(db,'users',currentUser.uid,'mangas',btn.dataset.id),
+            { status: 'reading' }
+          );
 
-          // Reload view according to currentFilter (setButtonsForFilter already updates currentFilter)
           await loadMangas('reading');
         };
       });
-    }
+  }
 
   if(window.timeBoxEnabled) calculateTotalTime();
 }
+
 
 /* -------- FINISH MODAL HANDLERS -------- */
 const finishModal = document.getElementById('finish-modal');

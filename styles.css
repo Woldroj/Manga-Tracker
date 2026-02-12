@@ -487,3 +487,27 @@ input:checked + .slider::before {
 .mobile-settings-popup button:hover {
   background: rgba(255,255,255,0.05);
 }
+
+.progress-wrapper{
+  margin-top:8px;
+}
+
+.progress-bar{
+  width:100%;
+  height:6px;
+  background:rgba(255,255,255,0.1);
+  border-radius:6px;
+  overflow:hidden;
+}
+
+.progress-fill{
+  height:100%;
+  background:var(--accent-2);
+  transition:width 0.3s ease;
+}
+
+.progress-text{
+  font-size:12px;
+  margin-top:4px;
+  color:var(--muted);
+}
