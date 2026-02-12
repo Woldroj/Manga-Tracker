@@ -1211,18 +1211,16 @@ async function loadMangas(status='reading'){
           ? parseInt(prompt("¿Cuántos sumar?", "1")) 
           : 1;
 
-        if(!delta || delta <= 0) return;
+        if(!delta || delta <= 0 || delta > m.chapters || delta > m.episodes) return;
 
         const old = Number(snap.data().last) || 0;
         const newValue = old + delta;
 
         await updateDoc(docRef, { last: String(newValue) });
 
-        // 🔥 actualizar número sin reconstruir todo
         const strong = card.querySelector('.last strong');
         if(strong) strong.textContent = String(newValue);
 
-        // 🔥 actualizar barra sin recargar
         const total = Number(snap.data().lastKnownChapters) || 0;
         if(total > 0){
           const percent = Math.min((newValue / total) * 100, 100);
