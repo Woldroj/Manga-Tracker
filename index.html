@@ -1142,15 +1142,15 @@ async function loadMangas(status='reading'){
 
           ${status==='reading'
             ? `<div class="finish-box">
-                 <label>
-                   <input type="checkbox" class="finish-check" data-id="${it.id}">
-                   Terminado
-                 </label>
-               </div>`
+                <label>
+                  <input type="checkbox" class="finish-check" data-id="${it.id}">
+                  Terminado
+                </label>
+              </div>`
             : `<div class="finished-label">Finalizado ✔</div>
-               <button type="button" class="small restore-btn" data-id="${it.id}" style="margin-top:8px;">
-                 Restaurar
-               </button>`
+              <button type="button" class="small restore-btn" data-id="${it.id}" style="margin-top:8px;">
+                Restaurar
+              </button>`
           }
         </div>
 
