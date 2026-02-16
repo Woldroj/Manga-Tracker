@@ -511,3 +511,37 @@ input:checked + .slider::before {
   margin-top:4px;
   color:var(--muted);
 }
+
+/* Skeleton loader */
+.skeleton-card{
+  background:#161b22;
+  border-radius:12px;
+  padding:12px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  animation:pulse 1.4s infinite ease-in-out;
+}
+
+.skeleton-thumb{
+  height:180px;
+  border-radius:8px;
+  background:#21262d;
+}
+
+.skeleton-line{
+  height:12px;
+  border-radius:6px;
+  background:#21262d;
+}
+
+.skeleton-line.short{
+  width:60%;
+}
+
+@keyframes pulse{
+  0%{ opacity:0.6; }
+  50%{ opacity:1; }
+  100%{ opacity:0.6; }
+}
+
