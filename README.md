@@ -1,6 +1,6 @@
 # 📚 MangaTracker
 
-![MangaTracker Banner](icon-512.png)
+![MangaTracker Banner](./icons/icon-512.png)
 
 **MangaTracker** es una aplicación web moderna (PWA) diseñada para gestionar tus lecturas de manga y visualizaciones de anime de forma rápida, sencilla y elegante. Olvida las listas complicadas; mantén tu progreso al día con una interfaz optimizada para dispositivos móviles y sincronización instantánea.
 
