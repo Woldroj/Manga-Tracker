@@ -259,6 +259,18 @@
     </div>
   </div>
 
+  <!-- Loader -->
+  <div id="searchLoader" class="search-loader hidden">
+  <div class="tenor-gif-embed" data-postid="15745848" data-share-method="host" data-aspect-ratio="1.08108" data-width="200px">
+    <a href="https://tenor.com/view/bronya-zaychik-honkai-mobile-game-character-loading-gif-15745848">
+      Bronya Zaychik Honkai Sticker
+    </a> from <a href="https://tenor.com/search/bronya+zaychik-stickers">Bronya Zaychik Stickers</a>
+  </div>
+</div>
+
+<script type="text/javascript" async src="https://tenor.com/embed.js"></script>
+
+
 <script type="module">
 /* ================================
    Manga Tracker - Script principal
@@ -309,6 +321,7 @@ const sChangeName = document.getElementById('s-change-name');
 const sChangePhoto = document.getElementById('s-change-photo');
 const sSignout = document.getElementById('s-signout');
 const themeGrid = document.getElementById('theme-grid');
+const searchLoader = document.getElementById('searchLoader');
 
 // Buttons
 const btnLogin = document.getElementById('btn-login');
@@ -493,6 +506,14 @@ function applyView() {
   }
 }
 
+function showSearchLoader(){
+  searchLoader.classList.remove('hidden');
+}
+
+function hideSearchLoader(){
+  searchLoader.classList.add('hidden');
+}
+
 async function searchJikan(query, type = 'manga') {
   const endpoint =
     type === 'anime'
@@ -651,27 +672,39 @@ zmSearchBtn.addEventListener('click', async () => {
   const q = zmQueryInput.value.trim();
   if (!q) return;
 
-  goSearch();
+  showSearchLoader();   // 🔥 mostrar gif
 
-  const type = filterType.value;
-  const orderBy = filterOrder.value;
-  const sort = filterSort.value;
+  try {
 
-  zmResults.innerHTML = 'Buscando…';
+    goSearch();
 
-  await loadUserJikanIds();
-  const results = await searchJikan(q, type);
+    const type = filterType.value;
+    const orderBy = filterOrder.value;
+    const sort = filterSort.value;
 
-  results.sort((a, b) => {
-    let av = orderBy === 'chapters' ? (a.chapters || 0) : a.title;
-    let bv = orderBy === 'chapters' ? (b.chapters || 0) : b.title;
+    zmResults.innerHTML = ''; // 🔥 quitamos el "Buscando…"
 
-    if (sort === 'asc') return av > bv ? 1 : -1;
-    return av < bv ? 1 : -1;
-  });
+    await loadUserJikanIds();
+    const results = await searchJikan(q, type);
 
-  renderJikanResults(results, type);
+    results.sort((a, b) => {
+      let av = orderBy === 'chapters' ? (a.chapters || 0) : a.title;
+      let bv = orderBy === 'chapters' ? (b.chapters || 0) : b.title;
+
+      if (sort === 'asc') return av > bv ? 1 : -1;
+      return av < bv ? 1 : -1;
+    });
+
+    renderJikanResults(results, type);
+
+  } catch (err) {
+    console.error(err);
+    zmResults.innerHTML = '<p>Error en la búsqueda</p>';
+  } finally {
+    hideSearchLoader();   // 🔥 ocultar gif siempre
+  }
 });
+
 
 async function mobileBarDisplayCheck() {
   const activeEl = document.activeElement;

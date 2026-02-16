@@ -545,3 +545,17 @@ input:checked + .slider::before {
   100%{ opacity:0.6; }
 }
 
+/* Loader */
+.search-loader{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.search-loader.hidden {
+  display: none;
+}
