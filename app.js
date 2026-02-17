@@ -1224,18 +1224,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
 }); // DOMContentLoaded end
 
-/* --- REEMPLAZA DESDE AQUÍ --- */
 const orgiginalTitle = document.title;
 
 document.body.addEventListener('click', (e) => {
-    // 1. SI EL MODAL ESTÁ ABIERTO, NO HACER NADA
-    // Comprobamos si el modal tiene display: flex o si el clic fue dentro del panel
     const modalActivo = document.getElementById('modal').style.display !== 'none';
     if (modalActivo || e.target.closest('.panel')) {
-        return; // Detiene la ejecución para que no se muestre la mobile-bar
+        return;
     }
 
-    // 3. LÓGICA DE TÍTULOS (Solo si es un enlace)
     const href = target.getAttribute('href');
     if (!href) return;
 
@@ -1247,7 +1243,6 @@ document.body.addEventListener('click', (e) => {
         document.title = 'Manga Tracker';
     }
 });
-/* --- HASTA AQUÍ --- */
 
 document.addEventListener('visibilitychange', () => {
     if (!document.hidden) {
