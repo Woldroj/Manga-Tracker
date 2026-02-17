@@ -247,28 +247,26 @@
   </div>
 
   <!-- MODAL MOVE TO FINISHED -->
-  <div id="finish-modal" class="finish-modal hidden">
-    <div class="finish-panel">
-      <h3>¿Mover a finalizados?</h3>
-      <p>Has marcado este título como terminado.<br>¿Quieres moverlo a la sección de finalizados?</p>
-
-      <div class="finish-actions">
-        <button id="finish-cancel" class="btn">Cancelar</button>
-        <button id="finish-confirm" class="btn primary">Mover</button>
-      </div>
-    </div>
-  </div>
+  <div id="searchLoader" class="search-loader hidden">
+  <dotlottie-wc
+    src="https://lottie.host/9a42a72a-6037-4172-8187-fc0ce79b6966/Q7tT8o2ocj.lottie"
+    style="width:150px;height:150px"
+    autoplay
+    loop>
+  </dotlottie-wc>
+</div>
 
   <!-- Loader -->
   <div id="searchLoader" class="search-loader hidden">
-  <div class="tenor-gif-embed" data-postid="15745848" data-share-method="host" data-aspect-ratio="1.08108" data-width="200px">
-    <a href="https://tenor.com/view/bronya-zaychik-honkai-mobile-game-character-loading-gif-15745848">
-      Bronya Zaychik Honkai Sticker
-    </a> from <a href="https://tenor.com/search/bronya+zaychik-stickers">Bronya Zaychik Stickers</a>
+    <svg class="css-loader" viewBox="0 0 50 50"></svg>
+      <circle cx="25" cy="25" r="20"></circle> 
   </div>
-</div>
 
-<script type="text/javascript" async src="https://tenor.com/embed.js"></script>
+<script
+  src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.8.11/dist/dotlottie-wc.js"
+  type="module"
+></script>
+
 
 
 <script type="module">
@@ -672,8 +670,8 @@ zmSearchBtn.addEventListener('click', async () => {
   const q = zmQueryInput.value.trim();
   if (!q) return;
 
-  showSearchLoader();   // 🔥 mostrar gif
-
+  showSearchLoader();
+  
   try {
 
     goSearch();
@@ -682,7 +680,7 @@ zmSearchBtn.addEventListener('click', async () => {
     const orderBy = filterOrder.value;
     const sort = filterSort.value;
 
-    zmResults.innerHTML = ''; // 🔥 quitamos el "Buscando…"
+    zmResults.innerHTML = '';
 
     await loadUserJikanIds();
     const results = await searchJikan(q, type);
@@ -701,7 +699,7 @@ zmSearchBtn.addEventListener('click', async () => {
     console.error(err);
     zmResults.innerHTML = '<p>Error en la búsqueda</p>';
   } finally {
-    hideSearchLoader();   // 🔥 ocultar gif siempre
+    hideSearchLoader();
   }
 });
 
