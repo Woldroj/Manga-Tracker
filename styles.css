@@ -294,7 +294,7 @@ input:checked + .slider::before {
   #mobile-profile-pic{width:38px;height:38px}
   #btn-finalizados-pc {display: none !important;}
   .search-box {width: 100%; margin: 0 auto; padding: 0 10px;}
-  .search-bar {flex-direction: column; align-items: stretch; width: 100%; gap: 8px;}
+  .search-bar {flex-direction: column; align-items: stretch; width: 100%; gap: 8px; max-width: 80%;}
   .search-bar input {width: 100%; flex: none;}
   .search-bar button {width: 100%;}
   #zm-results {width: 100%; margin: 0 auto; grid-template-columns: repeat(1, 1fr);}

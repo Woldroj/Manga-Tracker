@@ -70,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Buttons navigation PC/Mobile
     const btnFinalizadosPC = document.getElementById('btn-finalizados-pc');
-    const btnVolverPC = document.getElementById("btn-volver-pc"); // puede ser null si no lo añadiste
+    const btnVolverPC = document.getElementById("btn-volver-pc");
     const btnVolverSearch = document.getElementById('btn-volver-search');
     const btnFinalizadosMobile = document.getElementById('btn-finalizados-mobile');
     const btnHomeMobile = document.getElementById('mobile-home');
@@ -240,8 +240,8 @@ document.addEventListener('DOMContentLoaded', () => {
     async function searchJikan(query, type = 'manga') {
         const endpoint =
             type === 'anime'
-                ? `https://api.jikan.moe/v4/anime?q=${encodeURIComponent(query)}&limit=20`
-                : `https://api.jikan.moe/v4/manga?q=${encodeURIComponent(query)}&limit=20`;
+                ? `https://api.jikan.moe/v4/anime?q=${encodeURIComponent(query)}&limit=24`
+                : `https://api.jikan.moe/v4/manga?q=${encodeURIComponent(query)}&limit=24`;
 
         let res;
         try {
@@ -1222,30 +1222,28 @@ document.addEventListener('DOMContentLoaded', () => {
     /* prevent settings menu from closing while interacting */
     settingsMenu?.addEventListener('click', e => e.stopPropagation());
 
+    const originalTitle = document.title;
+
+    document.addEventListener('click', (e) => {
+
+        const link = e.target.closest('a');
+        if (!link) return;
+
+        const href = link.getAttribute('href');
+        if (!href) return;
+
+        if (href.includes('zonatmo')) {
+            document.title = 'Leyendo...';
+        }
+        else if (href.includes('animeflv')) {
+            document.title = 'Viendo...';
+        }
+    });
+
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+            document.title = originalTitle;
+        }
+    });
 }); // DOMContentLoaded end
 
-const orgiginalTitle = document.title;
-
-document.body.addEventListener('click', (e) => {
-    const modalActivo = document.getElementById('modal').style.display !== 'none';
-    if (modalActivo || e.target.closest('.panel')) {
-        return;
-    }
-
-    const href = target.getAttribute('href');
-    if (!href) return;
-
-    if (href.includes('manga')) {
-        document.title = 'Leyendo...';
-    } else if (href.includes('anime')) {
-        document.title = 'Viendo...';
-    } else {
-        document.title = 'Manga Tracker';
-    }
-});
-
-document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) {
-        document.title = orgiginalTitle;
-    }
-});
