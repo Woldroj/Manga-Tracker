@@ -199,6 +199,7 @@ input:checked + .slider::before {
   width: 100%;
   max-width: 40%;
   margin: 0 auto 12px auto;
+  margin-top: 50px;
   margin-bottom: 12px;
 }
 

@@ -834,7 +834,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const filtered = items.filter(it => (it.status || 'reading') === status);
 
-            // 🔥 limpiar skeleton antes de pintar reales
             gridEl.innerHTML = '';
 
             if (filtered.length === 0) {
@@ -999,7 +998,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         if (totalS > 0) {
                             if (old >= totalS) return;
-                            if (newValue > totalS) newValue = totalS;
+                            if (newValue >= totalS) {
+                                newValue = totalS
+
+                                selectedToFinish = snap.id;
+                                showFinishModal();
+                                finishModal.querySelector("h3").textContent = `¿Marcar "${snap.data().title}" como terminado?`;
+                                finishModal.querySelector("p").textContent = `Has alcanzado el último capítulo (${totalS}). ¿Quieres marcarlo como terminado?`;
+                            };
                         }
 
                         await updateDoc(docRef, { last: String(newValue) });
@@ -1060,8 +1066,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const finishConfirm = document.getElementById('finish-confirm');
     const finishCancel = document.getElementById('finish-cancel');
 
+    const originalH3 = finishModal.querySelector("h3").textContent;
+    const originalP = finishModal.querySelector("p").textContent;
+
     function showFinishModal() { if (finishModal) finishModal.classList.remove('hidden'); }
-    function hideFinishModal() { if (finishModal) finishModal.classList.add('hidden'); selectedToFinish = null; }
+    function hideFinishModal() { if (finishModal) finishModal.classList.add('hidden'); selectedToFinish = null; finishModal.querySelector("h3").textContent = originalH3; finishModal.querySelector("p").textContent = originalP; }
 
     finishCancel?.addEventListener('click', () => { if (finishModal) hideFinishModal(); });
     finishConfirm?.addEventListener('click', async () => {
