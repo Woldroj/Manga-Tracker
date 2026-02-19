@@ -985,7 +985,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         const snap = await getDoc(docRef);
                         if (!snap.exists()) return;
 
-                        let delta = e.rightClick
+                        let delta = e.altKey
                             ? parseInt(prompt("¿Cuántos sumar?", "1"))
                             : 1;
 
