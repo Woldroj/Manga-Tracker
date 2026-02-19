@@ -937,7 +937,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div style="display:flex;gap:6px;">
               <button type="button" class="small edit-btn" data-id="${it.id}">Editar</button>
               <button type="button" class="small del-btn" data-id="${it.id}"
-                style="background:transparent;border:1px solid rgba(255,255,255,0.12)">
+                style="background:transparent;border:1px solid rgba(255,255,255,0.12); color:var(--error);">
                 Borrar
               </button>
             </div>
