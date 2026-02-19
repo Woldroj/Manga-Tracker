@@ -711,18 +711,6 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const fields = ['title', 'genre', 'last', 'url', 'imgurl', 'type'];
-    const typeSelect = document.getElementById('type');
-    const genreSelect = document.getElementById('genre');
-    function updateGenres() {
-        if (!typeSelect || !genreSelect) return;
-        genreSelect.innerHTML = '';
-        categories[typeSelect.value].forEach(c => {
-            const o = document.createElement('option');
-            o.value = o.textContent = c; genreSelect.appendChild(o);
-        });
-    }
-    typeSelect?.addEventListener('change', updateGenres);
-    updateGenres();
 
     /* ======= SAGA DETECTION ====== */
 
@@ -813,10 +801,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const sk = document.createElement('div');
             sk.className = 'skeleton-card';
             sk.innerHTML = `
-      <div class="skeleton-thumb"></div>
-      <div class="skeleton-line"></div>
-      <div class="skeleton-line short"></div>
-    `;
+                <div class="skeleton-thumb"></div>
+                <div class="skeleton-line"></div>
+                <div class="skeleton-line short"></div>
+            `;
             gridEl.appendChild(sk);
         }
 
@@ -935,7 +923,6 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="actions">
             <a class="link" href="${it.url || '#'}" target="_blank" rel="noopener">Ir →</a>
             <div style="display:flex;gap:6px;">
-              <button type="button" class="small edit-btn" data-id="${it.id}">Editar</button>
               <button type="button" class="small del-btn" data-id="${it.id}"
                 style="background:transparent;border:1px solid rgba(255,255,255,0.12); color:var(--error);">
                 Borrar
@@ -961,18 +948,20 @@ document.addEventListener('DOMContentLoaded', () => {
             gridEl.querySelectorAll('.del-btn')
                 .forEach(b => {
                     b.onclick = async (e) => {
+                        e.preventDefault();
                         e.stopPropagation();
                         if (!confirm("¿Eliminar?")) return;
 
                         await deleteDoc(doc(db, 'users', currentUser.uid, 'mangas', b.dataset.id));
-                        await loadMangas(status);
+                        const card = b.closest('.card');
+                        if (card) card.remove();
                     };
                 });
 
             if (status === 'reading') {
 
                 gridEl.querySelectorAll('.card').forEach(card => {
-                    card.onclick = async (e) => {
+                    card.addEventListener('mousedown', async (e) => {
 
                         if (
                             e.target.closest('button') ||
@@ -985,27 +974,27 @@ document.addEventListener('DOMContentLoaded', () => {
                         const snap = await getDoc(docRef);
                         if (!snap.exists()) return;
 
-                        let delta = e.altKey
-                            ? parseInt(prompt("¿Cuántos sumar?", "1"))
-                            : 1;
+                        let delta = 1;
 
-                        if (!delta || delta <= 0) return;
+                        if (e.button === 2) delta = -1; // click derecho
+                        else if (e.altKey) delta = parseInt(prompt("¿Cuántos capítulos leíste?", "1")) || 0;
+
+                        // Si es negativo no bloqueamos, pero si es 0, salimos
+                        if (delta === 0) return;
 
                         const old = Number(snap.data().last) || 0;
                         const totalS = Number(snap.data().lastKnownChapters) || 0;
 
                         let newValue = old + delta;
+                        if (newValue < 0) newValue = 0;
+                        if (totalS > 0 && newValue > totalS) newValue = totalS;
 
-                        if (totalS > 0) {
-                            if (old >= totalS) return;
-                            if (newValue >= totalS) {
-                                newValue = totalS
-
-                                selectedToFinish = snap.id;
-                                showFinishModal();
-                                finishModal.querySelector("h3").textContent = `¿Marcar "${snap.data().title}" como terminado?`;
-                                finishModal.querySelector("p").textContent = `Has alcanzado el último capítulo (${totalS}). ¿Quieres marcarlo como terminado?`;
-                            };
+                        // Si llegamos al final
+                        if (totalS > 0 && newValue === totalS) {
+                            selectedToFinish = snap.id;
+                            showFinishModal();
+                            finishModal.querySelector("h3").textContent = `¿Marcar "${snap.data().title}" como terminado?`;
+                            finishModal.querySelector("p").textContent = `Has alcanzado el último capítulo (${totalS}). ¿Quieres marcarlo como terminado?`;
                         }
 
                         await updateDoc(docRef, { last: String(newValue) });
@@ -1023,7 +1012,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
 
                         if (window.timeBoxEnabled) calculateTotalTime();
-                    };
+                    });
                 });
 
                 gridEl.querySelectorAll('.finish-check')
@@ -1084,51 +1073,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     /* -------- FORM OPEN/CLOSE/SAVE -------- */
-    function openForm(id = null) {
-        editId = id;
-        document.getElementById('form-title').textContent = id ? "Editar" : "Añadir";
-        fields.forEach(f => { const el = document.getElementById(f); if (el) el.value = ''; });
-        preview.innerHTML = ''; preview.dataset.image = '';
-        if (id) {
-            getDoc(doc(db, 'users', currentUser.uid, 'mangas', id)).then(s => {
-                if (!s.exists()) return;
-                const d = s.data();
-                const t = document.getElementById('title'); if (t) t.value = d.title || "";
-                const l = document.getElementById('last'); if (l) l.value = d.last || "";
-                const u = document.getElementById('url'); if (u) u.value = d.url || "";
-                const tp = document.getElementById('type'); if (tp) tp.value = d.type || "Manga";
-                updateGenres();
-                const g = document.getElementById('genre'); if (g) g.value = d.genre || "";
-                if (d.imgurl) { preview.innerHTML = `<img src="${d.imgurl}" style="max-width:120px;border-radius:6px">`; preview.dataset.image = d.imgurl; }
-            }).catch(e => console.error(e));
-        }
-        if (window.innerWidth <= 520) { document.getElementById('mobile-bar').style.display = 'none'; }
-        modal && modal.classList.add('open');
-    }
     function closeForm() {
         modal && modal.classList.remove('open'); editId = null;
         if (window.innerWidth <= 520) { document.getElementById('mobile-bar').style.display = 'flex'; }
     }
 
     /* --- IMPORTANT: listeners for Add buttons (fix for the issue) --- */
-    btnAdd?.addEventListener('click', () => { openForm(); });
-    mobileAdd?.addEventListener('click', () => { openForm(); });
-
-    btnSave?.addEventListener('click', async () => {
-        if (!currentUser) return alert("Inicia sesión");
-        const data = {};
-        fields.forEach(f => { const el = document.getElementById(f); data[f] = el ? el.value : ""; });
-        data.imgurl = preview.dataset.image || "";
-        data.status = data.status || "reading";
-        const colRef = collection(db, 'users', currentUser.uid, 'mangas');
-        try {
-            if (editId) { await setDoc(doc(db, 'users', currentUser.uid, 'mangas', editId), data, { merge: true }); }
-            else { await addDoc(colRef, data); }
-            closeForm();
-            await loadMangas(currentFilter);
-        } catch (e) { console.error(e); alert("Error guardando"); }
-    });
-    btnCancel?.addEventListener('click', closeForm);
     modal?.addEventListener('click', e => { if (e.target === modal) closeForm(); });
 
     /* -------- TIME BOX -------- */
@@ -1254,5 +1204,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.title = originalTitle;
         }
     });
+    
+    document.addEventListener('contextmenu', (e) => e.preventDefault()); 
 }); // DOMContentLoaded end
 
