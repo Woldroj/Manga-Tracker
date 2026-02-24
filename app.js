@@ -337,6 +337,37 @@ document.addEventListener('DOMContentLoaded', () => {
                     addBtn.disabled = true;
                 };
             }
+            // ===== SWIPE MOBILE =====
+            let touchStartX = 0;
+            let touchStartY = 0;
+
+            card.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+            touchStartY = e.changedTouches[0].screenY;
+            }, { passive: true });
+
+            card.addEventListener('touchend', (e) => {
+            const touchEndX = e.changedTouches[0].screenX;
+            const touchEndY = e.changedTouches[0].screenY;
+
+            const diffX = touchEndX - touchStartX;
+            const diffY = touchEndY - touchStartY;
+
+            // Evitar que el scroll vertical active el gesto
+            if (Math.abs(diffY) > Math.abs(diffX)) return;
+
+            const threshold = 50; // distancia mínima
+
+            if (diffX > threshold) {
+                // 👉 Swipe derecha (+1)
+                btnPlus.click();
+            }
+
+            if (diffX < -threshold) {
+                // 👈 Swipe izquierda (-1)
+                btnMinus.click();
+            }
+            });
             zmResults.appendChild(card);
         });
     }
