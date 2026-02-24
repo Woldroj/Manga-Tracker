@@ -467,7 +467,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const isSearching = activeEl && activeEl.id === 'zm-query';
 
-        if (modal.style.display === 'flex' || (isTyping && !isSearching)) {
+        if (isTyping && !isSearching) {
             document.getElementById('mobile-bar').style.display = 'none';
             return;
         }
