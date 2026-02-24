@@ -337,37 +337,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     addBtn.disabled = true;
                 };
             }
-            // ===== SWIPE MOBILE =====
-            let touchStartX = 0;
-            let touchStartY = 0;
-
-            card.addEventListener('touchstart', (e) => {
-            touchStartX = e.changedTouches[0].screenX;
-            touchStartY = e.changedTouches[0].screenY;
-            }, { passive: true });
-
-            card.addEventListener('touchend', (e) => {
-            const touchEndX = e.changedTouches[0].screenX;
-            const touchEndY = e.changedTouches[0].screenY;
-
-            const diffX = touchEndX - touchStartX;
-            const diffY = touchEndY - touchStartY;
-
-            // Evitar que el scroll vertical active el gesto
-            if (Math.abs(diffY) > Math.abs(diffX)) return;
-
-            const threshold = 50; // distancia mínima
-
-            if (diffX > threshold) {
-                // 👉 Swipe derecha (+1)
-                btnPlus.click();
-            }
-
-            if (diffX < -threshold) {
-                // 👈 Swipe izquierda (-1)
-                btnMinus.click();
-            }
-            });
             zmResults.appendChild(card);
         });
     }
@@ -1044,6 +1013,60 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         if (window.timeBoxEnabled) calculateTotalTime();
                     });
+                    
+                    // ===== SWIPE MOBILE =====
+                        let touchStartX = 0;
+                        let touchStartY = 0;
+
+                        card.addEventListener('touchstart', (e) => {
+                            touchStartX = e.changedTouches[0].screenX;
+                            touchStartY = e.changedTouches[0].screenY;
+                        }, { passive: true });
+
+                        card.addEventListener('touchend', async (e) => {
+
+                            const touchEndX = e.changedTouches[0].screenX;
+                            const touchEndY = e.changedTouches[0].screenY;
+
+                            const diffX = touchEndX - touchStartX;
+                            const diffY = touchEndY - touchStartY;
+
+                            // Evitar activar con scroll vertical
+                            if (Math.abs(diffY) > Math.abs(diffX)) return;
+
+                            const threshold = 60;
+                            if (Math.abs(diffX) < threshold) return;
+
+                            const id = card.dataset.id;
+                            const docRef = doc(db, 'users', currentUser.uid, 'mangas', id);
+                            const snap = await getDoc(docRef);
+                            if (!snap.exists()) return;
+
+                            const old = Number(snap.data().last) || 0;
+                            const totalS = Number(snap.data().lastKnownChapters) || 0;
+
+                            let delta = diffX > 0 ? 1 : -1;
+                            let newValue = old + delta;
+
+                            if (newValue < 0) newValue = 0;
+                            if (totalS > 0 && newValue > totalS) newValue = totalS;
+
+                            await updateDoc(docRef, { last: String(newValue) });
+
+                            const strong = card.querySelector('.last strong');
+                            if (strong) strong.textContent = String(newValue);
+
+                            if (totalS > 0) {
+                                const percent = Math.min((newValue / totalS) * 100, 100);
+                                const fill = card.querySelector('.progress-fill');
+                                const text = card.querySelector('.progress-text');
+
+                                if (fill) fill.style.width = percent + "%";
+                                if (text) text.textContent = `${newValue} / ${totalS}`;
+                            }
+
+                            if (window.timeBoxEnabled) calculateTotalTime();
+                        });
                 });
 
                 gridEl.querySelectorAll('.finish-check')
