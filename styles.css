@@ -136,6 +136,10 @@ header.app-header {
   display: block;
 }
 
+#btn-login {
+  cursor: pointer;
+}
+
 /* ===============================
           SETTINGS SIDEBAR
    =============================== */
