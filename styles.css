@@ -841,6 +841,7 @@ input:checked + .slider::before {
     left: 12px;
     right: 12px;
     width: auto;
+    cursor: pointer;
   }
 }
 
