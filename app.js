@@ -87,9 +87,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnFinalizadosPC = document.getElementById("btn-finalizados-pc");
   const btnVolverPC = document.getElementById("btn-volver-pc");
   const btnVolverSearch = document.getElementById("btn-volver-search");
-  const btnFinalizadosMobile = document.getElementById(
-    "btn-finalizados-mobile",
-  );
+  const btnFinalizadosMobile = document.getElementById("btn-finalizados-mobile");
   const btnHomeMobile = document.getElementById("mobile-home");
 
   // API JIKAN
@@ -105,6 +103,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const filterOrder = document.getElementById("filter-order");
   const filterSort = document.getElementById("filter-sort");
 
+  const sidebar = document.getElementById("settings-sidebar");
+  const overlay = document.getElementById("settings-overlay");
+  const closeBtn = document.getElementById("settings-close");
+  const themeGridLight = document.getElementById("theme-grid-light");
+  const themeGridDark = document.getElementById("theme-grid-dark");
+
+
+
   /* -------- STATE -------- */
   let currentView = "home";
   let currentUser = null;
@@ -119,6 +125,7 @@ document.addEventListener("DOMContentLoaded", () => {
   /* -------- THEMES -------- */
   const THEMES = {
     dark: {
+      type: "dark",
       "--bg": "#0f172a",
       "--card": "#1e293b",
       "--accent": "#f1f5f9",
@@ -126,13 +133,140 @@ document.addEventListener("DOMContentLoaded", () => {
       "--muted": "#94a3b8",
     },
     black: {
+      type: "dark",
       "--bg": "#0f0f0f",
       "--card": "#1a1a1a",
       "--accent": "#f5f5f5",
       "--accent-2": "#888888",
       "--muted": "#5a5a5a",
     },
+    pinkDark: {
+      type: "dark",
+      "--bg": "#1a0b14",
+      "--card": "#2a1020",
+      "--accent": "#fde7f3",
+      "--accent-2": "#ec4899",
+      "--muted": "#c58aa6",
+    },
+    purpleDark: {
+      type: "dark",
+      "--bg": "#160b22",
+      "--card": "#221238",
+      "--accent": "#f1e9ff",
+      "--accent-2": "#7c3aed",
+      "--muted": "#b59ee0",
+    },
+
+    greenDark: {
+      type: "dark",
+      "--bg": "#062012",
+      "--card": "#0b2f1b",
+      "--accent": "#e6fff2",
+      "--accent-2": "#10b981",
+      "--muted": "#7fc9a4",
+    },
+
+    redDark: {
+      type: "dark",
+      "--bg": "#1f0a0a",
+      "--card": "#2e1111",
+      "--accent": "#ffeaea",
+      "--accent-2": "#ef4444",
+      "--muted": "#d98a8a",
+    },
+
+    orangeDark: {
+      type: "dark",
+      "--bg": "#241200",
+      "--card": "#341a00",
+      "--accent": "#fff1e0",
+      "--accent-2": "#f97316",
+      "--muted": "#e0a16b",
+    },
+
+    tealDark: {
+      type: "dark",
+      "--bg": "#03201e",
+      "--card": "#05302d",
+      "--accent": "#e6fffb",
+      "--accent-2": "#14b8a6",
+      "--muted": "#7ccfc6",
+    },
+
+    yellowDark: {
+      type: "dark",
+      "--bg": "#1f1a05",
+      "--card": "#2e2608",
+      "--accent": "#fff8dc",
+      "--accent-2": "#facc15",
+      "--muted": "#e3c56b",
+    },
+    cyanDark: {
+      type: "dark",
+      "--bg": "#031e22",
+      "--card": "#06323a",
+      "--accent": "#e6fdff",
+      "--accent-2": "#06b6d4",
+      "--muted": "#7ccfd9",
+    },
+    brownDark: {
+      type: "dark",
+      "--bg": "#1e130b",
+      "--card": "#2a1b10",
+      "--accent": "#f5ede7",
+      "--accent-2": "#92400e",
+      "--muted": "#c6a38a",
+    },
+    slateDark: {
+      type: "dark",
+      "--bg": "#020617",
+      "--card": "#020617",
+      "--accent": "#e5e7eb",
+      "--accent-2": "#64748b",
+      "--muted": "#94a3b8",
+    },
+    oliveDark: {
+      type: "dark",
+      "--bg": "#1a1f0f",
+      "--card": "#262c16",
+      "--accent": "#f4f7e8",
+      "--accent-2": "#84a21d",
+      "--muted": "#b5c27a",
+    },
+    roseDark: {
+      type: "dark",
+      "--bg": "#1f0a10",
+      "--card": "#2e1118",
+      "--accent": "#ffe7ec",
+      "--accent-2": "#f43f5e",
+      "--muted": "#e09aad",
+    },
+    iceDark: {
+      type: "dark",
+      "--bg": "#041926",
+      "--card": "#06283a",
+      "--accent": "#e6f7ff",
+      "--accent-2": "#38bdf8",
+      "--muted": "#9dcde5",
+    },
+    indigoDark: {
+      type: "dark",
+      "--bg": "#0c0a24",
+      "--card": "#161238",
+      "--accent": "#ecebff",
+      "--accent-2": "#6366f1",
+      "--muted": "#a6a9e5",
+    },
+    blue: {
+      type: "light",
+      "--bg": "#eff6ff",
+      "--card": "#e0f2fe",
+      "--accent": "#0b1220",
+      "--accent-2": "#3b82f6",
+      "--muted": "#64748b",
+    },
     light: {
+      type: "light",
       "--bg": "#ffffff",
       "--card": "#f8fafc",
       "--accent": "#0f172a",
@@ -140,20 +274,15 @@ document.addEventListener("DOMContentLoaded", () => {
       "--muted": "#6b7280",
     },
     pink: {
+      type: "light",
       "--bg": "#fff0f6",
       "--card": "#fff1f2",
       "--accent": "#2b2a2a",
       "--accent-2": "#ec4899",
       "--muted": "#7c4a5b",
     },
-    blue: {
-      "--bg": "#eff6ff",
-      "--card": "#e0f2fe",
-      "--accent": "#0b1220",
-      "--accent-2": "#3b82f6",
-      "--muted": "#64748b",
-    },
     purple: {
+      type: "light",
       "--bg": "#faf5ff",
       "--card": "#f3e8ff",
       "--accent": "#211634",
@@ -161,6 +290,7 @@ document.addEventListener("DOMContentLoaded", () => {
       "--muted": "#6b5b7a",
     },
     green: {
+      type: "light",
       "--bg": "#f0fdf4",
       "--card": "#dcfce7",
       "--accent": "#04260f",
@@ -168,6 +298,7 @@ document.addEventListener("DOMContentLoaded", () => {
       "--muted": "#4b6b53",
     },
     red: {
+      type: "light",
       "--bg": "#fff5f5",
       "--card": "#ffe5e5",
       "--accent": "#2a0a0a",
@@ -175,6 +306,7 @@ document.addEventListener("DOMContentLoaded", () => {
       "--muted": "#a64b4b",
     },
     orange: {
+      type: "light",
       "--bg": "#fffaf0",
       "--card": "#fff3e0",
       "--accent": "#2b1a00",
@@ -182,6 +314,7 @@ document.addEventListener("DOMContentLoaded", () => {
       "--muted": "#b36b3b",
     },
     teal: {
+      type: "light",
       "--bg": "#f0fdfa",
       "--card": "#ccfbf1",
       "--accent": "#042f2e",
@@ -189,11 +322,68 @@ document.addEventListener("DOMContentLoaded", () => {
       "--muted": "#4a7c79",
     },
     yellow: {
+      type: "light",
       "--bg": "#fffbeb",
       "--card": "#fef3c7",
       "--accent": "#2b2a00",
       "--accent-2": "#facc15",
       "--muted": "#a68c4b",
+    },
+    cyan: {
+      type: "light",
+      "--bg": "#ecfeff",
+      "--card": "#cffafe",
+      "--accent": "#042f2e",
+      "--accent-2": "#06b6d4",
+      "--muted": "#4b7c82",
+    },
+    brown: {
+      type: "light",
+      "--bg": "#faf7f5",
+      "--card": "#ede6e1",
+      "--accent": "#2a1c14",
+      "--accent-2": "#92400e",
+      "--muted": "#7a5c4a",
+    },
+    slate: {
+      type: "light",
+      "--bg": "#f8fafc",
+      "--card": "#e2e8f0",
+      "--accent": "#0f172a",
+      "--accent-2": "#64748b",
+      "--muted": "#64748b",
+    },
+    olive: {
+      type: "light",
+      "--bg": "#f7f8f3",
+      "--card": "#e6e9d8",
+      "--accent": "#2a2f1b",
+      "--accent-2": "#84a21d",
+      "--muted": "#6b7450",
+    },
+    rose: {
+      type: "light",
+      "--bg": "#fff1f2",
+      "--card": "#ffe4e6",
+      "--accent": "#2a0a12",
+      "--accent-2": "#f43f5e",
+      "--muted": "#a8576c",
+    },
+    ice: {
+      type: "light",
+      "--bg": "#f0f9ff",
+      "--card": "#e0f2fe",
+      "--accent": "#082f49",
+      "--accent-2": "#38bdf8",
+      "--muted": "#5b7c92",
+    },
+    indigo: {
+      type: "light",
+      "--bg": "#eef2ff",
+      "--card": "#e0e7ff",
+      "--accent": "#1e1b4b",
+      "--accent-2": "#6366f1",
+      "--muted": "#6b6fa1",
     },
   };
 
@@ -221,19 +411,27 @@ document.addEventListener("DOMContentLoaded", () => {
       themeName === "dark" || themeName === "black" ? "#f1f5f9" : "#fff",
     );
   }
+  
+  Object.keys(THEMES).forEach((key) => {
+    const theme = THEMES[key];
 
-  /* render swatches */
-  if (themeGrid) {
-    Object.keys(THEMES).forEach((key) => {
-      const sw = document.createElement("div");
-      sw.className = "theme-swatch";
-      sw.style.background = THEMES[key]["--accent-2"];
-      sw.title = key;
-      sw.dataset.theme = key;
-      sw.addEventListener("click", () => applyTheme(key, true));
-      themeGrid.appendChild(sw);
-    });
-  }
+    // elegimos contenedor según tipo
+    const container =
+      theme.type === "light" ? themeGridLight : themeGridDark;
+
+    if (!container) return;
+
+    const sw = document.createElement("div");
+    sw.className = "theme-swatch";
+    sw.style.background = theme["--accent-2"];
+    sw.title = key;
+    sw.dataset.theme = key;
+
+    sw.addEventListener("click", () => applyTheme(key, true));
+
+    container.appendChild(sw);
+  });
+
   function setCssVarsFromTheme(themeKey) {
     const vars = THEMES[themeKey] || THEMES.dark;
     Object.entries(vars).forEach(([k, v]) =>
@@ -269,6 +467,22 @@ document.addEventListener("DOMContentLoaded", () => {
       .trim()
       .replace(/\s+/g, "-");
   }
+
+  function openSettings() {
+    sidebar.classList.add("open");
+    overlay.classList.add("open");
+    sidebar.setAttribute("aria-hidden", "false");
+  }
+
+  function closeSettings() {
+    sidebar.classList.remove("open");
+    overlay.classList.remove("open");
+    sidebar.setAttribute("aria-hidden", "true");
+  }
+
+  closeBtn?.addEventListener("click", closeSettings);
+  gearBtn?.addEventListener("click", openSettings);
+  overlay?.addEventListener("click", closeSettings);
 
   /* -------- PROFILE HELPERS -------- */
   function setProfileImage(url) {
@@ -768,17 +982,6 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
   });
 
   /* -------- SETTINGS / PROFILE actions -------- */
-  gearBtn?.addEventListener("click", (e) => {
-    e.stopPropagation();
-    if (window.innerWidth > 520) {
-      settingsMenu.classList.toggle("open");
-    }
-  });
-  document.addEventListener(
-    "click",
-    () => settingsMenu && settingsMenu.classList.remove("open"),
-  );
-
   sChangeName?.addEventListener("click", async () => {
     if (!currentUser) return alert("Inicia sesión");
     settingsMenu.classList.remove("open");
@@ -873,7 +1076,10 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     <button id="mb-change-name">✏ Cambiar nombre</button>
     <button id="mb-change-photo">🖼 Cambiar foto</button>
     <button id="mb-toggle-timebox">🕒 Mostrar tiempo consumido</button>
-    <div id="mb-theme-grid" style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0;"></div>
+    <h4 style="margin-top:10px">Claros</h4>
+    <div class="theme-grid" id="mb-theme-grid-light"></div>
+    <h4 style="margin-top:14px">Oscuros</h4>
+    <div class="theme-grid" id="mb-theme-grid-dark"></div>
     <button id="mb-signout">🚪 Cerrar sesión</button>
     <button id="mb-close">Cerrar</button>
   `;
@@ -881,24 +1087,36 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     document.body.appendChild(c);
     mobileSettingsPopup = c;
 
+    renderMobileThemes(); 
+
+// Define esta función dentro o fuera de tu evento
+  function renderMobileThemes() {
+      const mbGridLight = document.getElementById("mb-theme-grid-light");
+      const mbGridDark = document.getElementById("mb-theme-grid-dark");
+
+      // Recorremos tu objeto de temas (THEMES)
+      Object.keys(THEMES).forEach((key) => {
+          const theme = THEMES[key];
+          const container = theme.type === "light" ? mbGridLight : mbGridDark;
+
+          if (container) {
+              const sw = document.createElement("div");
+              sw.className = "theme-swatch";
+              sw.style.background = theme["--accent-2"];
+              // Si el tema actual es el seleccionado, puedes añadirle una clase 'active'
+              if (localStorage.getItem("mt_theme") === key) sw.classList.add("active");
+
+              sw.onclick = () => {
+                  applyTheme(key, true);
+                  // Opcional: cerrar popup al elegir tema
+              };
+              container.appendChild(sw);
+          }
+      });
+  }
+
     // Evita que al tocar dentro se cierre
     c.addEventListener("click", (ev) => ev.stopPropagation());
-
-    /* THEMES */
-    const g = c.querySelector("#mb-theme-grid");
-    Object.keys(THEMES).forEach((k) => {
-      const d = document.createElement("div");
-      d.style.width = "30px";
-      d.style.height = "30px";
-      d.style.borderRadius = "6px";
-      d.style.background = THEMES[k]["--accent-2"];
-      d.style.cursor = "pointer";
-      d.onclick = () => {
-        applyTheme(k, true);
-        closeMobileSettings();
-      };
-      g.appendChild(d);
-    });
 
     c.querySelector("#mb-change-name").onclick = async () => {
       const n = prompt("Nuevo nombre:");

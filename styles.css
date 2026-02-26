@@ -136,37 +136,118 @@ header.app-header {
   display: block;
 }
 
-/* settings menu */
-.settings-menu {
-  position: absolute;
+/* ===============================
+          SETTINGS SIDEBAR
+   =============================== */
+
+.settings-sidebar {
+  position: fixed;
+  top: 0;
   right: 0;
-  top: 60px;
+  width: 320px;
+  max-width: 90%;
+  height: 100vh;
   background: var(--card);
-  border-radius: 10px;
-  padding: 10px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
-  min-width: 240px;
-  display: none;
-  z-index: 1200;
-}
-.settings-menu.open {
-  display: block;
-}
-.settings-item {
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+  z-index: 3000;
   display: flex;
-  gap: 10px;
-  align-items: center;
-  padding: 8px;
-  border-radius: 8px;
-  cursor: pointer;
-  color: var(--accent);
+  flex-direction: column;
 }
-.settings-item:hover {
-  background: rgba(255, 255, 255, 0.03);
+
+.settings-sidebar.open {
+  transform: translateX(0);
 }
-.settings-item .label {
+
+.settings-content {
   flex: 1;
+  overflow-y: auto;
+  padding: 16px;
 }
+
+.settings-section h4 {
+  margin: 0 0 8px;
+  font-size: 14px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.settings-section {
+  margin-bottom: 18px;
+}
+
+.settings-section.danger button {
+  width: 100%;
+  padding: 12px;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* footer */
+.settings-footer {
+  padding: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.settings-footer .settings-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  cursor: pointer;
+  border-radius: 8px;
+}
+
+.settings-footer .settings-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.settings-header {
+  padding: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.settings-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  margin: 12px 0;
+}
+
+.settings-close-btn {
+  width: 100%;
+  padding: 10px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  color: var(--accent);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.settings-close-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* overlay */
+.settings-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: 2900;
+}
+
+.settings-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
 .theme-grid {
   display: flex;
   gap: 8px;
