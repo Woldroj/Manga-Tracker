@@ -109,8 +109,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const themeGridLight = document.getElementById("theme-grid-light");
   const themeGridDark = document.getElementById("theme-grid-dark");
 
-
-
   /* -------- STATE -------- */
   let currentView = "home";
   let currentUser = null;
@@ -411,13 +409,12 @@ document.addEventListener("DOMContentLoaded", () => {
       themeName === "dark" || themeName === "black" ? "#f1f5f9" : "#fff",
     );
   }
-  
+
   Object.keys(THEMES).forEach((key) => {
     const theme = THEMES[key];
 
     // elegimos contenedor según tipo
-    const container =
-      theme.type === "light" ? themeGridLight : themeGridDark;
+    const container = theme.type === "light" ? themeGridLight : themeGridDark;
 
     if (!container) return;
 
@@ -1087,33 +1084,34 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     document.body.appendChild(c);
     mobileSettingsPopup = c;
 
-    renderMobileThemes(); 
+    renderMobileThemes();
 
-// Define esta función dentro o fuera de tu evento
-  function renderMobileThemes() {
+    // Define esta función dentro o fuera de tu evento
+    function renderMobileThemes() {
       const mbGridLight = document.getElementById("mb-theme-grid-light");
       const mbGridDark = document.getElementById("mb-theme-grid-dark");
 
       // Recorremos tu objeto de temas (THEMES)
       Object.keys(THEMES).forEach((key) => {
-          const theme = THEMES[key];
-          const container = theme.type === "light" ? mbGridLight : mbGridDark;
+        const theme = THEMES[key];
+        const container = theme.type === "light" ? mbGridLight : mbGridDark;
 
-          if (container) {
-              const sw = document.createElement("div");
-              sw.className = "theme-swatch";
-              sw.style.background = theme["--accent-2"];
-              // Si el tema actual es el seleccionado, puedes añadirle una clase 'active'
-              if (localStorage.getItem("mt_theme") === key) sw.classList.add("active");
+        if (container) {
+          const sw = document.createElement("div");
+          sw.className = "theme-swatch";
+          sw.style.background = theme["--accent-2"];
+          // Si el tema actual es el seleccionado, puedes añadirle una clase 'active'
+          if (localStorage.getItem("mt_theme") === key)
+            sw.classList.add("active");
 
-              sw.onclick = () => {
-                  applyTheme(key, true);
-                  // Opcional: cerrar popup al elegir tema
-              };
-              container.appendChild(sw);
-          }
+          sw.onclick = () => {
+            applyTheme(key, true);
+            // Opcional: cerrar popup al elegir tema
+          };
+          container.appendChild(sw);
+        }
       });
-  }
+    }
 
     // Evita que al tocar dentro se cierre
     c.addEventListener("click", (ev) => ev.stopPropagation());
