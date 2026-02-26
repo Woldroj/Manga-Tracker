@@ -244,7 +244,18 @@ header.app-header {
 
 .settings-overlay.open {
   opacity: 1;
-  pointer-events: auto;
+  pointer-events: auto; 
+}
+
+#s-toggle-timebox, #s-change-photo, #s-change-name {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 12px;
+}
+
+#s-change-photo, #s-change-name {
+  cursor: pointer;
 }
 
 .theme-grid {
