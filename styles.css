@@ -1335,12 +1335,12 @@ input:checked + .slider::before {
   justify-content: center;
   cursor: pointer;
   z-index: 5;
-  transition: all 0.2s ease;
+  opacity: 0;
+  transition: opacity 0.2s ease;
 }
 
-.visibility-btn:hover {
-  transform: scale(1.1);
-  background: var(--accent-2);
+.card:hover .visibility-btn{
+  opacity: 1;
 }
 
 .visibility-btn.is-public {
