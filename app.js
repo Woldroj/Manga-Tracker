@@ -866,10 +866,17 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
   async function renderUserPage() {
     if (!currentUser) return;
 
+    const prefsSnap = await getDoc(doc(db, "users", currentUser.uid, "prefs", "ui"));
+    let finalPhoto = currentUser.photoURL;
+
+    if (prefsSnap.exists() && prefsSnap.data().photoURL) {
+      finalPhoto = prefsSnap.data().photoURL; // Si existe la subida a mano, usamos esa
+    }
+
     // 1. Datos básicos
     userPageName.textContent = currentUser.displayName || "Usuario";
     userPageEmail.textContent = currentUser.email || "ejemplo@gmail.com";
-    userPageAvatar.src = currentUser.photoURL || "default-profile.png";
+    userPageAvatar.src = finalPhoto;
     
     // Cargar Bio y Preferencias de Firestore
     const prefs = await getDoc(prefsDocRef(currentUser.uid));
