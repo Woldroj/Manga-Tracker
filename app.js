@@ -880,9 +880,23 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
         if (userBio) userBio.value = data.bio || "";
         if (statsToggle) statsToggle.checked = data.statsPublic || false;
       }
+      if (userPageName) {
+        const devUID = "wv0cbOYYzbgZBp3s7JqDWjw80mq2";
+        
+        if (currentUser.uid === devUID) {
+            userPageName.innerHTML = `
+                ${currentUser.displayName || "Usuario"} 
+                <span class="dev-badge" title="Desarrollador Oficial">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                </span>
+            `;
+        } else {
+            userPageName.textContent = currentUser.displayName || "Usuario";
+        }
+      }
 
-      // Aplicar datos básicos a la interfaz
-      userPageName.textContent = currentUser.displayName || "Usuario";
       userPageEmail.textContent = currentUser.email || "";
       userPageAvatar.src = finalPhoto;
 

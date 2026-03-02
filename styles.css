@@ -1456,3 +1456,28 @@ input:checked + .slider::before {
 .mini-tag:active {
   transform: scale(0.95); /* Efecto de pulsación */
 }
+
+.dev-badge {
+    display: inline-flex;
+    align-items: center;
+    vertical-align: middle;
+    margin-left: 8px;
+    color: #ffd700; /* Color Oro */
+    filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.5));
+    animation: shine 2s infinite;
+}
+
+@keyframes shine {
+    0% { opacity: 0.8; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.1); }
+    100% { opacity: 0.8; transform: scale(1); }
+}
+
+/* Opcional: Nombre en color especial para el admin */
+#user-page-name:has(.dev-badge) {
+  background: linear-gradient(90deg, #fff, #ffd700);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: bold;
+}
