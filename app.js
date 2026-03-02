@@ -1743,5 +1743,25 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     }
   });
 
+  const btnScrollTop = document.getElementById("btn-scroll-top");
+
+  // 1. Detectar el scroll para mostrar/ocultar el botón
+  window.addEventListener("scroll", () => {
+    // Si bajamos más de 300px, mostramos el botón
+    if (window.scrollY > 300) {
+      btnScrollTop.classList.add("show");
+    } else {
+      btnScrollTop.classList.remove("show");
+    }
+  });
+
+  // 2. Función para subir suavemente
+  btnScrollTop?.addEventListener("click", () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth" // Esto hace que el movimiento sea suave
+    });
+  });
+
   document.addEventListener("contextmenu", (e) => e.preventDefault());
 }); // DOMContentLoaded end

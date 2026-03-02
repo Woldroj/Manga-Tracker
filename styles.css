@@ -1273,3 +1273,48 @@ input:checked + .slider::before {
 .switch-container .switch {
   margin-top: 7px;
 }
+
+.scroll-top-btn {
+  position: fixed;
+  bottom: 80px; /* Separado del borde o de la barra móvil */
+  right: 20px;
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  background-color: var(--accent-2);
+  color: white;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 999;
+  
+  /* Animación de aparición */
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(20px);
+  transition: all 0.3s ease-in-out;
+}
+
+/* Clase que añadiremos con JS para mostrarlo */
+.scroll-top-btn.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.scroll-top-btn:hover {
+  background-color: #2563eb; /* Un azul un poco más oscuro */
+  transform: scale(1.1);
+}
+
+/* En móviles lo subimos un poco más para que no tape la barra de navegación */
+@media (max-width: 768px) {
+  .scroll-top-btn {
+    bottom: 90px;
+    width: 40px;
+    height: 40px;
+  }
+}
