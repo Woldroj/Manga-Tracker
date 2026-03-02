@@ -109,6 +109,18 @@ document.addEventListener("DOMContentLoaded", () => {
   const themeGridLight = document.getElementById("theme-grid-light");
   const themeGridDark = document.getElementById("theme-grid-dark");
 
+  // User Page
+  const userView = document.getElementById("user-view");
+  const userPageAvatar = document.getElementById("user-page-avatar");
+  const userPageName = document.getElementById("user-page-name");
+  const userPageEmail = document.getElementById("user-page-email");
+  const userBio = document.getElementById("user-bio");
+  const statsToggle = document.getElementById("stats-public-toggle");
+  const reviewsToggle = document.getElementById("reviews-toggle");
+  const reviewsList = document.getElementById("reviews-list");
+  const btnEditNamePage = document.getElementById("btn-edit-name-page");
+
+
   /* -------- STATE -------- */
   let currentView = "home";
   let currentUser = null;
@@ -296,20 +308,31 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function applyView() {
     if (currentView === "finished") {
+      userView.style.display = "none";
       searchBox && (searchBox.style.display = "none");
       btnAdd && (btnAdd.style.display = "none");
       btnVolverSearch && (btnVolverSearch.style.display = "none");
     } else if (currentView === "search") {
+      userView.style.display = "none";
       searchBox && (searchBox.style.display = "");
       btnAdd && (btnAdd.style.display = "");
       btnVolverSearch && (btnVolverSearch.style.display = "inline-block");
       timeBox && (timeBox.style.display = "none");
+    } else if (currentView === "user") {
+      userView.style.display = "block";
+      searchBox && (searchBox.style.display = "none");
+      btnAdd && (btnAdd.style.display = "none");
+      btnVolverSearch && (btnVolverSearch.style.display = "inline-block");
+      btnVolverPC && (btnVolverPC.style.display = "none");
+      timeBox && (timeBox.style.display = "none");
     } else {
       // home
+      userView.style.display = "none";
       searchBox && (searchBox.style.display = "");
       btnAdd && (btnAdd.style.display = "");
       btnVolverSearch && (btnVolverSearch.style.display = "none");
-      timeBox && (timeBox.style.display = "");
+      timeBox && (timeBox.style.display = "none");
+      
     }
   }
 
@@ -833,6 +856,90 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     await signOut(auth);
   });
 
+  // Toggle del acordeón de reseñas
+  reviewsToggle?.addEventListener("click", () => {
+    const isHidden = reviewsList.style.display === "none";
+    reviewsList.style.display = isHidden ? "block" : "none";
+    reviewsToggle.querySelector(".arrow-icon").style.transform = isHidden ? "rotate(180deg)" : "rotate(0)";
+  });
+
+  async function renderUserPage() {
+    if (!currentUser) return;
+
+    // 1. Datos básicos
+    userPageName.textContent = currentUser.displayName || "Usuario";
+    userPageEmail.textContent = currentUser.email || "ejemplo@gmail.com";
+    userPageAvatar.src = currentUser.photoURL || "default-profile.png";
+    
+    // Cargar Bio y Preferencias de Firestore
+    const prefs = await getDoc(prefsDocRef(currentUser.uid));
+    if (prefs.exists()) {
+      userBio.value = prefs.data().bio || "";
+      statsToggle.checked = prefs.data().statsPublic || false;
+    }
+
+    // 2. Cargar listas públicas y estadísticas
+    const querySnapshot = await getDocs(collection(db, "users", currentUser.uid, "mangas"));
+    const allItems = [];
+    querySnapshot.forEach(doc => allItems.push({ id: doc.id, ...doc.data() }));
+
+    // Filtrar públicos
+    const publicReading = allItems.filter(it => it.status === "reading" && it.isPublic);
+    const publicFinished = allItems.filter(it => it.status === "finished" && it.isPublic);
+
+    renderGridInElement(publicReading, "public-reading-grid", "public-reading-container");
+    renderGridInElement(publicFinished, "public-finished-grid", "public-finished-container");
+
+    // 3. Estadísticas
+    document.getElementById("stat-total").textContent = allItems.length;
+    const totalChapters = allItems.reduce((acc, curr) => acc + (Number(curr.last) || 0), 0);
+    document.getElementById("stat-chapters").textContent = totalChapters;
+    const minutosTotales = await calculateTotalTime();
+    const horasTotales = Math.floor(minutosTotales / 60);
+    document.getElementById("stat-time").textContent = `${horasTotales}h`;
+
+    // 4. Reseñas
+    reviewsList.innerHTML = "";
+    allItems.filter(it => it.review).forEach(it => {
+      const div = document.createElement("div");
+      div.className = "review-item";
+      div.innerHTML = `<strong>${it.title}:</strong> <p>${it.review}</p>`;
+      reviewsList.appendChild(div);
+    });
+  }
+
+  // Función auxiliar para renderizar mini-grids en el perfil
+  function renderGridInElement(items, gridId, containerId) {
+    const container = document.getElementById(containerId);
+    const grid = document.getElementById(gridId);
+    grid.innerHTML = "";
+    
+    if (items.length === 0) {
+      container.style.display = "none";
+    } else {
+      container.style.display = "block";
+      items.forEach(it => { 
+        const card = document.createElement("div");
+        card.className = "mini-card";
+        card.innerHTML = `
+          <div class="mini-card-image" style="background-image: url('${it.image}')"></div>
+          <div class="mini-card-title">${it.title}</div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+  }
+
+  // Guardar biografía automáticamente al salir del textarea
+  userBio?.addEventListener("blur", async () => {
+    await setDoc(prefsDocRef(currentUser.uid), { bio: userBio.value }, { merge: true });
+  });
+
+  // Guardar privacidad de stats
+  statsToggle?.addEventListener("change", async () => {
+    await setDoc(prefsDocRef(currentUser.uid), { statsPublic: statsToggle.checked }, { merge: true });
+  });
+
   // Mobile settings
   mobileGear?.addEventListener("click", (e) => {
     e.stopPropagation();
@@ -947,14 +1054,6 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
       mobileSettingsPopup = null;
     }
   }
-
-  /* Mobile profile click */
-  mobileProfile.addEventListener("click", () => {
-    if (currentUser)
-      alert(`Perfil: ${currentUser.displayName || currentUser.email}`);
-    else alert("Invitado");
-  });
-
   /* ---------- DATA / CARDS ---------- */
   /* categories */
   const categories = {
@@ -1105,7 +1204,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
 
     try {
       if (!currentUser) {
-        gridEl.innerHTML = ""; // 🔥 limpiar skeleton
+        gridEl.innerHTML = "";
         if (empty) empty.style.display = "block";
         return;
       }
@@ -1510,6 +1609,8 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     const minutes = totalMinutes % 60;
 
     timeBoxValue.textContent = `${days}d ${hours}h ${minutes}m`;
+
+    return totalMinutes;
   }
 
   /* -------- BUTTONS: Finished / Come Back / mobile home -------- */
@@ -1525,6 +1626,15 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     currentView = "finished";
     zmResults && (zmResults.innerHTML = "");
     await loadMangas("finished");
+    applyView();
+  }
+
+  function goUser() {
+    closeMobileSettings();
+    currentView = "user";
+    zmResults && (zmResults.innerHTML = "");
+    gridEl.innerHTML = "";
+    renderUserPage();
     applyView();
   }
 
@@ -1553,6 +1663,37 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     if (currentView === "finished") goHome();
     else goFinished();
   });
+  profileImg?.addEventListener("click", () => {
+    if (currentView === "user") goHome();
+    else goUser();
+  });
+
+  mobileProfile?.addEventListener("click", () => {
+    if (currentView === "user") goHome();
+    else goUser();
+  });
+  btnEditNamePage?.addEventListener("click", async () => {
+  // 1. Pedimos el nuevo nombre (puedes usar un prompt sencillo para ir rápido)
+  const currentName = currentUser.displayName || "Usuario";
+  const newName = prompt("Introduce tu nuevo nombre de usuario:", currentName);
+
+  // 2. Validamos que no esté vacío y que no sea el mismo
+  if (newName && newName !== currentName) {
+    try {
+      // 3. Actualizamos en Firebase Auth
+      await updateProfile(auth.currentUser, {
+        displayName: newName
+      });
+
+      // 4. Actualizamos la interfaz al momento
+      if (userPageName) userPageName.textContent = newName;
+      if (userDisplay) userDisplay.textContent = newName;
+    } catch (error) {
+      console.error("Error al actualizar el nombre:", error);
+      alert("No se pudo actualizar el nombre. Inténtalo de nuevo.");
+    }
+  }
+});
   btnVolverPC?.addEventListener("click", goHome);
   btnHomeMobile?.addEventListener("click", goHome);
 
