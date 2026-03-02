@@ -1046,8 +1046,6 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
       await signOut(auth);
       closeMobileSettings();
     };
-
-    c.querySelector("#mb-close").onclick = closeMobileSettings;
   });
 
   /* cerrar tocando fuera */
