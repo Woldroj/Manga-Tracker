@@ -855,7 +855,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
 
   sSignout?.addEventListener("click", async () => {
     await signOut(auth);
-  });
+  }); 
 
   // Toggle del acordeón de reseñas
   reviewsToggle?.addEventListener("click", () => {
@@ -867,53 +867,127 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
   async function renderUserPage() {
     if (!currentUser) return;
 
-    const prefsSnap = await getDoc(doc(db, "users", currentUser.uid, "prefs", "ui"));
-    let finalPhoto = currentUser.photoURL;
+    const publicContainer = document.getElementById("public-mangas-container");
 
-    if (prefsSnap.exists() && prefsSnap.data().photoURL) {
-      finalPhoto = prefsSnap.data().photoURL; // Si existe la subida a mano, usamos esa
-    }
+    try {
+      // 1. Cargar Preferencias y Foto (Lógica unificada con el Header)
+      const prefsDoc = await getDoc(doc(db, "users", currentUser.uid, "prefs", "ui"));
+      let finalPhoto = currentUser.photoURL || "./icons/icon-192.png";
 
-    // 1. Datos básicos
-    userPageName.textContent = currentUser.displayName || "Usuario";
-    userPageEmail.textContent = currentUser.email || "ejemplo@gmail.com";
-    userPageAvatar.src = finalPhoto;
-    
-    // Cargar Bio y Preferencias de Firestore
-    const prefs = await getDoc(prefsDocRef(currentUser.uid));
-    if (prefs.exists()) {
-      userBio.value = prefs.data().bio || "";
-      statsToggle.checked = prefs.data().statsPublic || false;
-    }
+      if (prefsDoc.exists()) {
+        const data = prefsDoc.data();
+        if (data.photoURL) finalPhoto = data.photoURL;
+        if (userBio) userBio.value = data.bio || "";
+        if (statsToggle) statsToggle.checked = data.statsPublic || false;
+      }
 
-    // 2. Cargar listas públicas y estadísticas
-    const querySnapshot = await getDocs(collection(db, "users", currentUser.uid, "mangas"));
-    const allItems = [];
-    querySnapshot.forEach(doc => allItems.push({ id: doc.id, ...doc.data() }));
+      // Aplicar datos básicos a la interfaz
+      userPageName.textContent = currentUser.displayName || "Usuario";
+      userPageEmail.textContent = currentUser.email || "";
+      userPageAvatar.src = finalPhoto;
 
-    // Filtrar públicos
-    const publicReading = allItems.filter(it => it.status === "reading" && it.isPublic);
-    const publicFinished = allItems.filter(it => it.status === "finished" && it.isPublic);
+      // 2. Obtener todos los mangas/animes
+      const querySnapshot = await getDocs(collection(db, "users", currentUser.uid, "mangas"));
+      const allItems = querySnapshot.docs.map(d => ({ id: d.id, ...d.data() }));
 
-    renderGridInElement(publicReading, "public-reading-grid", "public-reading-container");
-    renderGridInElement(publicFinished, "public-finished-grid", "public-finished-container");
+      // 3. FILTRAR Y RENDERIZAR MINI CARDS PÚBLICAS
+      // Filtramos solo los que tienen el "ojito" activado (isPublic: true)
+      const publicItems = allItems.filter(it => it.isPublic === true);
+      
+      if (publicContainer) {
+        publicContainer.innerHTML = ""; // Limpiar contenedor
 
-    // 3. Estadísticas
-    document.getElementById("stat-total").textContent = allItems.length;
-    const totalChapters = allItems.reduce((acc, curr) => acc + (Number(curr.last) || 0), 0);
-    document.getElementById("stat-chapters").textContent = totalChapters;
-    const minutosTotales = await calculateTotalTime();
-    const horasTotales = Math.floor(minutosTotales / 60);
-    document.getElementById("stat-time").textContent = `${horasTotales}h`;
+        if (publicItems.length === 0) {
+          publicContainer.innerHTML = `<p style="opacity:0.5; text-align:center; padding:20px;">No tienes contenido público todavía. ¡Usa el icono del ojo en tus listas!</p>`;
+        } else {
+          const tipos = ["Manga", "Anime"];
 
-    // 4. Reseñas
-    reviewsList.innerHTML = "";
-    allItems.filter(it => it.review).forEach(it => {
-      const div = document.createElement("div");
-      div.className = "review-item";
-      div.innerHTML = `<strong>${it.title}:</strong> <p>${it.review}</p>`;
-      reviewsList.appendChild(div);
-    });
+          tipos.forEach(tipo => {
+            const group = publicItems.filter(it => it.type === tipo);
+            
+            if (group.length > 0) {
+              // Crear la sección (Manga o Anime)
+              const section = document.createElement("div");
+              section.className = "user-public-section";
+              section.innerHTML = `
+                <h3>${tipo}s Públicos</h3>
+                <div class="mini-grid"></div>
+              `;
+
+              const grid = section.querySelector(".mini-grid");
+
+              // Crear las Mini Cards (Solo imagen y título)
+              group.forEach(it => {
+                    const miniTag = document.createElement("div");
+                    miniTag.className = "mini-tag";
+                    miniTag.style.position = "relative"; // Necesario para posicionar el bocadillo
+                    
+                    miniTag.innerHTML = `
+                        <span class="tag-icon">${tipo === 'Manga' ? '📖' : '🎬'}</span>
+                        <span class="tag-text">${it.title}</span>
+                    `;
+
+                    miniTag.onclick = async (e) => {
+                        // 1. Copiar al portapapeles
+                        try {
+                            await navigator.clipboard.writeText(it.title);
+                            
+                            // 2. Crear y mostrar el bocadillo (Tooltip)
+                            const tip = document.createElement("div");
+                            tip.className = "copy-tooltip";
+                            tip.textContent = "¡Copiado!";
+                            
+                            miniTag.appendChild(tip);
+                            
+                            // 3. Quitarlo después de 1.5 segundos
+                            setTimeout(() => {
+                                tip.classList.add("out");
+                                setTimeout(() => tip.remove(), 200);
+                            }, 1200);
+
+                        } catch (err) {
+                            console.error("Error al copiar:", err);
+                        }
+                    };
+
+                    grid.appendChild(miniTag);
+                });
+              publicContainer.appendChild(section);
+            }
+          });
+        }
+      }
+
+      // 4. Estadísticas
+      const statTotalEl = document.getElementById("stat-total");
+      const statChaptersEl = document.getElementById("stat-chapters");
+      const statTimeEl = document.getElementById("stat-time");
+
+      if (statTotalEl) statTotalEl.textContent = allItems.length;
+      
+      const totalChapters = allItems.reduce((acc, curr) => acc + (Number(curr.last) || 0), 0);
+      if (statChaptersEl) statChaptersEl.textContent = totalChapters;
+
+      const minutosTotales = await calculateTotalTime();
+      const horasTotales = Math.floor(minutosTotales / 60);
+      if (statTimeEl) statTimeEl.textContent = `${horasTotales}h`;
+
+      // 5. Reseñas
+      if (reviewsList) {
+        reviewsList.innerHTML = "";
+        const itemsWithReview = allItems.filter(it => it.review && it.review.trim() !== "");
+        
+        itemsWithReview.forEach(it => {
+          const div = document.createElement("div");
+          div.className = "review-item";
+          div.innerHTML = `<strong>${it.title}:</strong> <p>${it.review}</p>`;
+          reviewsList.appendChild(div);
+        });
+      }
+
+    } catch (error) {
+      console.error("Error en renderUserPage:", error);
+    } 
   }
 
   // Función auxiliar para renderizar mini-grids en el perfil
@@ -1260,6 +1334,9 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
 
         group.forEach((it) => {
           const card = document.createElement("article");
+          const isPublic = it.isPublic || false;
+          const eyeOpen = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+          const eyeClosed = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
           card.className = "card";
           card.dataset.id = it.id;
 
@@ -1296,6 +1373,9 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
           card.innerHTML = `
           <div class="thumb">
             ${it.imgurl ? `<img src="${it.imgurl}" style="width:100%;height:100%;object-fit:cover">` : ""}
+            <div class="visibility-btn ${isPublic ? 'is-public' : ''}" data-id="${it.id}" title="${isPublic ? 'Público' : 'Privado'}">
+              ${isPublic ? eyeOpen : eyeClosed}
+            </div>
           </div>
 
           <div class="meta">
@@ -1358,13 +1438,50 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
         };
       });
 
+      /* ===== EVENTO PARA EL OJITO (CORREGIDO) ===== */
+      gridEl.querySelectorAll(".visibility-btn").forEach((btn) => {
+        btn.onclick = async (e) => {
+          e.preventDefault();
+          e.stopPropagation(); // Esto evita que se sume +1 capítulo
+
+          // DEFINIMOS LOS ICONOS AQUÍ DENTRO para evitar el error de "not defined"
+          const eyeOpen = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+          const eyeClosed = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
+
+          const id = btn.dataset.id;
+          // Comprobamos si actualmente es público mirando la clase
+          const isNowPublic = !btn.classList.contains("is-public");
+
+          try {
+            // 1. Actualizar en Firebase Firestore
+            const docRef = doc(db, "users", currentUser.uid, "mangas", id);
+            await updateDoc(docRef, { isPublic: isNowPublic });
+
+            // 2. Cambiar la apariencia visual
+            if (isNowPublic) {
+              btn.classList.add("is-public");
+              btn.innerHTML = eyeOpen;
+              btn.title = "Público";
+            } else {
+              btn.classList.remove("is-public");
+              btn.innerHTML = eyeClosed;
+              btn.title = "Privado";
+            }
+
+          } catch (error) {
+            console.error("Error al cambiar visibilidad:", error);
+          }
+        };
+      });
+
       if (status === "reading") {
         gridEl.querySelectorAll(".card").forEach((card) => {
           card.addEventListener("mousedown", async (e) => {
             if (
               e.target.closest("button") ||
               e.target.closest("a") ||
-              e.target.closest(".finish-box")
+              e.target.closest(".finish-box") ||
+              e.target.closest(".visibility-btn")
             )
               return;
 
