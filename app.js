@@ -55,6 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const sChangeName = document.getElementById("s-change-name");
   const sChangePhoto = document.getElementById("s-change-photo");
   const sSignout = document.getElementById("s-signout");
+  const sGoProfile = document.getElementById("s-goProfile");
   const themeGrid = document.getElementById("theme-grid");
   const searchLoader = document.getElementById("searchLoader");
 
@@ -1671,6 +1672,11 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
   profileImg?.addEventListener("click", () => {
     if (currentView === "user") goHome();
     else goUser();
+  });
+
+  sGoProfile?.addEventListener("click", () => {
+    if (currentView === "user") goHome();
+    else { goUser(); closeSettings(); }
   });
 
   mobileProfile?.addEventListener("click", () => {

@@ -251,14 +251,14 @@ header.app-header {
   pointer-events: auto; 
 }
 
-#s-change-photo, #s-change-name {
+#s-goProfile {
   display: flex;
   justify-content: flex-start;
   align-items: center;
   gap: 12px;
 }
 
-#s-change-photo, #s-change-name {
+#s-goProfile {
   cursor: pointer;
 }
 
