@@ -23,6 +23,10 @@ import {
   getDoc,
   updateDoc,
   query,
+  where,
+  onSnapshot,
+  orderBy,
+  limit,
 } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-firestore.js";
 
 /* -------- CONFIG -------- */
@@ -742,7 +746,28 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
       userControls && (userControls.style.display = "flex");
       setUserNameDisplay(user.displayName || user.email);
 
-      // try load prefs/photo
+      // 1. Generar el UserCode
+      const userCode = `MT-${user.uid.substring(0, 6).toUpperCase()}`;
+
+      // 2. ACTUALIZACIÓN CRÍTICA: Guardar/Actualizar en la colección global "users"
+      // Esto es lo que permite que el buscador funcione.
+      try {
+        await setDoc(doc(db, "users", user.uid), {
+          displayName: user.displayName || "Usuario",
+          photoURL: user.photoURL || "",
+          userCode: userCode,
+          uid: user.uid
+        }, { merge: true }); // merge: true evita borrar otros datos que pudieras tener
+        
+        // Mostrar tu código en el perfil (asegúrate de que este ID exista en tu HTML)
+        const myCodeEl = document.getElementById("my-user-code");
+        if (myCodeEl) myCodeEl.textContent = userCode;
+        
+      } catch (e) {
+        console.error("Error al sincronizar perfil global:", e);
+      }
+
+      // 3. Carga de preferencias y fotos (tu lógica original)
       const prefsSnap = await getDoc(prefsDocRef(user.uid));
       if (prefsSnap && prefsSnap.exists() && prefsSnap.data().photoURL) {
         setProfileImage(prefsSnap.data().photoURL);
@@ -754,8 +779,15 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
 
       await loadPrefsForUser(user.uid);
       await goHome();
+      
+      // 4. Iniciar escuchas de amigos y solicitudes
       await loadFriends(user.uid);
+      if (typeof listenToRequests === "function") {
+        listenToRequests(user.uid); 
+      }
+
     } else {
+      // Lógica de logout (tu lógica original)
       authControls && (authControls.style.display = "flex");
       userControls && (userControls.style.display = "none");
       setUserNameDisplay("Invitado");
@@ -1077,43 +1109,86 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
   }
 
   async function showPublicProfile(uid) {
+  // 1. La validación DEBE ir antes de cualquier llamada a Firebase
+  if (!uid || typeof uid !== "string") {
+    console.error("No se proporcionó un UID válido");
+    return;
+  }
+
+  try {
+    // 2. Obtener el documento del usuario
     const userSnap = await getDoc(doc(db, "users", uid));
-    const data = userSnap.data();
+    const uiSnap = await getDoc(doc(db, "users", uid, "prefs", "ui"));
 
-    document.getElementById("public-username").textContent = data.displayName;
-    document.getElementById("public-avatar").src = data.photoURL || "./icons/icon-192.png";
-    document.getElementById("public-usercode").textContent = data.userCode;
+    if (!userSnap.exists()) {
+      console.warn("El usuario no existe en la base de datos");
+      return;
+    }
+    
+    const userData = userSnap.data();
+    const uiData = uiSnap.exists() ? uiSnap.data() : {};
 
-    // Cargar estadísticas si son públicas
+    // 3. Asignar datos básicos (protegiendo de valores nulos)
+    document.getElementById("public-username").textContent = userData.displayName || "Usuario";
+    document.getElementById("public-avatar").src = userData.photoURL || "./icons/icon-192.png";
+    document.getElementById("public-usercode").textContent = userData.userCode || "";
+    document.getElementById("public-bio").textContent = uiData.bio || "Este usuario no ha escrito una biografía.";
+
+    // 4. Estadísticas
     const statsDiv = document.getElementById("public-stats");
-    if (data.statsPublic) {
-      // Aquí podrías reutilizar tu lógica de calcular stats pero apuntando al UID del amigo
-      statsDiv.innerHTML = `<p class="muted-text">Estadísticas visibles</p>`; 
-    } else {
-      statsDiv.innerHTML = `<p class="muted-text">Estadísticas privadas</p>`;
+    if (statsDiv) {
+      if (data.statsPublic) {
+        // Aquí podrías poner lógica real de conteo si la tienes implementada
+        statsDiv.innerHTML = `<p class="muted-text">Estadísticas visibles</p>`;
+      } else {
+        statsDiv.innerHTML = `<p class="muted-text">Estadísticas privadas</p>`;
+      }
     }
 
-    // Cargar 3 últimas reseñas
-    const reviewsSnap = await getDocs(query(
-      collection(db, "users", uid, "reviews"),
-      orderBy("timestamp", "desc"),
-      limit(3)
-    ));
-    
+    // 5. Cargar 3 últimas reseñas
     const reviewsList = document.getElementById("public-reviews-list");
-    reviewsList.innerHTML = "";
-    reviewsSnap.forEach(doc => {
-      const r = doc.data();
-      reviewsList.innerHTML += `
-        <div class="public-review-item">
-          <strong>${r.mangaTitle}</strong>
-          <p>"${r.text}"</p>
-        </div>
-      `;
-    });
+    if (reviewsList) {
+      reviewsList.innerHTML = "<p class='muted-text'>Cargando reseñas...</p>";
+      
+      try {
+        const reviewsSnap = await getDocs(query(
+          collection(db, "users", uid, "reviews"),
+          orderBy("timestamp", "desc"),
+          limit(3)
+        ));
 
-    publicProfileModal.classList.remove("hidden");
+        reviewsList.innerHTML = "";
+        if (reviewsSnap.empty) {
+          reviewsList.innerHTML = "<p class='muted-text'>No hay reseñas recientes.</p>";
+        } else {
+          reviewsSnap.forEach(docSnap => {
+            const r = docSnap.data();
+            reviewsList.innerHTML += `
+              <div class="public-review-item">
+                <strong>${r.mangaTitle || "Título desconocido"}</strong>
+                <p>"${r.text || ""}"</p>
+              </div>
+            `;
+          });
+        }
+      } catch (err) {
+        console.error("Error al cargar reseñas:", err);
+        reviewsList.innerHTML = "<p class='muted-text'>No se pudieron cargar las reseñas.</p>";
+      }
+    }
+
+    // 6. Mostrar el modal (asegúrate de que publicProfileModal esté definido globalmente)
+    if (typeof publicProfileModal !== "undefined") {
+        publicProfileModal.classList.remove("hidden");
+    } else {
+        document.getElementById("public-profile-modal")?.classList.remove("hidden");
+    }
+
+  } catch (error) {
+    console.error("Error crítico en showPublicProfile:", error);
+    alert("Hubo un error al cargar el perfil. Revisa los permisos en la consola de Firebase.");
   }
+}
 
   function renderGridInElement(items, gridId, containerId) {
     const container = document.getElementById(containerId);
@@ -1200,38 +1275,48 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
   }
 
   function listenToRequests(myUid) {
-    const q = query(collection(db, "friend_requests"), where("to", "==", myUid), where("status", "==", "pending"));
+    // CAMBIO AQUÍ: Apuntamos a la subcolección dentro de tu usuario
+    // Según tus reglas: match /users/{userId}/friend_requests/{reqId}
+    const q = collection(db, "users", myUid, "friend_requests");
     
     onSnapshot(q, (snapshot) => {
       const list = document.getElementById("requests-items-list");
       const badge = document.getElementById("request-badge");
-      const count = snapshot.size;
+      
+      // Si badge o list no existen en el HTML, evitamos error
+      if (!badge || !list) return;
 
+      const count = snapshot.size;
       badge.textContent = count;
-      badge.classList.toggle("hidden", count === 0);
+      badge.style.display = count === 0 ? "none" : "block"; // O usa toggle("hidden")
+      
       list.innerHTML = "";
 
       if (count === 0) {
-        list.innerHTML = '<p class="empty-msg">No hay solicitudes</p>';
+        list.innerHTML = '<p class="empty-msg" style="padding:10px; font-size:12px; color:var(--muted);">No hay solicitudes</p>';
         return;
       }
 
       snapshot.forEach(docSnap => {
         const req = docSnap.data();
-        const id = docSnap.id;
-        list.innerHTML += `
-          <div class="request-item">
-            <img src="${req.fromPhoto || './icons/icon-192.png'}">
-            <div class="req-info">
-              <strong>${req.fromName}</strong>
-              <div class="req-btns">
-                <button class="btn-mini btn-accept" onclick="acceptFriend('${id}', '${req.from}')">Aceptar</button>
-                <button class="btn-mini btn-reject" onclick="rejectFriend('${id}')">X</button>
-              </div>
+        const id = docSnap.id; // El ID del remitente
+        
+        const item = document.createElement("div");
+        item.className = "request-item";
+        item.innerHTML = `
+          <img src="${req.fromPhoto || './icons/icon-192.png'}" style="width:30px; height:30px; border-radius:50%;">
+          <div class="req-info">
+            <strong style="font-size:13px;">${req.fromName}</strong>
+            <div class="req-btns">
+              <button class="btn-mini btn-accept" onclick="acceptFriend('${id}')">Aceptar</button>
+              <button class="btn-mini btn-reject" onclick="rejectFriend('${id}')">X</button>
             </div>
           </div>
         `;
+        list.appendChild(item);
       });
+    }, (error) => {
+      console.error("Error en el listener:", error);
     });
   }
 
@@ -1989,7 +2074,6 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     currentView = "friends";
     zmResults && (zmResults.innerHTML = "");
     gridEl.innerHTML = ""
-    showPublicProfile();
     applyView();
   }
 
@@ -2072,52 +2156,67 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     if (!code) return;
 
     searchResultArea.innerHTML = "Buscando...";
+    btnSearchFriend.disabled = true;
     
-    const q = query(collection(db, "users"), where("userCode", "==", code));
-    const querySnapshot = await getDocs(q);
-
-    if (querySnapshot.empty) {
-      searchResultArea.innerHTML = "<p class='muted-text'>Usuario no encontrado.</p>";
-      return;
-    }
-
-    const targetData = querySnapshot.docs[0].data();
-    const targetId = querySnapshot.docs[0].id;
-
-    if (targetId === currentUser.uid) {
-      searchResultArea.innerHTML = "<p class='muted-text'>¡Eres tú!</p>";
-      return;
-    }
-
-    searchResultArea.innerHTML = `
-      <div class="friend-card">
-        <img src="${targetData.photoURL || './icons/icon-192.png'}" class="friend-avatar">
-        <div class="friend-info">
-          <h4>${targetData.displayName}</h4>
-          <p>${targetData.userCode}</p>
-        </div>
-        <button class="btn primary btn-small" id="send-req-btn">Añadir</button>
-      </div>
-    `;
-
-    document.getElementById("send-req-btn").onclick = () => sendFriendRequest(targetId, targetData);
-  });
-
-  async function sendFriendRequest(targetId, targetData) {
     try {
-      await setDoc(doc(db, "users", targetId, "friend_requests", currentUser.uid), {
-        fromId: currentUser.uid,
-        fromName: currentUser.displayName,
-        fromPhoto: currentUser.photoURL || "",
-        status: "pending",
-        timestamp: Date.now()
-      });
-      alert("Solicitud enviada");
-      searchResultArea.innerHTML = "";
-    } catch (e) {
-      console.error(e);
-      alert("Error al enviar solicitud");
+        // Esta consulta busca en la raíz de 'users', justo donde guardamos el userCode
+        const q = query(collection(db, "users"), where("userCode", "==", code));
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+            searchResultArea.innerHTML = "<p class='muted-text'>Usuario no encontrado.</p>";
+            btnSearchFriend.disabled = false;
+            return;
+        }
+
+        const targetDoc = querySnapshot.docs[0];
+        const targetData = targetDoc.data();
+        const targetId = targetDoc.id;
+
+        if (targetId === currentUser.uid) {
+            searchResultArea.innerHTML = "<p class='muted-text'>¡Eres tú!</p>";
+            btnSearchFriend.disabled = false; // Re-habilitar
+            return;
+        }
+
+        // Pintamos el resultado
+        searchResultArea.innerHTML = `
+            <div class="friend-card">
+                <img src="${targetData.photoURL || './icons/icon-192.png'}" class="friend-avatar">
+                <div class="friend-info">
+                    <h4>${targetData.displayName}</h4>
+                    <p>${targetData.userCode}</p>
+                </div>
+                <button class="btn primary btn-small" id="send-req-btn">Añadir</button>
+            </div>
+        `;
+
+        // Asignamos la función de enviar solicitud
+        document.getElementById("send-req-btn").onclick = () => {
+            sendFriendRequest(targetId, targetData);
+            btnSearchFriend.disabled = false; // Re-habilitar tras enviar
+        };
+
+    } catch (error) {
+        console.error("Error en la búsqueda:", error);
+        searchResultArea.innerHTML = "<p class='muted-text'>Error de permisos o red.</p>";
+    } finally {
+        btnSearchFriend.disabled = false;
     }
+});
+
+  async function sendFriendRequest(targetUid, targetData) {
+    const myData = {
+      from: auth.currentUser.uid,
+      fromName: auth.currentUser.displayName || "Usuario",
+      fromPhoto: auth.currentUser.photoURL || "",
+      status: "pending",
+      timestamp: new Date()
+    };
+
+    // Guardamos en: users -> ID_DEL_AMIGO -> friend_requests -> MI_ID
+    await setDoc(doc(db, "users", targetUid, "friend_requests", auth.currentUser.uid), myData);
+    alert("Solicitud enviada a " + targetData.displayName);
   }
 
   btnVolverPC?.addEventListener("click", goHome);
