@@ -946,7 +946,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
                   <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
                       <path d="M12 2L4 5V11C4 16.19 7.41 21.05 12 22C16.59 21.05 20 16.19 20 11V5L12 2M10 17L6 13L7.41 11.59L10 14.17L16.59 7.58L18 9L10 17Z"/>
                   </svg>
-              </span>z
+              </span>
           `;
         } else {
             userPageName.textContent = name;
