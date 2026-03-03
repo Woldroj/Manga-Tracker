@@ -343,17 +343,20 @@ document.addEventListener("DOMContentLoaded", () => {
     if (currentView === "finished") {
       userView.style.display = "none";
       searchBox && (searchBox.style.display = "none");
+      friendsView.style.display = "none";
       btnAdd && (btnAdd.style.display = "none");
       btnVolverSearch && (btnVolverSearch.style.display = "none");
     } else if (currentView === "search") {
       userView.style.display = "none";
       searchBox && (searchBox.style.display = "");
+      friendsView.style.display = "none";
       btnAdd && (btnAdd.style.display = "");
       btnVolverSearch && (btnVolverSearch.style.display = "inline-block");
       timeBox && (timeBox.style.display = "none");
     } else if (currentView === "user") {
       userView.style.display = "block";
       searchBox && (searchBox.style.display = "none");
+      friendsView.style.display = "none";
       btnAdd && (btnAdd.style.display = "none");
       btnVolverSearch && (btnVolverSearch.style.display = "inline-block");
       btnVolverPC && (btnVolverPC.style.display = "none");
