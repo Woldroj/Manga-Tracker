@@ -882,18 +882,30 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
       }
       if (userPageName) {
         const devUID = "wv0cbOYYzbgZBp3s7JqDWjw80mq2";
+        const testerUID = ["wYE4Gp2uzTVvs2lzpVP7IthFMYb2", "GGpWv2FubDdbMND0DVUZ3vPJoin1"];
+
+        const name = currentUser.displayName || "Usuario";
         
         if (currentUser.uid === devUID) {
             userPageName.innerHTML = `
-                ${currentUser.displayName || "Usuario"} 
+                ${name} 
                 <span class="dev-badge" title="Desarrollador Oficial">
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
                         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                     </svg>
                 </span>
             `;
+        } else if (testerUID.includes(currentUser.uid)) {
+            userPageName.innerHTML = `
+              ${name} 
+              <span class="tester-badge" title="Tester Oficial">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                      <path d="M12 2L4 5V11C4 16.19 7.41 21.05 12 22C16.59 21.05 20 16.19 20 11V5L12 2M10 17L6 13L7.41 11.59L10 14.17L16.59 7.58L18 9L10 17Z"/>
+                  </svg>
+              </span>
+          `;
         } else {
-            userPageName.textContent = currentUser.displayName || "Usuario";
+            userPageName.textContent = name;
         }
       }
 

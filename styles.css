@@ -1481,3 +1481,24 @@ input:checked + .slider::before {
   background-clip: text;
   font-weight: bold;
 }
+
+/* Badge del Tester */
+.tester-badge {
+    display: inline-flex;
+    align-items: center;
+    vertical-align: middle;
+    margin-left: 8px;
+    color: #22c55e; /* Un verde vibrante */
+    filter: drop-shadow(0 0 3px rgba(34, 197, 94, 0.4));
+}
+
+/* Efecto de nombre para Tester */
+#user-page-name:has(.tester-badge) {
+    font-weight: 700;
+    color: #ffffff;
+    /* Un degradado verde muy elegante */
+    background: linear-gradient(90deg, #ffffff, #22c55e);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
