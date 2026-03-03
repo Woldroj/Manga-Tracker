@@ -1108,87 +1108,92 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     } 
   }
 
-  async function showPublicProfile(uid) {
-  // 1. La validación DEBE ir antes de cualquier llamada a Firebase
-  if (!uid || typeof uid !== "string") {
-    console.error("No se proporcionó un UID válido");
-    return;
-  }
+  window.showPublicProfile = async (uid) => {
+    if (!uid || typeof uid !== "string") return;
 
-  try {
-    // 2. Obtener el documento del usuario
-    const userSnap = await getDoc(doc(db, "users", uid));
-    const uiSnap = await getDoc(doc(db, "users", uid, "prefs", "ui"));
+    try {
+      // 1. Obtener datos de la raíz (Públicos: Nombre, Foto, Código)
+      const userSnap = await getDoc(doc(db, "users", uid));
+      // 2. Obtener preferencias (Privados: Bio, Config de Stats)
+      const uiSnap = await getDoc(doc(db, "users", uid, "prefs", "ui"));
 
-    if (!userSnap.exists()) {
-      console.warn("El usuario no existe en la base de datos");
-      return;
-    }
-    
-    const userData = userSnap.data();
-    const uiData = uiSnap.exists() ? uiSnap.data() : {};
-
-    // 3. Asignar datos básicos (protegiendo de valores nulos)
-    document.getElementById("public-username").textContent = userData.displayName || "Usuario";
-    document.getElementById("public-avatar").src = userData.photoURL || "./icons/icon-192.png";
-    document.getElementById("public-usercode").textContent = userData.userCode || "";
-    document.getElementById("public-bio").textContent = uiData.bio || "Este usuario no ha escrito una biografía.";
-
-    // 4. Estadísticas
-    const statsDiv = document.getElementById("public-stats");
-    if (statsDiv) {
-      if (data.statsPublic) {
-        // Aquí podrías poner lógica real de conteo si la tienes implementada
-        statsDiv.innerHTML = `<p class="muted-text">Estadísticas visibles</p>`;
-      } else {
-        statsDiv.innerHTML = `<p class="muted-text">Estadísticas privadas</p>`;
+      if (!userSnap.exists()) {
+        console.warn("El usuario no existe");
+        return;
       }
-    }
 
-    // 5. Cargar 3 últimas reseñas
-    const reviewsList = document.getElementById("public-reviews-list");
-    if (reviewsList) {
-      reviewsList.innerHTML = "<p class='muted-text'>Cargando reseñas...</p>";
-      
-      try {
+      const userData = userSnap.data();
+      const uiData = uiSnap.exists() ? uiSnap.data() : {};
+
+      // 3. Asignar datos básicos
+      document.getElementById("public-username").textContent = userData.displayName || "Usuario";
+      document.getElementById("public-avatar").src = userData.photoURL || "./icons/icon-192.png";
+      document.getElementById("public-usercode").textContent = userData.userCode || "";
+      // Nota: Usamos 'biografia' porque es como lo tienes en tu base de datos
+      document.getElementById("public-bio").textContent = uiData.biografia || "Este usuario prefiere mantener su biografía en secreto.";
+
+      // 4. Lógica de Estadísticas con bloqueo visual
+      const statsDiv = document.getElementById("public-stats");
+      if (statsDiv) {
+        // Limpiamos el contenedor y quitamos clases previas
+        statsDiv.innerHTML = "";
+        statsDiv.classList.remove("stats-locked");
+        
+        if (uiData.statsPublic) {
+          // Muestra las stats (Aquí puedes llamar a una función que cuente sus mangas/animes)
+          statsDiv.innerHTML = `
+            <div class="stats-grid-public">
+              <p class="muted-text">Estadísticas visibles</p>
+              </div>
+          `;
+        } else {
+          // EFECTO BORROSO Y OJO TACHADO
+          statsDiv.classList.add("stats-locked");
+          statsDiv.innerHTML = `
+            <div class="stats-overlay">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                <line x1="1" y1="1" x2="23" y2="23"></line>
+              </svg>
+              <p>Estadísticas privadas</p>
+            </div>
+            <div style="opacity: 0.2; filter: blur(2px);">
+              <p>000 Mangas</p>
+              <p>000 Animes</p>
+            </div>
+          `;
+        }
+      }
+
+      // 5. Cargar reseñas (Igual que tenías)
+      const reviewsList = document.getElementById("public-reviews-list");
+      if (reviewsList) {
+        reviewsList.innerHTML = "<p class='muted-text'>Cargando reseñas...</p>";
         const reviewsSnap = await getDocs(query(
           collection(db, "users", uid, "reviews"),
           orderBy("timestamp", "desc"),
           limit(3)
         ));
-
-        reviewsList.innerHTML = "";
-        if (reviewsSnap.empty) {
-          reviewsList.innerHTML = "<p class='muted-text'>No hay reseñas recientes.</p>";
-        } else {
-          reviewsSnap.forEach(docSnap => {
-            const r = docSnap.data();
-            reviewsList.innerHTML += `
-              <div class="public-review-item">
-                <strong>${r.mangaTitle || "Título desconocido"}</strong>
-                <p>"${r.text || ""}"</p>
-              </div>
-            `;
-          });
-        }
-      } catch (err) {
-        console.error("Error al cargar reseñas:", err);
-        reviewsList.innerHTML = "<p class='muted-text'>No se pudieron cargar las reseñas.</p>";
+        reviewsList.innerHTML = reviewsSnap.empty ? 
+          "<p class='muted-text'>No hay reseñas recientes.</p>" : "";
+        
+        reviewsSnap.forEach(docSnap => {
+          const r = docSnap.data();
+          reviewsList.innerHTML += `
+            <div class="public-review-item">
+              <strong>${r.mangaTitle || "Título"}</strong>
+              <p>"${r.text || ""}"</p>
+            </div>`;
+        });
       }
-    }
 
-    // 6. Mostrar el modal (asegúrate de que publicProfileModal esté definido globalmente)
-    if (typeof publicProfileModal !== "undefined") {
-        publicProfileModal.classList.remove("hidden");
-    } else {
-        document.getElementById("public-profile-modal")?.classList.remove("hidden");
-    }
+      // 6. Abrir Modal
+      document.getElementById("public-profile-modal")?.classList.remove("hidden");
 
-  } catch (error) {
-    console.error("Error crítico en showPublicProfile:", error);
-    alert("Hubo un error al cargar el perfil. Revisa los permisos en la consola de Firebase.");
-  }
-}
+    } catch (error) {
+      console.error("Error en perfil público:", error);
+    }
+  };
 
   function renderGridInElement(items, gridId, containerId) {
     const container = document.getElementById(containerId);
@@ -1238,40 +1243,6 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
         friendsGrid.appendChild(friendCard);
       });
     });
-  }
-
-  // --- 3. Lógica de aceptar solicitud (Importante) ---
-  async function acceptFriend(requestId, fromUid) {
-    try {
-      // 1. Obtener datos del que envió la solicitud
-      const fromSnap = await getDoc(doc(db, "users", fromUid));
-      const fromData = fromSnap.data();
-
-      // 2. Obtener mis datos
-      const myDataSnap = await getDoc(doc(db, "users", currentUser.uid));
-      const myData = myDataSnap.data();
-
-      // 3. Añadirlo a MI lista de amigos
-      await setDoc(doc(db, "users", currentUser.uid, "friends", fromUid), {
-        displayName: fromData.displayName,
-        photoURL: fromData.photoURL,
-        userCode: fromData.userCode
-      });
-
-      // 4. Añadirme a SU lista de amigos
-      await setDoc(doc(db, "users", fromUid, "friends", currentUser.uid), {
-        displayName: myData.displayName,
-        photoURL: myData.photoURL,
-        userCode: myData.userCode
-      });
-
-      // 5. Borrar la solicitud
-      await deleteDoc(doc(db, "users", currentUser.uid, "friend_requests", fromUid));
-      
-      alert("¡Ahora sois amigos!");
-    } catch (e) {
-      console.error(e);
-    }
   }
 
   function listenToRequests(myUid) {
@@ -2152,64 +2123,89 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
   });
 
   btnSearchFriend?.addEventListener("click", async () => {
-    const code = friendSearchInput.value.trim().toUpperCase();
-    if (!code) return;
+      const code = friendSearchInput.value.trim().toUpperCase();
+      if (!code) return;
 
-    searchResultArea.innerHTML = "Buscando...";
-    btnSearchFriend.disabled = true;
-    
-    try {
-        // Esta consulta busca en la raíz de 'users', justo donde guardamos el userCode
-        const q = query(collection(db, "users"), where("userCode", "==", code));
-        const querySnapshot = await getDocs(q);
+      searchResultArea.innerHTML = "Buscando...";
+      btnSearchFriend.disabled = true;
+      
+      try {
+          const q = query(collection(db, "users"), where("userCode", "==", code));
+          const querySnapshot = await getDocs(q);
 
-        if (querySnapshot.empty) {
-            searchResultArea.innerHTML = "<p class='muted-text'>Usuario no encontrado.</p>";
-            btnSearchFriend.disabled = false;
-            return;
-        }
+          if (querySnapshot.empty) {
+              searchResultArea.innerHTML = "<p class='muted-text'>Usuario no encontrado.</p>";
+              return;
+          }
 
-        const targetDoc = querySnapshot.docs[0];
-        const targetData = targetDoc.data();
-        const targetId = targetDoc.id;
+          const targetDoc = querySnapshot.docs[0];
+          const targetData = targetDoc.data();
+          const targetId = targetDoc.id;
 
-        if (targetId === currentUser.uid) {
-            searchResultArea.innerHTML = "<p class='muted-text'>¡Eres tú!</p>";
-            btnSearchFriend.disabled = false; // Re-habilitar
-            return;
-        }
+          if (targetId === currentUser.uid) {
+              searchResultArea.innerHTML = "<p class='muted-text'>¡Eres tú!</p>";
+              return;
+          }
 
-        // Pintamos el resultado
-        searchResultArea.innerHTML = `
-            <div class="friend-card">
-                <img src="${targetData.photoURL || './icons/icon-192.png'}" class="friend-avatar">
-                <div class="friend-info">
-                    <h4>${targetData.displayName}</h4>
-                    <p>${targetData.userCode}</p>
-                </div>
-                <button class="btn primary btn-small" id="send-req-btn">Añadir</button>
+          // --- NUEVA LÓGICA: Comprobar si ya existe una solicitud enviada ---
+          const checkReq = await getDoc(doc(db, "users", targetId, "friend_requests", currentUser.uid));
+          const yaEnviada = checkReq.exists();
+
+          // Pintamos el resultado
+          searchResultArea.innerHTML = `
+            <div class="friend-card" onclick="showPublicProfile('${targetId}')" style="cursor:pointer">
+              <img src="${targetData.photoURL || './icons/icon-192.png'}" class="friend-avatar">
+              <div class="friend-info">
+                <h4>${targetData.displayName}</h4>
+                <p>${targetData.userCode}</p>
+              </div>
+              <button class="btn primary btn-small" id="send-req-btn" ${yaEnviada ? 'disabled style="background:var(--muted);"' : ''}>
+                  ${yaEnviada ? 'Esperando respuesta' : 'Añadir'}
+              </button>
             </div>
-        `;
+          `;
 
-        // Asignamos la función de enviar solicitud
-        document.getElementById("send-req-btn").onclick = () => {
-            sendFriendRequest(targetId, targetData);
-            btnSearchFriend.disabled = false; // Re-habilitar tras enviar
-        };
+          // Lógica del botón Añadir
+          const sendBtn = document.getElementById("send-req-btn");
+          if (sendBtn && !yaEnviada) {
+              sendBtn.onclick = async (e) => {
+                  e.stopPropagation(); // Evita abrir el perfil al dar al botón
+                  
+                  sendBtn.disabled = true;
+                  sendBtn.textContent = "Enviando...";
 
-    } catch (error) {
-        console.error("Error en la búsqueda:", error);
-        searchResultArea.innerHTML = "<p class='muted-text'>Error de permisos o red.</p>";
-    } finally {
-        btnSearchFriend.disabled = false;
-    }
-});
+                  try {
+                      await sendFriendRequest(targetId, targetData);
+                      
+                      // Cambio visual a "Esperando respuesta"
+                      sendBtn.textContent = "Esperando respuesta";
+                      sendBtn.style.background = "var(--muted)";
+                      sendBtn.disabled = true; 
+                  } catch (err) {
+                      console.error("Error al enviar solicitud:", err);
+                      sendBtn.disabled = false;
+                      sendBtn.textContent = "Añadir";
+                      alert("No se pudo enviar la solicitud. Revisa las reglas de Firebase.");
+                  }
+              };
+          }
 
+      } catch (error) {
+          console.error("Error en la búsqueda:", error);
+          searchResultArea.innerHTML = "<p class='muted-text'>Error de permisos o red.</p>";
+      } finally {
+          btnSearchFriend.disabled = false;
+      }
+  });
+  
   async function sendFriendRequest(targetUid, targetData) {
+
+    const myCurrentPhoto = currentUser.photoURL || "./icons/icon-192.png";
+
     const myData = {
       from: auth.currentUser.uid,
       fromName: auth.currentUser.displayName || "Usuario",
-      fromPhoto: auth.currentUser.photoURL || "",
+      fromPhoto: myCurrentPhoto,
       status: "pending",
       timestamp: new Date()
     };
@@ -2268,6 +2264,56 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
       btnScrollTop.classList.remove("show");
     }
   });
+
+  window.acceptFriend = async (fromUid) => {
+    if (!currentUser) return;
+    
+    try {
+      // 1. Referencia a la solicitud
+      const reqRef = doc(db, "users", currentUser.uid, "friend_requests", fromUid);
+      const reqSnap = await getDoc(reqRef);
+      if (!reqSnap.exists()) return;
+      const reqData = reqSnap.data();
+
+      // 2. Mis datos para enviárselos al amigo
+      const mySnap = await getDoc(doc(db, "users", currentUser.uid));
+      const myData = mySnap.data();
+
+      // 3. Añadir al amigo en mi lista
+      await setDoc(doc(db, "users", currentUser.uid, "friends", fromUid), {
+        uid: fromUid,
+        displayName: reqData.fromName || "Amigo",
+        photoURL: reqData.fromPhoto || "./icons/icon-192.png",
+        userCode: reqData.fromCode || "",
+        addedAt: new Date()
+      });
+
+      // 4. Añadirme a su lista (Ahora las reglas lo permiten)
+      await setDoc(doc(db, "users", fromUid, "friends", currentUser.uid), {
+        uid: currentUser.uid,
+        displayName: myData.displayName,
+        photoURL: myData.photoURL || "./icons/icon-192.png",
+        userCode: myData.userCode,
+        addedAt: new Date()
+      });
+
+      // 5. Borrar solicitud
+      await deleteDoc(reqRef);
+      
+      alert("¡Ahora sois amigos!");
+    } catch (error) {
+      console.error("Error al aceptar amigo:", error);
+    }
+  };
+
+  window.rejectFriend = async (fromUid) => {
+    if (!currentUser) return;
+    try {
+      await deleteDoc(doc(db, "users", currentUser.uid, "friend_requests", fromUid));
+    } catch (e) {
+      console.error("Error al rechazar:", e);
+    }
+  };
 
   // 2. Función para subir suavemente
   btnScrollTop?.addEventListener("click", () => {

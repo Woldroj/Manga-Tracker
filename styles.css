@@ -1695,3 +1695,20 @@ input:checked + .slider::before {
   color: var(--muted);
   margin-top: 30px;
 }
+
+.stats-locked {
+  position: relative;
+  filter: blur(4px);
+  pointer-events: none;
+  user-select: none;
+}
+.stats-overlay {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  z-index: 10;
+  background: rgba(15, 23, 42, 0.4); /* Un velo oscuro */
+  border-radius: 12px;
+}
+.stats-overlay svg { margin-bottom: 8px; color: var(--muted); }
