@@ -56,14 +56,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const sChangePhoto = document.getElementById("s-change-photo");
   const sSignout = document.getElementById("s-signout");
   const sGoProfile = document.getElementById("s-goProfile");
-  const themeGrid = document.getElementById("theme-grid");
   const searchLoader = document.getElementById("searchLoader");
 
   // Buttons
   const btnLogin = document.getElementById("btn-login");
   const btnAdd = document.getElementById("btn-add");
-  const btnSave = document.getElementById("btn-save");
-  const btnCancel = document.getElementById("btn-cancel");
 
   // Mobile
   const mobileAdd = document.getElementById("mobile-add");
@@ -115,11 +112,28 @@ document.addEventListener("DOMContentLoaded", () => {
   const userPageAvatar = document.getElementById("user-page-avatar");
   const userPageName = document.getElementById("user-page-name");
   const userPageEmail = document.getElementById("user-page-email");
+  const userPageCode = document.getElementById("my-user-code");
+  const toast = document.getElementById("copy-toast");
   const userBio = document.getElementById("user-bio");
   const statsToggle = document.getElementById("stats-public-toggle");
   const reviewsToggle = document.getElementById("reviews-toggle");
   const reviewsList = document.getElementById("reviews-list");
   const btnEditNamePage = document.getElementById("btn-edit-name-page");
+
+  // Social Zone
+  const friendsView = document.getElementById("friends-view");
+  const sGoFriends = document.getElementById("s-goFriends");
+  const btnSearchFriend = document.getElementById("btn-search-friend");
+  const friendSearchInput = document.getElementById("friend-search-input");
+  const friendRequestsList = document.getElementById("friend-requests-list");
+  const friendsList = document.getElementById("friends-list");
+  const searchResultArea = document.getElementById("search-result-area");
+
+  const publicProfileModal = document.getElementById("public-profile-modal");
+  const closePublicProfile = document.getElementById("close-public-profile");
+
+  const btnMail = document.getElementById("btn-mail-requests");
+  const dropdown = document.getElementById("requests-dropdown");
 
 
   /* -------- STATE -------- */
@@ -245,6 +259,24 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  async function ensureUserCode(user) {
+    const userRef = doc(db, "users", user.uid);
+    const userSnap = await getDoc(userRef);
+    
+    let userCode = "";
+    if (userSnap.exists() && userSnap.data().userCode) {
+      userCode = userSnap.data().userCode;
+    } else {
+      userCode = `MT-${user.uid.substring(0, 6).toUpperCase()}`;
+      await setDoc(userRef, { 
+        userCode,
+        displayName: user.displayName,
+        photoURL: user.photoURL || ""
+      }, { merge: true });
+    }
+    return userCode;
+  }
+
   function toAnimeflvSlug(title) {
     return title
       .toLowerCase()
@@ -326,8 +358,16 @@ document.addEventListener("DOMContentLoaded", () => {
       btnVolverSearch && (btnVolverSearch.style.display = "inline-block");
       btnVolverPC && (btnVolverPC.style.display = "none");
       timeBox && (timeBox.style.display = "none");
+    } else if (currentView === "friends") {
+      friendsView.style.display = "block";
+      userView.style.display = "none";
+      searchBox && (searchBox.style.display = "none");
+      btnAdd && (btnAdd.style.display = "none");
+      btnVolverSearch && (btnVolverSearch.style.display = "inline-block");
+      timeBox && (timeBox.style.display = "none");
     } else {
       // home
+      friendsView.style.display = "none";
       userView.style.display = "none";
       searchBox && (searchBox.style.display = "");
       btnAdd && (btnAdd.style.display = "");
@@ -711,6 +751,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
 
       await loadPrefsForUser(user.uid);
       await goHome();
+      await loadFriends(user.uid);
     } else {
       authControls && (authControls.style.display = "flex");
       userControls && (userControls.style.display = "none");
@@ -883,7 +924,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
       if (userPageName) {
         const devUID = "wv0cbOYYzbgZBp3s7JqDWjw80mq2";
         const testerUID = ["wYE4Gp2uzTVvs2lzpVP7IthFMYb2", "GGpWv2FubDdbMND0DVUZ3vPJoin1"];
-
+    
         const name = currentUser.displayName || "Usuario";
         
         if (currentUser.uid === devUID) {
@@ -902,7 +943,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
                   <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
                       <path d="M12 2L4 5V11C4 16.19 7.41 21.05 12 22C16.59 21.05 20 16.19 20 11V5L12 2M10 17L6 13L7.41 11.59L10 14.17L16.59 7.58L18 9L10 17Z"/>
                   </svg>
-              </span>
+              </span>z
           `;
         } else {
             userPageName.textContent = name;
@@ -910,7 +951,23 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
       }
 
       userPageEmail.textContent = currentUser.email || "";
+      const uCode = "MT-" + currentUser.uid.slice(0, 6).toUpperCase();
+      userPageCode.textContent =  uCode;
       userPageAvatar.src = finalPhoto;
+
+      if (userPageCode && toast) {
+        userPageCode.onclick = async () => {
+          const textToCopy = userPageCode.childNodes[0].textContent.trim();
+          navigator.clipboard.writeText(textToCopy).then(() => {
+            toast.classList.add("visible");
+            setTimeout(() => {
+              toast.classList.remove("visible");
+            }, 1500);
+          }).catch(err => {
+            console.error("Error al copiar el código de usuario: ", err);
+          });
+        }
+      }
 
       // 2. Obtener todos los mangas/animes
       const querySnapshot = await getDocs(collection(db, "users", currentUser.uid, "mangas"));
@@ -1016,7 +1073,45 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     } 
   }
 
-  // Función auxiliar para renderizar mini-grids en el perfil
+  async function showPublicProfile(uid) {
+    const userSnap = await getDoc(doc(db, "users", uid));
+    const data = userSnap.data();
+
+    document.getElementById("public-username").textContent = data.displayName;
+    document.getElementById("public-avatar").src = data.photoURL || "./icons/icon-192.png";
+    document.getElementById("public-usercode").textContent = data.userCode;
+
+    // Cargar estadísticas si son públicas
+    const statsDiv = document.getElementById("public-stats");
+    if (data.statsPublic) {
+      // Aquí podrías reutilizar tu lógica de calcular stats pero apuntando al UID del amigo
+      statsDiv.innerHTML = `<p class="muted-text">Estadísticas visibles</p>`; 
+    } else {
+      statsDiv.innerHTML = `<p class="muted-text">Estadísticas privadas</p>`;
+    }
+
+    // Cargar 3 últimas reseñas
+    const reviewsSnap = await getDocs(query(
+      collection(db, "users", uid, "reviews"),
+      orderBy("timestamp", "desc"),
+      limit(3)
+    ));
+    
+    const reviewsList = document.getElementById("public-reviews-list");
+    reviewsList.innerHTML = "";
+    reviewsSnap.forEach(doc => {
+      const r = doc.data();
+      reviewsList.innerHTML += `
+        <div class="public-review-item">
+          <strong>${r.mangaTitle}</strong>
+          <p>"${r.text}"</p>
+        </div>
+      `;
+    });
+
+    publicProfileModal.classList.remove("hidden");
+  }
+
   function renderGridInElement(items, gridId, containerId) {
     const container = document.getElementById(containerId);
     const grid = document.getElementById(gridId);
@@ -1036,6 +1131,105 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
         grid.appendChild(card);
       });
     }
+  }
+
+  async function loadFriends(myUid) {
+    const friendsGrid = document.getElementById("friends-list-grid");
+    if (!friendsGrid) return;
+
+    // Escuchamos la subcolección de amigos del usuario
+    const q = collection(db, "users", myUid, "friends");
+    
+    onSnapshot(q, (snapshot) => {
+      friendsGrid.innerHTML = "";
+      if (snapshot.empty) {
+        friendsGrid.innerHTML = '<p class="muted-text">Aún no tienes amigos.</p>';
+        return;
+      }
+
+      snapshot.forEach((docSnap) => {
+        const friend = docSnap.data();
+        const friendCard = document.createElement("div");
+        friendCard.className = "friend-item-card";
+        friendCard.innerHTML = `
+          <img src="${friend.photoURL || './icons/icon-192.png'}">
+          <h4>${friend.displayName}</h4>
+        `;
+        // Al hacer clic, ver su perfil rápido
+        friendCard.onclick = () => showPublicProfile(docSnap.id);
+        friendsGrid.appendChild(friendCard);
+      });
+    });
+  }
+
+  // --- 3. Lógica de aceptar solicitud (Importante) ---
+  async function acceptFriend(requestId, fromUid) {
+    try {
+      // 1. Obtener datos del que envió la solicitud
+      const fromSnap = await getDoc(doc(db, "users", fromUid));
+      const fromData = fromSnap.data();
+
+      // 2. Obtener mis datos
+      const myDataSnap = await getDoc(doc(db, "users", currentUser.uid));
+      const myData = myDataSnap.data();
+
+      // 3. Añadirlo a MI lista de amigos
+      await setDoc(doc(db, "users", currentUser.uid, "friends", fromUid), {
+        displayName: fromData.displayName,
+        photoURL: fromData.photoURL,
+        userCode: fromData.userCode
+      });
+
+      // 4. Añadirme a SU lista de amigos
+      await setDoc(doc(db, "users", fromUid, "friends", currentUser.uid), {
+        displayName: myData.displayName,
+        photoURL: myData.photoURL,
+        userCode: myData.userCode
+      });
+
+      // 5. Borrar la solicitud
+      await deleteDoc(doc(db, "users", currentUser.uid, "friend_requests", fromUid));
+      
+      alert("¡Ahora sois amigos!");
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  function listenToRequests(myUid) {
+    const q = query(collection(db, "friend_requests"), where("to", "==", myUid), where("status", "==", "pending"));
+    
+    onSnapshot(q, (snapshot) => {
+      const list = document.getElementById("requests-items-list");
+      const badge = document.getElementById("request-badge");
+      const count = snapshot.size;
+
+      badge.textContent = count;
+      badge.classList.toggle("hidden", count === 0);
+      list.innerHTML = "";
+
+      if (count === 0) {
+        list.innerHTML = '<p class="empty-msg">No hay solicitudes</p>';
+        return;
+      }
+
+      snapshot.forEach(docSnap => {
+        const req = docSnap.data();
+        const id = docSnap.id;
+        list.innerHTML += `
+          <div class="request-item">
+            <img src="${req.fromPhoto || './icons/icon-192.png'}">
+            <div class="req-info">
+              <strong>${req.fromName}</strong>
+              <div class="req-btns">
+                <button class="btn-mini btn-accept" onclick="acceptFriend('${id}', '${req.from}')">Aceptar</button>
+                <button class="btn-mini btn-reject" onclick="rejectFriend('${id}')">X</button>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+    });
   }
 
   // Guardar biografía automáticamente al salir del textarea
@@ -1787,6 +1981,15 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     applyView();
   }
 
+  function goFriends() {
+    closeMobileSettings();
+    currentView = "friends";
+    zmResults && (zmResults.innerHTML = "");
+    gridEl.innerHTML = ""
+    showPublicProfile();
+    applyView();
+  }
+
   function goSearch() {
     closeMobileSettings();
     currentView = "search";
@@ -1812,6 +2015,12 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     if (currentView === "finished") goHome();
     else goFinished();
   });
+
+  btnMail?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    dropdown.classList.toggle("hidden");
+  });
+
   profileImg?.addEventListener("click", () => {
     if (currentView === "user") goHome();
     else goUser();
@@ -1826,28 +2035,88 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     if (currentView === "user") goHome();
     else goUser();
   });
+
+  sGoFriends?.addEventListener("click", () => {
+    if (currentView === "friends") goHome();
+    else { goFriends(); closeSettings(); }
+  });
+
   btnEditNamePage?.addEventListener("click", async () => {
-  // 1. Pedimos el nuevo nombre (puedes usar un prompt sencillo para ir rápido)
-  const currentName = currentUser.displayName || "Usuario";
-  const newName = prompt("Introduce tu nuevo nombre de usuario:", currentName);
+    // 1. Pedimos el nuevo nombre (puedes usar un prompt sencillo para ir rápido)
+    const currentName = currentUser.displayName || "Usuario";
+    const newName = prompt("Introduce tu nuevo nombre de usuario:", currentName);
 
-  // 2. Validamos que no esté vacío y que no sea el mismo
-  if (newName && newName !== currentName) {
+    // 2. Validamos que no esté vacío y que no sea el mismo
+    if (newName && newName !== currentName) {
+      try {
+        // 3. Actualizamos en Firebase Auth
+        await updateProfile(auth.currentUser, {
+          displayName: newName
+        });
+
+        // 4. Actualizamos la interfaz al momento
+        if (userPageName) userPageName.textContent = newName;
+        if (userDisplay) userDisplay.textContent = newName;
+      } catch (error) {
+        console.error("Error al actualizar el nombre:", error);
+        alert("No se pudo actualizar el nombre. Inténtalo de nuevo.");
+      }
+    }
+  });
+
+  btnSearchFriend?.addEventListener("click", async () => {
+    const code = friendSearchInput.value.trim().toUpperCase();
+    if (!code) return;
+
+    searchResultArea.innerHTML = "Buscando...";
+    
+    const q = query(collection(db, "users"), where("userCode", "==", code));
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.empty) {
+      searchResultArea.innerHTML = "<p class='muted-text'>Usuario no encontrado.</p>";
+      return;
+    }
+
+    const targetData = querySnapshot.docs[0].data();
+    const targetId = querySnapshot.docs[0].id;
+
+    if (targetId === currentUser.uid) {
+      searchResultArea.innerHTML = "<p class='muted-text'>¡Eres tú!</p>";
+      return;
+    }
+
+    searchResultArea.innerHTML = `
+      <div class="friend-card">
+        <img src="${targetData.photoURL || './icons/icon-192.png'}" class="friend-avatar">
+        <div class="friend-info">
+          <h4>${targetData.displayName}</h4>
+          <p>${targetData.userCode}</p>
+        </div>
+        <button class="btn primary btn-small" id="send-req-btn">Añadir</button>
+      </div>
+    `;
+
+    document.getElementById("send-req-btn").onclick = () => sendFriendRequest(targetId, targetData);
+  });
+
+  async function sendFriendRequest(targetId, targetData) {
     try {
-      // 3. Actualizamos en Firebase Auth
-      await updateProfile(auth.currentUser, {
-        displayName: newName
+      await setDoc(doc(db, "users", targetId, "friend_requests", currentUser.uid), {
+        fromId: currentUser.uid,
+        fromName: currentUser.displayName,
+        fromPhoto: currentUser.photoURL || "",
+        status: "pending",
+        timestamp: Date.now()
       });
-
-      // 4. Actualizamos la interfaz al momento
-      if (userPageName) userPageName.textContent = newName;
-      if (userDisplay) userDisplay.textContent = newName;
-    } catch (error) {
-      console.error("Error al actualizar el nombre:", error);
-      alert("No se pudo actualizar el nombre. Inténtalo de nuevo.");
+      alert("Solicitud enviada");
+      searchResultArea.innerHTML = "";
+    } catch (e) {
+      console.error(e);
+      alert("Error al enviar solicitud");
     }
   }
-});
+
   btnVolverPC?.addEventListener("click", goHome);
   btnHomeMobile?.addEventListener("click", goHome);
 

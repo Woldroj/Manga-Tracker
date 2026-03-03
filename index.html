@@ -71,6 +71,22 @@
 
         <!-- SETTINGS -->
 
+        <div class="notifications-container">
+          <button id="btn-mail-requests" class="icon-btn" title="Solicitudes de amistad">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+              <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+            </svg>
+            <span id="request-badge" class="badge hidden">0</span>
+          </button>
+          
+          <div id="requests-dropdown" class="dropdown-content hidden">
+            <div class="dropdown-header">Solicitudes de amistad</div>
+            <div id="requests-items-list">
+              <p class="empty-msg">No tienes solicitudes pendientes</p>
+            </div>
+          </div>
+        </div>
+
         <button class="gear-btn" id="gear-btn" aria-label="Ajustes" title="Ajustes">
           <!-- gear SVG (simple, well-proportioned) -->
           <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -109,6 +125,15 @@
                 <path d="M2 22c0-4.42 4.03-8 10-8s10 3.58 10 8" />
               </svg>
               <div class="label">Perfil</div>
+            </div>
+
+            <div class="settings-divider"></div>
+
+            <div class="settings-section" id="s-goFriends">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
+                <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+              </svg>
+              <div class="label">Amigos</div>
             </div>
 
           </div>
@@ -215,6 +240,8 @@
         <div class="user-info-text">
           <div class="name-edit-group">
             <h1 id="user-page-name">Nombre de Usuario</h1>
+            <span id="my-user-code" class="user-code-display" title="Haz click para copiar">MT-XXXXXX</span>
+            <span id="copy-toast" class="copy-toast">¡Copiado!</span>
             <button id="btn-edit-name-page" class="icon-btn-edit">
               <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
@@ -258,6 +285,57 @@
         <div id="reviews-list" class="accordion-content" style="display:none"></div>
       </div>
     </section>
+
+    <div id="friends-view" class="view-container" style="display:none">
+      <div class="friends-header">
+        <h2>Amigos</h2>
+        <div class="search-friend-box">
+          <input type="text" id="friend-search-input" placeholder="Buscar por código (ej: MT-WU893G)">
+          <button id="btn-search-friend" class="btn primary">Buscar</button>
+        </div>
+      </div>
+
+      <div id="search-result-area"></div>
+
+      <div class="friends-sections">
+        <section>
+          <div id="friends-view" class="view-container" style="display:none">
+            <div class="friends-header">
+              <h2>Mis Amigos</h2>
+              <div class="search-bar">
+                <input type="text" id="input-friend-code" placeholder="UserCode (ej: MT-WU893G)">
+                <button id="btn-do-search" class="btn primary">Añadir</button>
+              </div>
+            </div>
+            
+            <div id="friends-list-grid" class="friends-grid">
+              <p class="muted-text">Aún no tienes amigos agregados.</p>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <div id="public-profile-modal" class="modal hidden">
+      <div class="modal-content profile-modal">
+        <button class="close-modal" id="close-public-profile">&times;</button>
+        <div class="profile-header-main">
+          <div class="profile-avatar-large">
+            <img id="public-avatar" src="./icons/icon-192.png" alt="Avatar">
+          </div>
+          <h2 id="public-username">Usuario</h2>
+          <p id="public-usercode" class="muted-text"></p>
+        </div>
+
+        <div id="public-stats" class="stats-grid-display">
+          </div>
+
+        <div class="public-reviews-section">
+          <h3>Últimas Reseñas</h3>
+          <div id="public-reviews-list"></div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- mobile bottom bar -->
