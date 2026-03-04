@@ -93,6 +93,7 @@ document.addEventListener("DOMContentLoaded", () => {
     "btn-finalizados-mobile",
   );
   const btnHomeMobile = document.getElementById("mobile-home");
+  const btnFriendsMobile = document.getElementById("mobile-friends");
 
   // API JIKAN
   const zmQueryInput = document.getElementById("zm-query");
@@ -2615,6 +2616,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
 
   btnVolverPC?.addEventListener("click", goHome);
   btnHomeMobile?.addEventListener("click", goHome);
+  btnFriendsMobile?.addEventListener("click", goFriends);
 
   /* -------- INITIAL LOCAL THEME & TIMEBOX ON PAGE LOAD -------- */
   window.addEventListener("load", () => {
