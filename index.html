@@ -260,13 +260,6 @@
       <div class="profile-section stats-area">
         <div class="stats-header">
           <h2 class="section-title">Estadísticas</h2>
-          <div class="switch-container">
-            <span class="muted-text">Públicas</span>
-            <label class="switch">
-              <input type="checkbox" id="stats-public-toggle">
-              <span class="slider round"></span>
-            </label>
-          </div>
         </div>
         <div id="stats-content" class="stats-grid-display">
           <div class="stat-card"> <span id="stat-total">0</span> <label>Mangas y Animes</label> </div>
@@ -299,6 +292,7 @@
 
       <div class="friends-sections">
         <section>
+          <h3>Mis Amigos</h3>
             <div id="friends-list-grid" class="friends-grid">
               <p class="muted-text">Aún no tienes amigos agregados.</p>
             </div>
@@ -307,26 +301,45 @@
     </div>
 
     <div id="public-profile-modal" class="modal hidden">
-      <div class="modal-content profile-modal">
-        <button class="close-modal" id="close-public-profile">&times;</button>
-        
-        <div class="profile-header-main">
-          <div class="profile-avatar-large">
+      <div class="profile-modal-content">
+        <button id="close-public-profile" class="gear-btn" style="position: absolute; top: 15px; right: 15px;">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+
+        <div class="user-profile-header">
+          <div class="user-avatar-wrapper">
             <img id="public-avatar" src="./icons/icon-192.png" alt="Avatar">
           </div>
-          <h2 id="public-username">Usuario</h2>
-          <p id="public-usercode" class="muted-text"></p>
-          <p id="public-bio" style="margin-top: 10px; font-size: 0.9em; color: var(--muted);"></p>
-          
-          <div id="public-profile-action" style="margin-top: 15px; width: 100%;"></div>
+          <div class="user-info-text">
+            <h2 id="public-username" style="margin:0">Cargando...</h2>
+            <span id="public-usercode" class="user-code-display">#000000</span>
+            <p id="public-bio" class="bio-textarea" style="background:transparent; border:none; padding:0; min-height:auto; font-style:italic"></p>
+          </div>
         </div>
 
-        <div id="public-stats" class="stats-grid-display">
-          </div>
+        <div id="public-profile-action" style="margin-top: -15px; margin-bottom: 20px;"></div>
 
-        <div class="public-reviews-section">
-          <h3>Últimas Reseñas</h3>
-          <div id="public-reviews-list"></div>
+        <div class="user-public-section">
+            <h3>Mangas</h3>
+            <div id="public-mangas-list" class="mini-grid"></div>
+        </div>
+
+        <div class="user-public-section">
+            <h3>Animes</h3>
+            <div id="public-animes-list" class="mini-grid"></div>
+        </div>
+
+        <div class="profile-section">
+          <div id="public-stats-container" style="position: relative;">
+              <div id="public-stats" class="stats-grid-display">
+                </div>
+          </div>
+        </div>
+
+        <div class="profile-section">
+          <h3 class="section-title">Últimas Reseñas</h3>
+          <div id="public-reviews-list" class="accordion-content" style="max-height: 200px; overflow-y: auto;">
+            </div>
         </div>
       </div>
     </div>

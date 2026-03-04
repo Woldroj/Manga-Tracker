@@ -1160,6 +1160,8 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
   });
 
   sSignout?.addEventListener("click", async () => {
+    friendsView.style.display = "none";
+    userView.style.display = "none";
     closeMobileSettings();
     closeSettings();
     await signOut(auth);
@@ -1359,130 +1361,162 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
   }
 
   window.showPublicProfile = async (uid) => {
-    if (!uid || typeof uid !== "string") return;
-    if (!currentUser) return; // Seguridad: Si no hay usuario logueado, fuera.
-
-    // 1. REFERENCIAS Y RESET INICIAL
+    if (!uid) return;
     const modal = document.getElementById("public-profile-modal");
+    modal.classList.remove("hidden");
+
+    // Referencias a elementos
     const elName = document.getElementById("public-username");
+    const elBio = document.getElementById("public-bio");
     const elImg = document.getElementById("public-avatar");
-    const elStats = document.getElementById("public-stats");
-    const reviewsList = document.getElementById("public-reviews-list");
     const elAction = document.getElementById("public-profile-action");
+    const mangaListCont = document.getElementById("public-mangas-list");
+    const animeListCont = document.getElementById("public-animes-list");
 
-    // Mostramos el modal VACÍO o con un "Cargando..." para que el usuario sepa que algo pasa
-    if (modal) {
-      modal.classList.remove("hidden");
-      if (elName) elName.textContent = "Cargando...";
-      if (elStats) elStats.innerHTML = "";
-      if (reviewsList)
-        reviewsList.innerHTML = "<p class='muted-text'>Cargando reseñas...</p>";
-      if (elAction) elAction.innerHTML = "";
-    }
+    const DEV_UID = "wv0cbOYYzbgZBp3s7JqDWjw80mq2";
+    const TEST_UID = [
+      "wYE4Gp2uzTVvs2lzpVP7IthFMYb2",
+      "GGpWv2FubDdbMND0DVUZ3vPJoin1",
+    ];
 
     try {
-      // 2. OBTENER DATOS (En paralelo para ir más rápido)
-      const [userSnap, uiSnap, mangasSnap, animesSnap, friendCheck] =
-        await Promise.all([
-          getDoc(doc(db, "users", uid)),
-          getDoc(doc(db, "users", uid, "prefs", "ui")),
-          getDocs(collection(db, "users", uid, "mangas")),
-          getDocs(collection(db, "users", uid, "animes")),
-          getDoc(doc(db, "users", currentUser.uid, "friends", uid)),
-        ]);
-
-      if (!userSnap.exists()) {
-        alert("Usuario no encontrado.");
-        modal.classList.add("hidden");
-        return;
-      }
-
-      const userData = userSnap.data();
-      const uiData = uiSnap.exists() ? uiSnap.data() : { statsPublic: false };
-      const finalPhoto =
-        uiData.photoURL || userData.photoURL || "./icons/icon-192.png";
-
-      // 3. ASIGNAR DATOS BÁSICOS
-      if (elName) elName.textContent = userData.displayName || "Usuario";
-      if (elImg) elImg.src = finalPhoto;
-      document.getElementById("public-usercode").textContent =
-        userData.userCode || "";
-      document.getElementById("public-bio").textContent =
-        uiData.biografia || "Sin biografía.";
-
-      // 4. BOTÓN ELIMINAR AMIGO
-      if (elAction && friendCheck.exists()) {
-        elAction.innerHTML = `
-                <button class="btn-danger-outline" onclick="removeFriend('${uid}', '${userData.displayName.replace(/'/g, "\\'")}')">
-                    Eliminar Amigo
-                </button>`;
-      }
-
-      // 5. LÓGICA DE ESTADÍSTICAS
-      if (elStats) {
-        elStats.classList.remove("stats-locked");
-        if (uiData.statsPublic) {
-          elStats.innerHTML = `
-                    <div class="stat-card"><span>${mangasSnap.size}</span><label>Mangas</label></div>
-                    <div class="stat-card"><span>${animesSnap.size}</span><label>Animes</label></div>`;
-        } else {
-          elStats.classList.add("stats-locked");
-          elStats.innerHTML = `
-                    <div class="stats-overlay" style="grid-column: span 2; display: flex; flex-direction: column; align-items: center; gap: 8px;">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
-                        <p>Estadísticas privadas</p>
-                    </div>`;
-        }
-      }
-
-      // 6. CARGAR RESEÑAS
-      if (reviewsList) {
-        const reviewsSnap = await getDocs(
-          query(
-            collection(db, "users", uid, "reviews"),
-            orderBy("timestamp", "desc"),
-            limit(3),
-          ),
-        );
-
-        reviewsList.innerHTML = reviewsSnap.empty
-          ? "<p class='muted-text'>No hay reseñas recientes.</p>"
-          : "";
-
-        reviewsSnap.forEach((docSnap) => {
-          const r = docSnap.data();
-          reviewsList.innerHTML += `
-                    <div class="public-review-item" style="background: var(--bg-card); padding: 10px; border-radius: 8px; margin-bottom: 8px; border: 1px solid var(--border);">
-                        <strong>${r.mangaTitle || "Título"}</strong>
-                        <p style="font-size: 0.85em; margin-top: 4px;">"${r.text || ""}"</p>
-                    </div>`;
-        });
-      }
-    } catch (error) {
-      console.error("Error al cargar perfil público:", error);
-      alert("Hubo un error al cargar el perfil.");
-    }
-  };
-
-  // --- FUNCIÓN PARA ELIMINAR AMIGO ---
-  window.removeFriend = async (friendUid, friendName) => {
-    if (!confirm(`¿Seguro que quieres eliminar a ${friendName} de tus amigos?`))
-      return;
-
-    try {
-      // Borrar recíprocamente
-      await Promise.all([
-        deleteDoc(doc(db, "users", currentUser.uid, "friends", friendUid)),
-        deleteDoc(doc(db, "users", friendUid, "friends", currentUser.uid)),
+      // 1. Cargar todos los datos necesarios
+      const [userSnap, uiSnap, allItemsSnap, friendCheck] = await Promise.all([
+        getDoc(doc(db, "users", uid)),
+        getDoc(doc(db, "users", uid, "prefs", "ui")),
+        getDocs(collection(db, "users", uid, "mangas")),
+        getDoc(doc(db, "users", currentUser.uid, "friends", uid)),
       ]);
 
-      alert("Amigo eliminado correctamente.");
-      document.getElementById("public-profile-modal")?.classList.add("hidden");
-      // El onSnapshot de loadFriends se encargará de actualizar la lista visualmente
+      if (!userSnap.exists()) return;
+      const userData = userSnap.data();
+      const uiData = uiSnap.exists() ? uiSnap.data() : {};
+
+      // --- LÓGICA DE NOMBRE Y BADGES ---
+
+      const esDorado = DEV_UID.includes(uid);
+      const esTester = TEST_UID.includes(uid);
+
+      elName.className = "";
+      let nameHTML = userData.displayName || "Usuario";
+      if (esDorado) {
+        elName.classList.add("dev-badge");
+        nameHTML = `${userData.displayName} <span class="dev-badge">⭐</span>`;
+      } else if (esTester) {
+        elName.classList.add("testes-badge");
+        nameHTML = `${userData.displayName} <span class="tester-badge">🛡️</span>`;
+      }
+      elName.innerHTML = nameHTML;
+
+      // --- FOTO Y BIO ---
+      elBio.textContent = uiData.biografia || uiData.bio || "Sin Biografía";
+      elImg.src =
+        uiData.photoURL || userData.photoURL || "./icons/icon-192.png";
+      document.getElementById("public-usercode").textContent =
+        userData.userCode || "#000000";
+
+      // --- BOTÓN ELIMINAR AMIGO (Restaurado) ---
+
+      window.removeFriend = async (uid, nombre) => {
+
+        try {
+
+          const refMia = doc(db, "users", currentUser.uid, "friends", uid);
+          const refSuya = doc(db, "users", uid, "friends", currentUser.uid);
+
+          await Promise.all([deleteDoc(refMia), deleteDoc(refSuya)]);
+
+          alert("¡Amigo eliminado!");
+
+          document
+            .getElementById("public-profile-modal")
+            .classList.add("hidden");
+          if (typeof loadFriends === "function") loadFriends();
+        } catch (error) {
+          console.error("ERROR EN FIREBASE:", error);
+        }
+      };
+
+      if (friendCheck.exists()) {
+        const nombre = userData.displayName || "Usuario";
+
+        elAction.innerHTML = `
+        <button class="btn-danger-outline" 
+            onclick="window.removeFriend('${uid}', '${nombre}')">
+            Eliminar de mis amigos
+        </button>`;
+      } else {
+        elAction.innerHTML = "";
+      }
+
+      // --- PROCESADO DE ITEMS (FILTRO SOLO PÚBLICOS) ---
+      const allDocs = allItemsSnap.docs.map((d) => d.data());
+
+      // FILTRO ESTRICTO: Solo si isPublic es true
+      const publicItems = allDocs.filter((item) => item.isPublic === true);
+
+      const publicMangas = publicItems.filter(
+        (item) => (item.type || "").toLowerCase().trim() === "manga",
+      );
+      const publicAnimes = publicItems.filter(
+        (item) => (item.type || "").toLowerCase().trim() === "anime",
+      );
+
+      // --- CÁLCULO DE ESTADÍSTICAS (Capítulos y Tiempo) ---
+      let totalCaps = 0;
+      let totalMinutos = 0;
+
+      publicItems.forEach((item) => {
+        // Capítulos/Episodios leídos
+        totalCaps += parseInt(item.chaptersRead || item.episodesWatched || 0);
+
+        // Tiempo (Asumiendo que tienes un campo 'runtime' o similar, si no usamos 24min de media para anime)
+        if (item.type === "anime") {
+          const caps = parseInt(item.episodesWatched || 0);
+          totalMinutos += caps * 24; // 24 min por episodio
+        } else {
+          const caps = parseInt(item.chaptersRead || 0);
+          totalMinutos += caps * 5; // 5 min por capítulo de manga (estimado)
+        }
+      });
+
+      const totalHoras = Math.floor(totalMinutos / 60);
+
+      // --- RENDER ESTADÍSTICAS ---
+      const container = document.getElementById("public-stats-container");
+      container.querySelector(".stats-overlay")?.remove();
+
+      if (uiData.statsPublic !== false) {
+        renderPublicList(publicMangas, mangaListCont, "📖");
+        renderPublicList(publicAnimes, animeListCont, "📺");
+      }
     } catch (e) {
-      console.error("Error al eliminar amigo:", e);
+      console.error("Error cargando perfil público:", e);
     }
   };
+
+  // Función auxiliar para renderizar listas
+  function renderPublicList(itemsArray, container, icon) {
+    container.innerHTML = "";
+    if (itemsArray.length === 0) {
+      container.innerHTML =
+        "<p class='muted-text' style='font-size:0.8em'>Nada público.</p>";
+      return;
+    }
+    itemsArray.forEach((item) => {
+      const tag = document.createElement("div");
+      tag.className = "mini-tag";
+      tag.innerHTML = `<span class="tag-icon">${icon}</span><span class="tag-text">${item.title}</span>`;
+      container.appendChild(tag);
+    });
+  }
+
+  // Cerrar modal
+  document
+    .getElementById("close-public-profile")
+    ?.addEventListener("click", () => {
+      document.getElementById("public-profile-modal").classList.add("hidden");
+    });
 
   function renderGridInElement(items, gridId, containerId) {
     const container = document.getElementById(containerId);
@@ -1511,7 +1545,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
 
     const q = collection(db, "users", myUid, "friends");
 
-    onSnapshot(q, (snapshot) => {
+    onSnapshot(q, async (snapshot) => {
       friendsGrid.innerHTML = "";
       if (snapshot.empty) {
         friendsGrid.innerHTML =
@@ -1519,19 +1553,36 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
         return;
       }
 
-      snapshot.forEach((docSnap) => {
-        const friend = docSnap.data();
+      // Usamos for...of para poder usar await dentro del bucle
+      for (const docSnap of snapshot.docs) {
+        const friendData = docSnap.data();
+        const friendUid = docSnap.id;
+
+        // 1. Buscamos los datos en tiempo real del amigo
+        const uiSnap = await getDoc(doc(db, "users", friendUid, "prefs", "ui"));
+        const userBaseSnap = await getDoc(doc(db, "users", friendUid));
+
+        const uiData = uiSnap.exists() ? uiSnap.data() : {};
+        const userBase = userBaseSnap.exists() ? userBaseSnap.data() : {};
+
+        // 2. Foto y Nombre actualizados
+        const fotoReal =
+          uiData.photoURL || friendData.photoURL || "./icons/icon-192.png";
+        const esAdmin = userBase.role === "admin" || userBase.isDev;
+
         const friendCard = document.createElement("div");
         friendCard.className = "friend-item-card";
+
         friendCard.innerHTML = `
-                <div class="friend-avatar-wrapper">
-                    <img src="${friend.photoURL || "./icons/icon-192.png"}">
-                </div>
-                <p>${friend.displayName}</p>
-            `;
-        friendCard.onclick = () => showPublicProfile(docSnap.id);
+        <div class="friend-avatar-wrapper">
+          <img src="${fotoReal}" style="width:60px; height:60px; border-radius:50%; object-fit:cover;">
+        </div>
+        <p class="${esAdmin ? "name-gold" : ""}">${friendData.displayName} ${esAdmin ? "⭐" : ""}</p>
+      `;
+
+        friendCard.onclick = () => showPublicProfile(friendUid);
         friendsGrid.appendChild(friendCard);
-      });
+      }
     });
   }
 
@@ -2460,11 +2511,27 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
         return;
       }
 
-      // Comprobar estados simultáneamente
-      const [friendCheck, reqCheck] = await Promise.all([
+      // --- LA CLAVE: Traer también las preferencias de UI del usuario encontrado ---
+      const [friendCheck, reqCheck, targetUiSnap] = await Promise.all([
         getDoc(doc(db, "users", currentUser.uid, "friends", targetId)),
         getDoc(doc(db, "users", targetId, "friend_requests", currentUser.uid)),
+        getDoc(doc(db, "users", targetId, "prefs", "ui")), // <--- Foto real aquí
       ]);
+
+      const targetUiData = targetUiSnap.exists() ? targetUiSnap.data() : {};
+
+      // Foto actualizada o la básica
+      const fotoReal =
+        targetUiData.photoURL || targetData.photoURL || "./icons/icon-192.png";
+
+      // Lógica de nombre dorado para el resultado de búsqueda
+      const isDev = targetData.role === "admin" || targetData.isDev;
+      const nameClass = isDev ? "name-gold" : "";
+      const badge = isDev
+        ? '<span class="dev-badge">⭐</span>'
+        : targetData.isTester
+          ? '<span class="tester-badge">🛡️</span>'
+          : "";
 
       let btnText = "Añadir";
       let btnClass = "primary";
@@ -2481,18 +2548,18 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
       }
 
       searchResultArea.innerHTML = `
-          <div class="search-card-result">
-            <div class="user-main-info" onclick="showPublicProfile('${targetId}')" style="cursor:pointer">
-              <img src="${targetData.photoURL || "./icons/icon-192.png"}" class="avatar-md">
-              <div>
-                <h4>${targetData.displayName}</h4>
-                <p>${targetData.userCode}</p>
-              </div>
+            <div class="search-card-result">
+                <div class="user-main-info" onclick="showPublicProfile('${targetId}')" style="cursor:pointer">
+                    <img src="${fotoReal}" class="avatar-md">
+                    <div>
+                        <h4 class="${nameClass}">${targetData.displayName} ${badge}</h4>
+                        <p>${targetData.userCode}</p>
+                    </div>
+                </div>
+                <button class="btn-action ${btnClass}" id="res-btn" ${isDisabled ? "disabled" : ""}>
+                    ${btnText}
+                </button>
             </div>
-            <button class="btn-action ${btnClass}" id="res-btn" ${isDisabled ? "disabled" : ""}>
-              ${btnText}
-            </button>
-          </div>
         `;
 
       const resBtn = document.getElementById("res-btn");
@@ -2501,7 +2568,6 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
           e.stopPropagation();
           resBtn.disabled = true;
           resBtn.textContent = "Enviando...";
-
           try {
             await sendFriendRequest(targetId, targetData);
             resBtn.textContent = "Pendiente";

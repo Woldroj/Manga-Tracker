@@ -248,17 +248,19 @@ header.app-header {
 
 .settings-overlay.open {
   opacity: 1;
-  pointer-events: auto; 
+  pointer-events: auto;
 }
 
-#s-goProfile, #s-goFriends {
+#s-goProfile,
+#s-goFriends {
   display: flex;
   justify-content: flex-start;
   align-items: center;
   gap: 12px;
 }
 
-#s-goProfile, #s-goFriends {
+#s-goProfile,
+#s-goFriends {
   cursor: pointer;
 }
 
@@ -1149,7 +1151,7 @@ input:checked + .slider::before {
   font-family: monospace;
   margin-top: 4px;
   cursor: pointer;
-  background: rgba(255,255,255,0.05);
+  background: rgba(255, 255, 255, 0.05);
   padding: 2px 8px;
   border-radius: 4px;
   width: fit-content;
@@ -1170,7 +1172,7 @@ input:checked + .slider::before {
   opacity: 0;
   pointer-events: none;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
 }
 
 /* Flechita hacia abajo del mensaje (opcional) */
@@ -1219,7 +1221,7 @@ input:checked + .slider::before {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .user-info-text {
@@ -1235,8 +1237,8 @@ input:checked + .slider::before {
 
 .bio-textarea {
   width: 100%;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   color: var(--accent);
   padding: 10px;
   border-radius: 8px;
@@ -1301,19 +1303,21 @@ input:checked + .slider::before {
 }
 
 .accordion-content {
-  background: rgba(255,255,255,0.02);
+  background: rgba(255, 255, 255, 0.02);
   padding: 15px;
   border-radius: 0 0 8px 8px;
 }
 
 .review-item {
-  border-bottom: 1px solid rgba(255,255,255,0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   padding: 10px 0;
 }
 
-.review-item:last-child { border: none; }
+.review-item:last-child {
+  border: none;
+}
 
-.switch-container { 
+.switch-container {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -1339,7 +1343,7 @@ input:checked + .slider::before {
   justify-content: center;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   z-index: 999;
-  
+
   /* Animación de aparición */
   opacity: 0;
   visibility: hidden;
@@ -1388,7 +1392,7 @@ input:checked + .slider::before {
   transition: opacity 0.2s ease;
 }
 
-.card:hover .visibility-btn{
+.card:hover .visibility-btn {
   opacity: 1;
 }
 
@@ -1480,8 +1484,14 @@ input:checked + .slider::before {
 
 /* Animaciones */
 @keyframes popIn {
-  0% { opacity: 0; transform: translateX(-50%) translateY(10px) scale(0.8); }
-  100% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(10px) scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
 }
 
 .copy-tooltip.out {
@@ -1507,19 +1517,28 @@ input:checked + .slider::before {
 }
 
 .dev-badge {
-    display: inline-flex;
-    align-items: center;
-    vertical-align: middle;
-    margin-left: 8px;
-    color: #ffd700; /* Color Oro */
-    filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.5));
-    animation: shine 2s infinite;
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+  margin-left: 8px;
+  color: #ffd700; /* Color Oro */
+  filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.5));
+  animation: shine 2s infinite;
 }
 
 @keyframes shine {
-    0% { opacity: 0.8; transform: scale(1); }
-    50% { opacity: 1; transform: scale(1.1); }
-    100% { opacity: 0.8; transform: scale(1); }
+  0% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+  100% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
 }
 
 /* Opcional: Nombre en color especial para el admin */
@@ -1533,25 +1552,24 @@ input:checked + .slider::before {
 
 /* Badge del Tester */
 .tester-badge {
-    display: inline-flex;
-    align-items: center;
-    vertical-align: middle;
-    margin-left: 8px;
-    color: #22c55e; /* Un verde vibrante */
-    filter: drop-shadow(0 0 3px rgba(34, 197, 94, 0.4));
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+  margin-left: 8px;
+  color: #22c55e; /* Un verde vibrante */
+  filter: drop-shadow(0 0 3px rgba(34, 197, 94, 0.4));
 }
 
 /* Efecto de nombre para Tester */
 #user-page-name:has(.tester-badge) {
-    font-weight: 700;
-    color: #ffffff;
-    /* Un degradado verde muy elegante */
-    background: linear-gradient(90deg, #ffffff, #22c55e);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+  font-weight: 700;
+  color: #ffffff;
+  /* Un degradado verde muy elegante */
+  background: linear-gradient(90deg, #ffffff, #22c55e);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
-
 
 /* Social Zone */
 
@@ -1582,26 +1600,43 @@ input:checked + .slider::before {
   display: flex;
   align-items: center;
   gap: 12px;
-  border: 1px solid rgba(255,255,255,0.05);
+  border: 1px solid rgba(255, 255, 255, 0.05);
   transition: transform 0.2s;
 }
-.friend-card:hover { transform: translateY(-2px); }
+.friend-card:hover {
+  transform: translateY(-2px);
+}
 .friend-avatar {
   width: 45px;
   height: 45px;
   border-radius: 50%;
   object-fit: cover;
 }
-.friend-info { flex: 1; }
-.friend-info h4 { margin: 0; font-size: 1rem; }
-.friend-info p { margin: 0; font-size: 0.8rem; color: var(--muted); }
+.friend-info {
+  flex: 1;
+}
+.friend-info h4 {
+  margin: 0;
+  font-size: 1rem;
+}
+.friend-info p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
 
-.friend-actions { display: flex; gap: 8px; }
-.btn-small { padding: 5px 10px; font-size: 0.8rem; border-radius: 6px; }
+.friend-actions {
+  display: flex;
+  gap: 8px;
+}
+.btn-small {
+  padding: 5px 10px;
+  font-size: 0.8rem;
+  border-radius: 6px;
+}
 
 /* PUBLIC PROFILE MODAL */
 .profile-modal {
-  max-width: 500px;
   width: 90%;
   padding: 30px;
   text-align: center;
@@ -1620,13 +1655,15 @@ input:checked + .slider::before {
   overflow-y: auto;
 }
 .public-review-item {
-  background: rgba(255,255,255,0.03);
+  background: rgba(255, 255, 255, 0.03);
   padding: 10px;
   border-radius: 8px;
   margin-bottom: 8px;
 }
 
-.notifications-container { position: relative; }
+.notifications-container {
+  position: relative;
+}
 .badge {
   position: absolute;
   top: -5px;
@@ -1645,15 +1682,21 @@ input:checked + .slider::before {
   width: 280px;
   background: var(--card);
   border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
   z-index: 1000;
-  border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   overflow: hidden;
 }
 
-.dropdown-content.hidden { display: none; }
+.dropdown-content.hidden {
+  display: none;
+}
 
-.dropdown-header { padding: 12px; font-weight: bold; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.dropdown-header {
+  padding: 12px;
+  font-weight: bold;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
 
 /* Item de solicitud */
 .request-item {
@@ -1661,14 +1704,38 @@ input:checked + .slider::before {
   align-items: center;
   gap: 10px;
   padding: 12px;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
-.request-item img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
-.req-info { flex: 1; font-size: 14px; }
-.req-btns { display: flex; gap: 5px; margin-top: 5px; }
-.btn-mini { padding: 4px 8px; font-size: 11px; border-radius: 4px; border: none; cursor: pointer; }
-.btn-accept { background: var(--accent-2); color: white; }
-.btn-reject { background: #334155; color: white; }
+.request-item img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.req-info {
+  flex: 1;
+  font-size: 14px;
+}
+.req-btns {
+  display: flex;
+  gap: 5px;
+  margin-top: 5px;
+}
+.btn-mini {
+  padding: 4px 8px;
+  font-size: 11px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+}
+.btn-accept {
+  background: var(--accent-2);
+  color: white;
+}
+.btn-reject {
+  background: #334155;
+  color: white;
+}
 
 .friends-grid {
   display: grid;
@@ -1683,12 +1750,21 @@ input:checked + .slider::before {
   border-radius: 12px;
   text-align: center;
   cursor: pointer;
-  border: 1px solid rgba(255,255,255,0.05);
+  border: 1px solid rgba(255, 255, 255, 0.05);
   transition: 0.2s;
 }
 
-.friend-item-card:hover { transform: translateY(-3px); background: #2d3a4f; }
-.friend-item-card img { width: 60px; height: 60px; border-radius: 50%; margin-bottom: 8px; object-fit: cover; }
+.friend-item-card:hover {
+  transform: translateY(-3px);
+  background: #2d3a4f;
+}
+.friend-item-card img {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  margin-bottom: 8px;
+  object-fit: cover;
+}
 
 .empty-msg {
   text-align: center;
@@ -1704,14 +1780,22 @@ input:checked + .slider::before {
 }
 .stats-overlay {
   position: absolute;
-  top: 0; left: 0; width: 100%; height: 100%;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   z-index: 10;
   background: rgba(15, 23, 42, 0.4); /* Un velo oscuro */
   border-radius: 12px;
 }
-.stats-overlay svg { margin-bottom: 8px; color: var(--muted); }
+.stats-overlay svg {
+  margin-bottom: 8px;
+  color: var(--muted);
+}
 
 /* Card de búsqueda */
 .search-card-result {
@@ -1749,9 +1833,20 @@ input:checked + .slider::before {
   transition: 0.3s;
 }
 
-.btn-action.primary { background: var(--accent); color: white; }
-.btn-action.success { background: #10b981; color: white; cursor: default; }
-.btn-action.muted { background: #334155; color: #94a3b8; cursor: default; }
+.btn-action.primary {
+  background: var(--accent);
+  color: white;
+}
+.btn-action.success {
+  background: #10b981;
+  color: white;
+  cursor: default;
+}
+.btn-action.muted {
+  background: #334155;
+  color: #94a3b8;
+  cursor: default;
+}
 
 .btn-danger-outline {
   background: transparent;
@@ -1763,7 +1858,8 @@ input:checked + .slider::before {
   font-weight: 600;
   margin-top: 15px;
   transition: 0.3s;
-  width: 100%;
+  z-index: 10001;
+  width: 20%;
 }
 
 .btn-danger-outline:hover {
@@ -1772,11 +1868,175 @@ input:checked + .slider::before {
 }
 
 .hidden {
-    display: none !important;
+  display: none !important;
 }
 
+/* MODAL DE PERFIL PÚBLICO - REVISADO */
 #public-profile-modal {
-    position: fixed; /* Asegura que flote sobre la pantalla */
-    z-index: 99999;  /* El valor más alto posible */
-    background: rgba(0, 0, 0, 0.8); /* Fondo oscuro para resaltar */
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.95); /* Fondo oscuro profundo */
+  display: none; /* Se controla con .hidden */
+  align-items: center;
+  justify-content: center;
+  z-index: 10000; /* Por encima de TODO (settings, barras, etc) */
+  padding: 20px;
+  backdrop-filter: blur(4px); /* Efecto cristal de fondo */
+}
+
+/* IMPORTANTE: Esta regla hace que el JS funcione */
+#public-profile-modal:not(.hidden) {
+  display: flex !important;
+}
+
+.profile-modal-content {
+  background: var(--card);
+  width: 60%;
+  border-radius: 20px;
+  padding: 30px;
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  text-align: center;
+}
+
+/* Estilo para las reseñas dentro del modal */
+#public-reviews-list {
+  margin-top: 20px;
+  text-align: left;
+  max-height: 200px;
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+/* Scrollbar personalizado para las reseñas */
+#public-reviews-list::-webkit-scrollbar {
+  width: 4px;
+}
+#public-reviews-list::-webkit-scrollbar-thumb {
+  background: var(--muted);
+  border-radius: 10px;
+}
+
+/* Ajustes específicos para el perfil público */
+.profile-modal-content {
+  background: var(--card);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 30px;
+  text-align: left; /* Alineado a la izquierda como tu perfil */
+}
+
+#public-avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid var(--accent-2);
+}
+
+/* Lógica de Blur para Stats */
+.stats-locked {
+  filter: blur(8px);
+  pointer-events: none;
+  user-select: none;
+  opacity: 0.5;
+}
+
+.stats-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+  background: rgba(15, 23, 42, 0.2);
+  color: var(--accent);
+  text-align: center;
+  font-weight: 600;
+}
+
+.stats-overlay svg {
+  margin-bottom: 5px;
+  opacity: 0.8;
+}
+
+.public-review-item {
+  padding: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+.public-review-item:last-child {
+  border: none;
+}
+
+#public-username:has(.dev-badge) {
+  background: linear-gradient(90deg, #fff, #ffd700);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: bold;
+}
+
+#public-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 columnas iguales */
+  gap: 15px;
+  margin-top: 15px;
+}
+
+/* El fondo negro/borroso se queda quieto */
+#public-profile-modal {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+  padding: 20px;
+}
+
+/* La tarjeta es la que tiene el scroll interno */
+.profile-modal-content {
+  background: var(--card);
+  width: 60%;
+  max-height: 90vh;
+  max-width: 60%; /* No ocupa toda la pantalla de alto */
+  overflow-y: auto; /* Permite scroll si el contenido es largo */
+  border-radius: 20px;
+  padding: 30px;
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+/* Ocultar scrollbar feo en la tarjeta (opcional) */
+.profile-modal-content::-webkit-scrollbar {
+  width: 6px;
+}
+.profile-modal-content::-webkit-scrollbar-thumb {
+  background: var(--accent);
+  border-radius: 10px;
+}
+
+#public-bio {
+    white-space: pre-wrap;      /* Respeta saltos de línea manuales */
+    word-wrap: break-word;      /* Rompe palabras largas si es necesario */
+    overflow-wrap: break-word;  /* Estándar moderno para romper líneas */
+    max-width: 100%;            /* No permite que sea más ancho que el modal */
+    line-height: 1.5;           /* Mejora la lectura */
+    color: var(--muted-text);
+    margin-bottom: 20px;
+}
+
+#public-profile-action {
+    position: relative !important;
+    z-index: 99999 !important; /* Prioridad máxima */
+    pointer-events: auto !important; /* Asegura que reciba clics */
+    margin-top: 25px !important;
+    display: flex !important;
+    justify-content: center !important;
+    clear: both !important; /* Evita que elementos flotantes lo tapen */
 }
