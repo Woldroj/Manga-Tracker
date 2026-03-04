@@ -1848,10 +1848,10 @@ input:checked + .slider::before {
 
 .btn-action.primary {
   background: var(--accent);
-  color: white;
+  color: var(--bg);
 }
 .btn-action.success {
-  background: #10b981;
+  background: #10b98194;
   color: white;
   cursor: default;
 }
