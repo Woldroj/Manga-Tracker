@@ -520,7 +520,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function openSettings() {
-     if (!currentUser) return alert("Inicia sesión");
+    if (!currentUser) return alert("Inicia sesión");
     sidebar.classList.add("open");
     overlay.classList.add("open");
     sidebar.setAttribute("aria-hidden", "false");
@@ -1360,9 +1360,28 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
 
   window.showPublicProfile = async (uid) => {
     if (!uid || typeof uid !== "string") return;
+    if (!currentUser) return; // Seguridad: Si no hay usuario logueado, fuera.
+
+    // 1. REFERENCIAS Y RESET INICIAL
+    const modal = document.getElementById("public-profile-modal");
+    const elName = document.getElementById("public-username");
+    const elImg = document.getElementById("public-avatar");
+    const elStats = document.getElementById("public-stats");
+    const reviewsList = document.getElementById("public-reviews-list");
+    const elAction = document.getElementById("public-profile-action");
+
+    // Mostramos el modal VACÍO o con un "Cargando..." para que el usuario sepa que algo pasa
+    if (modal) {
+      modal.classList.remove("hidden");
+      if (elName) elName.textContent = "Cargando...";
+      if (elStats) elStats.innerHTML = "";
+      if (reviewsList)
+        reviewsList.innerHTML = "<p class='muted-text'>Cargando reseñas...</p>";
+      if (elAction) elAction.innerHTML = "";
+    }
 
     try {
-      // 1. Obtener datos
+      // 2. OBTENER DATOS (En paralelo para ir más rápido)
       const [userSnap, uiSnap, mangasSnap, animesSnap, friendCheck] =
         await Promise.all([
           getDoc(doc(db, "users", uid)),
@@ -1372,64 +1391,52 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
           getDoc(doc(db, "users", currentUser.uid, "friends", uid)),
         ]);
 
-      if (!userSnap.exists()) return;
+      if (!userSnap.exists()) {
+        alert("Usuario no encontrado.");
+        modal.classList.add("hidden");
+        return;
+      }
 
       const userData = userSnap.data();
       const uiData = uiSnap.exists() ? uiSnap.data() : { statsPublic: false };
-
-      // PRIORIDAD DE IMAGEN (Igual que en tus ajustes)
       const finalPhoto =
         uiData.photoURL || userData.photoURL || "./icons/icon-192.png";
 
-      // 2. Asignar datos con comprobación de existencia (evita el error de null)
-      const elName = document.getElementById("public-username");
-      const elImg = document.getElementById("public-avatar");
-      const elCode = document.getElementById("public-usercode");
-      const elBio = document.getElementById("public-bio");
-      const elAction = document.getElementById("public-profile-action");
-      const elStats = document.getElementById("public-stats");
-
+      // 3. ASIGNAR DATOS BÁSICOS
       if (elName) elName.textContent = userData.displayName || "Usuario";
       if (elImg) elImg.src = finalPhoto;
-      if (elCode) elCode.textContent = userData.userCode || "";
-      if (elBio) elBio.textContent = uiData.biografia || "Sin biografía.";
+      document.getElementById("public-usercode").textContent =
+        userData.userCode || "";
+      document.getElementById("public-bio").textContent =
+        uiData.biografia || "Sin biografía.";
 
-      // 3. Botón Eliminar Amigo (Solo si sois amigos)
-      if (elAction) {
-        elAction.innerHTML = "";
-        if (friendCheck.exists()) {
-          elAction.innerHTML = `
-                      <button class="btn-danger-outline" onclick="removeFriend('${uid}', '${userData.displayName.replace(/'/g, "\\'")}')">
-                          Eliminar Amigo
-                      </button>`;
-        }
+      // 4. BOTÓN ELIMINAR AMIGO
+      if (elAction && friendCheck.exists()) {
+        elAction.innerHTML = `
+                <button class="btn-danger-outline" onclick="removeFriend('${uid}', '${userData.displayName.replace(/'/g, "\\'")}')">
+                    Eliminar Amigo
+                </button>`;
       }
 
-      // 4. Lógica de Estadísticas
+      // 5. LÓGICA DE ESTADÍSTICAS
       if (elStats) {
-        elStats.innerHTML = "";
         elStats.classList.remove("stats-locked");
-
         if (uiData.statsPublic) {
           elStats.innerHTML = `
-                      <div class="stat-card"><span>${mangasSnap.size}</span><label>Mangas</label></div>
-                      <div class="stat-card"><span>${animesSnap.size}</span><label>Animes</label></div>
-                  `;
+                    <div class="stat-card"><span>${mangasSnap.size}</span><label>Mangas</label></div>
+                    <div class="stat-card"><span>${animesSnap.size}</span><label>Animes</label></div>`;
         } else {
           elStats.classList.add("stats-locked");
           elStats.innerHTML = `
-                      <div class="stats-overlay" style="grid-column: span 2; display: flex; flex-direction: column; align-items: center; gap: 8px;">
-                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
-                          <p>Estadísticas privadas</p>
-                      </div>
-                  `;
+                    <div class="stats-overlay" style="grid-column: span 2; display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                        <p>Estadísticas privadas</p>
+                    </div>`;
         }
       }
 
-      // 5. Cargar reseñas
-      const reviewsList = document.getElementById("public-reviews-list");
+      // 6. CARGAR RESEÑAS
       if (reviewsList) {
-        reviewsList.innerHTML = "";
         const reviewsSnap = await getDocs(
           query(
             collection(db, "users", uid, "reviews"),
@@ -1438,26 +1445,22 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
           ),
         );
 
-        if (reviewsSnap.empty) {
-          reviewsList.innerHTML =
-            "<p class='muted-text'>No hay reseñas recientes.</p>";
-        } else {
-          reviewsSnap.forEach((docSnap) => {
-            const r = docSnap.data();
-            reviewsList.innerHTML += `
-                          <div class="public-review-item" style="background: var(--bg-card); padding: 10px; border-radius: 8px; margin-bottom: 8px; border: 1px solid var(--border);">
-                              <strong>${r.mangaTitle || "Título"}</strong>
-                              <p style="font-size: 0.85em; margin-top: 4px;">"${r.text || ""}"</p>
-                          </div>`;
-          });
-        }
-      }
+        reviewsList.innerHTML = reviewsSnap.empty
+          ? "<p class='muted-text'>No hay reseñas recientes.</p>"
+          : "";
 
-      document
-        .getElementById("public-profile-modal")
-        ?.classList.remove("hidden");
+        reviewsSnap.forEach((docSnap) => {
+          const r = docSnap.data();
+          reviewsList.innerHTML += `
+                    <div class="public-review-item" style="background: var(--bg-card); padding: 10px; border-radius: 8px; margin-bottom: 8px; border: 1px solid var(--border);">
+                        <strong>${r.mangaTitle || "Título"}</strong>
+                        <p style="font-size: 0.85em; margin-top: 4px;">"${r.text || ""}"</p>
+                    </div>`;
+        });
+      }
     } catch (error) {
       console.error("Error al cargar perfil público:", error);
+      alert("Hubo un error al cargar el perfil.");
     }
   };
 
@@ -1603,7 +1606,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
 
   // Mobile settings
   mobileGear?.addEventListener("click", (e) => {
-     if (!currentUser) return alert("Inicia sesión");
+    if (!currentUser) return alert("Inicia sesión");
     e.stopPropagation();
     if (mobileSettingsPopup) {
       mobileSettingsPopup.remove();

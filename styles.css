@@ -1770,3 +1770,13 @@ input:checked + .slider::before {
   background: #ff4d4d;
   color: white;
 }
+
+.hidden {
+    display: none !important;
+}
+
+#public-profile-modal {
+    position: fixed; /* Asegura que flote sobre la pantalla */
+    z-index: 99999;  /* El valor más alto posible */
+    background: rgba(0, 0, 0, 0.8); /* Fondo oscuro para resaltar */
+}
