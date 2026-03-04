@@ -89,7 +89,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnFinalizadosPC = document.getElementById("btn-finalizados-pc");
   const btnVolverPC = document.getElementById("btn-volver-pc");
   const btnVolverSearch = document.getElementById("btn-volver-search");
-  const btnFinalizadosMobile = document.getElementById("btn-finalizados-mobile");
+  const btnFinalizadosMobile = document.getElementById(
+    "btn-finalizados-mobile",
+  );
   const btnHomeMobile = document.getElementById("mobile-home");
 
   // API JIKAN
@@ -139,7 +141,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnMail = document.getElementById("btn-mail-requests");
   const dropdown = document.getElementById("requests-dropdown");
 
-
   /* -------- STATE -------- */
   let currentView = "home";
   let currentUser = null;
@@ -153,44 +154,267 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* -------- THEMES -------- */
   const THEMES = {
-
     // DARK THEMES
-    
-    dark: { type: "dark", "--bg": "#0f172a", "--card": "#1e293b", "--accent": "#f1f5f9", "--accent-2": "#3b82f6", "--muted": "#94a3b8" },
-    black: { type: "dark", "--bg": "#0f0f0f", "--card": "#1a1a1a", "--accent": "#f5f5f5", "--accent-2": "#888888", "--muted": "#5a5a5a" },
-    pinkDark: { type: "dark", "--bg": "#1a0b14", "--card": "#2a1020", "--accent": "#fde7f3", "--accent-2": "#ec4899", "--muted": "#c58aa6" },
-    purpleDark: { type: "dark", "--bg": "#160b22", "--card": "#221238", "--accent": "#f1e9ff", "--accent-2": "#7c3aed", "--muted": "#b59ee0" },
-    greenDark: { type: "dark", "--bg": "#062012", "--card": "#0b2f1b", "--accent": "#e6fff2", "--accent-2": "#10b981", "--muted": "#7fc9a4" },
-    redDark: { type: "dark", "--bg": "#1f0a0a", "--card": "#2e1111", "--accent": "#ffeaea", "--accent-2": "#ef4444", "--muted": "#d98a8a" },
-    orangeDark: { type: "dark", "--bg": "#241200", "--card": "#341a00", "--accent": "#fff1e0", "--accent-2": "#f97316", "--muted": "#e0a16b" },
-    tealDark: { type: "dark", "--bg": "#03201e", "--card": "#05302d", "--accent": "#e6fffb", "--accent-2": "#14b8a6", "--muted": "#7ccfc6" },
-    yellowDark: { type: "dark", "--bg": "#1f1a05", "--card": "#2e2608", "--accent": "#fff8dc", "--accent-2": "#facc15", "--muted": "#e3c56b" },
-    cyanDark: { type: "dark", "--bg": "#031e22", "--card": "#06323a", "--accent": "#e6fdff", "--accent-2": "#06b6d4", "--muted": "#7ccfd9" },
-    brownDark: { type: "dark", "--bg": "#1e130b", "--card": "#2a1b10", "--accent": "#f5ede7", "--accent-2": "#92400e", "--muted": "#c6a38a" },
-    slateDark: { type: "dark", "--bg": "#020617", "--card": "#020617", "--accent": "#e5e7eb", "--accent-2": "#64748b", "--muted": "#94a3b8" },
-    oliveDark: { type: "dark", "--bg": "#1a1f0f", "--card": "#262c16", "--accent": "#f4f7e8", "--accent-2": "#84a21d", "--muted": "#b5c27a" },
-    roseDark: { type: "dark", "--bg": "#1f0a10", "--card": "#2e1118", "--accent": "#ffe7ec", "--accent-2": "#f43f5e", "--muted": "#e09aad" },
-    iceDark: { type: "dark", "--bg": "#041926", "--card": "#06283a", "--accent": "#e6f7ff", "--accent-2": "#38bdf8", "--muted": "#9dcde5" },
-    indigoDark: { type: "dark", "--bg": "#0c0a24", "--card": "#161238", "--accent": "#ecebff", "--accent-2": "#6366f1", "--muted": "#a6a9e5" },
+
+    dark: {
+      type: "dark",
+      "--bg": "#0f172a",
+      "--card": "#1e293b",
+      "--accent": "#f1f5f9",
+      "--accent-2": "#3b82f6",
+      "--muted": "#94a3b8",
+    },
+    black: {
+      type: "dark",
+      "--bg": "#0f0f0f",
+      "--card": "#1a1a1a",
+      "--accent": "#f5f5f5",
+      "--accent-2": "#888888",
+      "--muted": "#5a5a5a",
+    },
+    pinkDark: {
+      type: "dark",
+      "--bg": "#1a0b14",
+      "--card": "#2a1020",
+      "--accent": "#fde7f3",
+      "--accent-2": "#ec4899",
+      "--muted": "#c58aa6",
+    },
+    purpleDark: {
+      type: "dark",
+      "--bg": "#160b22",
+      "--card": "#221238",
+      "--accent": "#f1e9ff",
+      "--accent-2": "#7c3aed",
+      "--muted": "#b59ee0",
+    },
+    greenDark: {
+      type: "dark",
+      "--bg": "#062012",
+      "--card": "#0b2f1b",
+      "--accent": "#e6fff2",
+      "--accent-2": "#10b981",
+      "--muted": "#7fc9a4",
+    },
+    redDark: {
+      type: "dark",
+      "--bg": "#1f0a0a",
+      "--card": "#2e1111",
+      "--accent": "#ffeaea",
+      "--accent-2": "#ef4444",
+      "--muted": "#d98a8a",
+    },
+    orangeDark: {
+      type: "dark",
+      "--bg": "#241200",
+      "--card": "#341a00",
+      "--accent": "#fff1e0",
+      "--accent-2": "#f97316",
+      "--muted": "#e0a16b",
+    },
+    tealDark: {
+      type: "dark",
+      "--bg": "#03201e",
+      "--card": "#05302d",
+      "--accent": "#e6fffb",
+      "--accent-2": "#14b8a6",
+      "--muted": "#7ccfc6",
+    },
+    yellowDark: {
+      type: "dark",
+      "--bg": "#1f1a05",
+      "--card": "#2e2608",
+      "--accent": "#fff8dc",
+      "--accent-2": "#facc15",
+      "--muted": "#e3c56b",
+    },
+    cyanDark: {
+      type: "dark",
+      "--bg": "#031e22",
+      "--card": "#06323a",
+      "--accent": "#e6fdff",
+      "--accent-2": "#06b6d4",
+      "--muted": "#7ccfd9",
+    },
+    brownDark: {
+      type: "dark",
+      "--bg": "#1e130b",
+      "--card": "#2a1b10",
+      "--accent": "#f5ede7",
+      "--accent-2": "#92400e",
+      "--muted": "#c6a38a",
+    },
+    slateDark: {
+      type: "dark",
+      "--bg": "#020617",
+      "--card": "#020617",
+      "--accent": "#e5e7eb",
+      "--accent-2": "#64748b",
+      "--muted": "#94a3b8",
+    },
+    oliveDark: {
+      type: "dark",
+      "--bg": "#1a1f0f",
+      "--card": "#262c16",
+      "--accent": "#f4f7e8",
+      "--accent-2": "#84a21d",
+      "--muted": "#b5c27a",
+    },
+    roseDark: {
+      type: "dark",
+      "--bg": "#1f0a10",
+      "--card": "#2e1118",
+      "--accent": "#ffe7ec",
+      "--accent-2": "#f43f5e",
+      "--muted": "#e09aad",
+    },
+    iceDark: {
+      type: "dark",
+      "--bg": "#041926",
+      "--card": "#06283a",
+      "--accent": "#e6f7ff",
+      "--accent-2": "#38bdf8",
+      "--muted": "#9dcde5",
+    },
+    indigoDark: {
+      type: "dark",
+      "--bg": "#0c0a24",
+      "--card": "#161238",
+      "--accent": "#ecebff",
+      "--accent-2": "#6366f1",
+      "--muted": "#a6a9e5",
+    },
 
     // LIGHT THEMES
 
-    blue: { type: "light", "--bg": "#eff6ff", "--card": "#e0f2fe", "--accent": "#0b1220", "--accent-2": "#3b82f6", "--muted": "#64748b" },
-    light: { type: "light", "--bg": "#ffffff", "--card": "#f8fafc", "--accent": "#0f172a", "--accent-2": "#f0f1f5", "--muted": "#6b7280" },
-    pink: { type: "light", "--bg": "#fff0f6", "--card": "#fff1f2", "--accent": "#2b2a2a", "--accent-2": "#ec4899", "--muted": "#7c4a5b" },
-    purple: { type: "light", "--bg": "#faf5ff", "--card": "#f3e8ff", "--accent": "#211634", "--accent-2": "#7c3aed", "--muted": "#6b5b7a" },
-    green: { type: "light", "--bg": "#f0fdf4", "--card": "#dcfce7", "--accent": "#04260f", "--accent-2": "#10b981", "--muted": "#4b6b53" },
-    red: { type: "light", "--bg": "#fff5f5", "--card": "#ffe5e5", "--accent": "#2a0a0a", "--accent-2": "#ef4444", "--muted": "#a64b4b" },
-    orange: { type: "light", "--bg": "#fffaf0", "--card": "#fff3e0", "--accent": "#2b1a00", "--accent-2": "#f97316", "--muted": "#b36b3b" },
-    teal: { type: "light", "--bg": "#f0fdfa", "--card": "#ccfbf1", "--accent": "#042f2e", "--accent-2": "#14b8a6", "--muted": "#4a7c79" },
-    yellow: { type: "light", "--bg": "#fffbeb", "--card": "#fef3c7", "--accent": "#2b2a00", "--accent-2": "#facc15", "--muted": "#a68c4b" },
-    cyan: { type: "light", "--bg": "#ecfeff", "--card": "#cffafe", "--accent": "#042f2e", "--accent-2": "#06b6d4", "--muted": "#4b7c82" },
-    brown: { type: "light", "--bg": "#faf7f5", "--card": "#ede6e1", "--accent": "#2a1c14", "--accent-2": "#92400e", "--muted": "#7a5c4a" },
-    slate: { type: "light", "--bg": "#f8fafc", "--card": "#e2e8f0", "--accent": "#0f172a", "--accent-2": "#64748b", "--muted": "#64748b" },
-    olive: { type: "light", "--bg": "#f7f8f3", "--card": "#e6e9d8", "--accent": "#2a2f1b", "--accent-2": "#84a21d", "--muted": "#6b7450" },
-    rose: { type: "light", "--bg": "#fff1f2", "--card": "#ffe4e6", "--accent": "#2a0a12", "--accent-2": "#f43f5e", "--muted": "#a8576c" },
-    ice: { type: "light", "--bg": "#f0f9ff", "--card": "#e0f2fe", "--accent": "#082f49", "--accent-2": "#38bdf8", "--muted": "#5b7c92" },
-    indigo: { type: "light", "--bg": "#eef2ff", "--card": "#e0e7ff", "--accent": "#1e1b4b", "--accent-2": "#6366f1", "--muted": "#6b6fa1" }
+    blue: {
+      type: "light",
+      "--bg": "#eff6ff",
+      "--card": "#e0f2fe",
+      "--accent": "#0b1220",
+      "--accent-2": "#3b82f6",
+      "--muted": "#64748b",
+    },
+    light: {
+      type: "light",
+      "--bg": "#ffffff",
+      "--card": "#f8fafc",
+      "--accent": "#0f172a",
+      "--accent-2": "#f0f1f5",
+      "--muted": "#6b7280",
+    },
+    pink: {
+      type: "light",
+      "--bg": "#fff0f6",
+      "--card": "#fff1f2",
+      "--accent": "#2b2a2a",
+      "--accent-2": "#ec4899",
+      "--muted": "#7c4a5b",
+    },
+    purple: {
+      type: "light",
+      "--bg": "#faf5ff",
+      "--card": "#f3e8ff",
+      "--accent": "#211634",
+      "--accent-2": "#7c3aed",
+      "--muted": "#6b5b7a",
+    },
+    green: {
+      type: "light",
+      "--bg": "#f0fdf4",
+      "--card": "#dcfce7",
+      "--accent": "#04260f",
+      "--accent-2": "#10b981",
+      "--muted": "#4b6b53",
+    },
+    red: {
+      type: "light",
+      "--bg": "#fff5f5",
+      "--card": "#ffe5e5",
+      "--accent": "#2a0a0a",
+      "--accent-2": "#ef4444",
+      "--muted": "#a64b4b",
+    },
+    orange: {
+      type: "light",
+      "--bg": "#fffaf0",
+      "--card": "#fff3e0",
+      "--accent": "#2b1a00",
+      "--accent-2": "#f97316",
+      "--muted": "#b36b3b",
+    },
+    teal: {
+      type: "light",
+      "--bg": "#f0fdfa",
+      "--card": "#ccfbf1",
+      "--accent": "#042f2e",
+      "--accent-2": "#14b8a6",
+      "--muted": "#4a7c79",
+    },
+    yellow: {
+      type: "light",
+      "--bg": "#fffbeb",
+      "--card": "#fef3c7",
+      "--accent": "#2b2a00",
+      "--accent-2": "#facc15",
+      "--muted": "#a68c4b",
+    },
+    cyan: {
+      type: "light",
+      "--bg": "#ecfeff",
+      "--card": "#cffafe",
+      "--accent": "#042f2e",
+      "--accent-2": "#06b6d4",
+      "--muted": "#4b7c82",
+    },
+    brown: {
+      type: "light",
+      "--bg": "#faf7f5",
+      "--card": "#ede6e1",
+      "--accent": "#2a1c14",
+      "--accent-2": "#92400e",
+      "--muted": "#7a5c4a",
+    },
+    slate: {
+      type: "light",
+      "--bg": "#f8fafc",
+      "--card": "#e2e8f0",
+      "--accent": "#0f172a",
+      "--accent-2": "#64748b",
+      "--muted": "#64748b",
+    },
+    olive: {
+      type: "light",
+      "--bg": "#f7f8f3",
+      "--card": "#e6e9d8",
+      "--accent": "#2a2f1b",
+      "--accent-2": "#84a21d",
+      "--muted": "#6b7450",
+    },
+    rose: {
+      type: "light",
+      "--bg": "#fff1f2",
+      "--card": "#ffe4e6",
+      "--accent": "#2a0a12",
+      "--accent-2": "#f43f5e",
+      "--muted": "#a8576c",
+    },
+    ice: {
+      type: "light",
+      "--bg": "#f0f9ff",
+      "--card": "#e0f2fe",
+      "--accent": "#082f49",
+      "--accent-2": "#38bdf8",
+      "--muted": "#5b7c92",
+    },
+    indigo: {
+      type: "light",
+      "--bg": "#eef2ff",
+      "--card": "#e0e7ff",
+      "--accent": "#1e1b4b",
+      "--accent-2": "#6366f1",
+      "--muted": "#6b6fa1",
+    },
   };
 
   function prefsDocRef(uid) {
@@ -266,17 +490,21 @@ document.addEventListener("DOMContentLoaded", () => {
   async function ensureUserCode(user) {
     const userRef = doc(db, "users", user.uid);
     const userSnap = await getDoc(userRef);
-    
+
     let userCode = "";
     if (userSnap.exists() && userSnap.data().userCode) {
       userCode = userSnap.data().userCode;
     } else {
       userCode = `MT-${user.uid.substring(0, 6).toUpperCase()}`;
-      await setDoc(userRef, { 
-        userCode,
-        displayName: user.displayName,
-        photoURL: user.photoURL || ""
-      }, { merge: true });
+      await setDoc(
+        userRef,
+        {
+          userCode,
+          displayName: user.displayName,
+          photoURL: user.photoURL || "",
+        },
+        { merge: true },
+      );
     }
     return userCode;
   }
@@ -380,7 +608,6 @@ document.addEventListener("DOMContentLoaded", () => {
       btnAdd && (btnAdd.style.display = "");
       btnVolverSearch && (btnVolverSearch.style.display = "none");
       timeBox && (timeBox.style.display = "none");
-      
     }
   }
 
@@ -752,17 +979,20 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
       // 2. ACTUALIZACIÓN CRÍTICA: Guardar/Actualizar en la colección global "users"
       // Esto es lo que permite que el buscador funcione.
       try {
-        await setDoc(doc(db, "users", user.uid), {
-          displayName: user.displayName || "Usuario",
-          photoURL: user.photoURL || "",
-          userCode: userCode,
-          uid: user.uid
-        }, { merge: true }); // merge: true evita borrar otros datos que pudieras tener
-        
+        await setDoc(
+          doc(db, "users", user.uid),
+          {
+            displayName: user.displayName || "Usuario",
+            photoURL: user.photoURL || "",
+            userCode: userCode,
+            uid: user.uid,
+          },
+          { merge: true },
+        ); // merge: true evita borrar otros datos que pudieras tener
+
         // Mostrar tu código en el perfil (asegúrate de que este ID exista en tu HTML)
         const myCodeEl = document.getElementById("my-user-code");
         if (myCodeEl) myCodeEl.textContent = userCode;
-        
       } catch (e) {
         console.error("Error al sincronizar perfil global:", e);
       }
@@ -779,13 +1009,12 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
 
       await loadPrefsForUser(user.uid);
       await goHome();
-      
+
       // 4. Iniciar escuchas de amigos y solicitudes
       await loadFriends(user.uid);
       if (typeof listenToRequests === "function") {
-        listenToRequests(user.uid); 
+        listenToRequests(user.uid);
       }
-
     } else {
       // Lógica de logout (tu lógica original)
       authControls && (authControls.style.display = "flex");
@@ -931,13 +1160,15 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
 
   sSignout?.addEventListener("click", async () => {
     await signOut(auth);
-  }); 
+  });
 
   // Toggle del acordeón de reseñas
   reviewsToggle?.addEventListener("click", () => {
     const isHidden = reviewsList.style.display === "none";
     reviewsList.style.display = isHidden ? "block" : "none";
-    reviewsToggle.querySelector(".arrow-icon").style.transform = isHidden ? "rotate(180deg)" : "rotate(0)";
+    reviewsToggle.querySelector(".arrow-icon").style.transform = isHidden
+      ? "rotate(180deg)"
+      : "rotate(0)";
   });
 
   async function renderUserPage() {
@@ -947,7 +1178,9 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
 
     try {
       // 1. Cargar Preferencias y Foto (Lógica unificada con el Header)
-      const prefsDoc = await getDoc(doc(db, "users", currentUser.uid, "prefs", "ui"));
+      const prefsDoc = await getDoc(
+        doc(db, "users", currentUser.uid, "prefs", "ui"),
+      );
       let finalPhoto = currentUser.photoURL || "./icons/icon-192.png";
 
       if (prefsDoc.exists()) {
@@ -958,12 +1191,15 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
       }
       if (userPageName) {
         const devUID = "wv0cbOYYzbgZBp3s7JqDWjw80mq2";
-        const testerUID = ["wYE4Gp2uzTVvs2lzpVP7IthFMYb2", "GGpWv2FubDdbMND0DVUZ3vPJoin1"];
-    
+        const testerUID = [
+          "wYE4Gp2uzTVvs2lzpVP7IthFMYb2",
+          "GGpWv2FubDdbMND0DVUZ3vPJoin1",
+        ];
+
         const name = currentUser.displayName || "Usuario";
-        
+
         if (currentUser.uid === devUID) {
-            userPageName.innerHTML = `
+          userPageName.innerHTML = `
                 ${name} 
                 <span class="dev-badge" title="Desarrollador Oficial">
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
@@ -972,7 +1208,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
                 </span>
             `;
         } else if (testerUID.includes(currentUser.uid)) {
-            userPageName.innerHTML = `
+          userPageName.innerHTML = `
               ${name} 
               <span class="tester-badge" title="Tester Oficial">
                   <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
@@ -981,37 +1217,45 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
               </span>
           `;
         } else {
-            userPageName.textContent = name;
+          userPageName.textContent = name;
         }
       }
 
       userPageEmail.textContent = currentUser.email || "";
       const uCode = "MT-" + currentUser.uid.slice(0, 6).toUpperCase();
-      userPageCode.textContent =  uCode;
+      userPageCode.textContent = uCode;
       userPageAvatar.src = finalPhoto;
 
       if (userPageCode && toast) {
         userPageCode.onclick = async () => {
           const textToCopy = userPageCode.childNodes[0].textContent.trim();
-          navigator.clipboard.writeText(textToCopy).then(() => {
-            toast.classList.add("visible");
-            setTimeout(() => {
-              toast.classList.remove("visible");
-            }, 1500);
-          }).catch(err => {
-            console.error("Error al copiar el código de usuario: ", err);
-          });
-        }
+          navigator.clipboard
+            .writeText(textToCopy)
+            .then(() => {
+              toast.classList.add("visible");
+              setTimeout(() => {
+                toast.classList.remove("visible");
+              }, 1500);
+            })
+            .catch((err) => {
+              console.error("Error al copiar el código de usuario: ", err);
+            });
+        };
       }
 
       // 2. Obtener todos los mangas/animes
-      const querySnapshot = await getDocs(collection(db, "users", currentUser.uid, "mangas"));
-      const allItems = querySnapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+      const querySnapshot = await getDocs(
+        collection(db, "users", currentUser.uid, "mangas"),
+      );
+      const allItems = querySnapshot.docs.map((d) => ({
+        id: d.id,
+        ...d.data(),
+      }));
 
       // 3. FILTRAR Y RENDERIZAR MINI CARDS PÚBLICAS
       // Filtramos solo los que tienen el "ojito" activado (isPublic: true)
-      const publicItems = allItems.filter(it => it.isPublic === true);
-      
+      const publicItems = allItems.filter((it) => it.isPublic === true);
+
       if (publicContainer) {
         publicContainer.innerHTML = ""; // Limpiar contenedor
 
@@ -1020,9 +1264,9 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
         } else {
           const tipos = ["Manga", "Anime"];
 
-          tipos.forEach(tipo => {
-            const group = publicItems.filter(it => it.type === tipo);
-            
+          tipos.forEach((tipo) => {
+            const group = publicItems.filter((it) => it.type === tipo);
+
             if (group.length > 0) {
               // Crear la sección (Manga o Anime)
               const section = document.createElement("div");
@@ -1035,41 +1279,40 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
               const grid = section.querySelector(".mini-grid");
 
               // Crear las Mini Cards (Solo imagen y título)
-              group.forEach(it => {
-                    const miniTag = document.createElement("div");
-                    miniTag.className = "mini-tag";
-                    miniTag.style.position = "relative"; // Necesario para posicionar el bocadillo
-                    
-                    miniTag.innerHTML = `
-                        <span class="tag-icon">${tipo === 'Manga' ? '📖' : '🎬'}</span>
+              group.forEach((it) => {
+                const miniTag = document.createElement("div");
+                miniTag.className = "mini-tag";
+                miniTag.style.position = "relative"; // Necesario para posicionar el bocadillo
+
+                miniTag.innerHTML = `
+                        <span class="tag-icon">${tipo === "Manga" ? "📖" : "🎬"}</span>
                         <span class="tag-text">${it.title}</span>
                     `;
 
-                    miniTag.onclick = async (e) => {
-                        // 1. Copiar al portapapeles
-                        try {
-                            await navigator.clipboard.writeText(it.title);
-                            
-                            // 2. Crear y mostrar el bocadillo (Tooltip)
-                            const tip = document.createElement("div");
-                            tip.className = "copy-tooltip";
-                            tip.textContent = "¡Copiado!";
-                            
-                            miniTag.appendChild(tip);
-                            
-                            // 3. Quitarlo después de 1.5 segundos
-                            setTimeout(() => {
-                                tip.classList.add("out");
-                                setTimeout(() => tip.remove(), 200);
-                            }, 1200);
+                miniTag.onclick = async (e) => {
+                  // 1. Copiar al portapapeles
+                  try {
+                    await navigator.clipboard.writeText(it.title);
 
-                        } catch (err) {
-                            console.error("Error al copiar:", err);
-                        }
-                    };
+                    // 2. Crear y mostrar el bocadillo (Tooltip)
+                    const tip = document.createElement("div");
+                    tip.className = "copy-tooltip";
+                    tip.textContent = "¡Copiado!";
 
-                    grid.appendChild(miniTag);
-                });
+                    miniTag.appendChild(tip);
+
+                    // 3. Quitarlo después de 1.5 segundos
+                    setTimeout(() => {
+                      tip.classList.add("out");
+                      setTimeout(() => tip.remove(), 200);
+                    }, 1200);
+                  } catch (err) {
+                    console.error("Error al copiar:", err);
+                  }
+                };
+
+                grid.appendChild(miniTag);
+              });
               publicContainer.appendChild(section);
             }
           });
@@ -1082,8 +1325,11 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
       const statTimeEl = document.getElementById("stat-time");
 
       if (statTotalEl) statTotalEl.textContent = allItems.length;
-      
-      const totalChapters = allItems.reduce((acc, curr) => acc + (Number(curr.last) || 0), 0);
+
+      const totalChapters = allItems.reduce(
+        (acc, curr) => acc + (Number(curr.last) || 0),
+        0,
+      );
       if (statChaptersEl) statChaptersEl.textContent = totalChapters;
 
       const minutosTotales = await calculateTotalTime();
@@ -1093,105 +1339,142 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
       // 5. Reseñas
       if (reviewsList) {
         reviewsList.innerHTML = "";
-        const itemsWithReview = allItems.filter(it => it.review && it.review.trim() !== "");
-        
-        itemsWithReview.forEach(it => {
+        const itemsWithReview = allItems.filter(
+          (it) => it.review && it.review.trim() !== "",
+        );
+
+        itemsWithReview.forEach((it) => {
           const div = document.createElement("div");
           div.className = "review-item";
           div.innerHTML = `<strong>${it.title}:</strong> <p>${it.review}</p>`;
           reviewsList.appendChild(div);
         });
       }
-
     } catch (error) {
       console.error("Error en renderUserPage:", error);
-    } 
+    }
   }
 
   window.showPublicProfile = async (uid) => {
     if (!uid || typeof uid !== "string") return;
 
     try {
-      // 1. Obtener datos de la raíz (Públicos: Nombre, Foto, Código)
-      const userSnap = await getDoc(doc(db, "users", uid));
-      // 2. Obtener preferencias (Privados: Bio, Config de Stats)
-      const uiSnap = await getDoc(doc(db, "users", uid, "prefs", "ui"));
+      // 1. Obtener datos
+      const [userSnap, uiSnap, mangasSnap, animesSnap, friendCheck] =
+        await Promise.all([
+          getDoc(doc(db, "users", uid)),
+          getDoc(doc(db, "users", uid, "prefs", "ui")),
+          getDocs(collection(db, "users", uid, "mangas")),
+          getDocs(collection(db, "users", uid, "animes")),
+          getDoc(doc(db, "users", currentUser.uid, "friends", uid)),
+        ]);
 
-      if (!userSnap.exists()) {
-        console.warn("El usuario no existe");
-        return;
-      }
+      if (!userSnap.exists()) return;
 
       const userData = userSnap.data();
-      const uiData = uiSnap.exists() ? uiSnap.data() : {};
+      const uiData = uiSnap.exists() ? uiSnap.data() : { statsPublic: false };
 
-      // 3. Asignar datos básicos
-      document.getElementById("public-username").textContent = userData.displayName || "Usuario";
-      document.getElementById("public-avatar").src = userData.photoURL || "./icons/icon-192.png";
-      document.getElementById("public-usercode").textContent = userData.userCode || "";
-      // Nota: Usamos 'biografia' porque es como lo tienes en tu base de datos
-      document.getElementById("public-bio").textContent = uiData.biografia || "Este usuario prefiere mantener su biografía en secreto.";
+      // PRIORIDAD DE IMAGEN (Igual que en tus ajustes)
+      const finalPhoto =
+        uiData.photoURL || userData.photoURL || "./icons/icon-192.png";
 
-      // 4. Lógica de Estadísticas con bloqueo visual
-      const statsDiv = document.getElementById("public-stats");
-      if (statsDiv) {
-        // Limpiamos el contenedor y quitamos clases previas
-        statsDiv.innerHTML = "";
-        statsDiv.classList.remove("stats-locked");
-        
-        if (uiData.statsPublic) {
-          // Muestra las stats (Aquí puedes llamar a una función que cuente sus mangas/animes)
-          statsDiv.innerHTML = `
-            <div class="stats-grid-public">
-              <p class="muted-text">Estadísticas visibles</p>
-              </div>
-          `;
-        } else {
-          // EFECTO BORROSO Y OJO TACHADO
-          statsDiv.classList.add("stats-locked");
-          statsDiv.innerHTML = `
-            <div class="stats-overlay">
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-                <line x1="1" y1="1" x2="23" y2="23"></line>
-              </svg>
-              <p>Estadísticas privadas</p>
-            </div>
-            <div style="opacity: 0.2; filter: blur(2px);">
-              <p>000 Mangas</p>
-              <p>000 Animes</p>
-            </div>
-          `;
+      // 2. Asignar datos con comprobación de existencia (evita el error de null)
+      const elName = document.getElementById("public-username");
+      const elImg = document.getElementById("public-avatar");
+      const elCode = document.getElementById("public-usercode");
+      const elBio = document.getElementById("public-bio");
+      const elAction = document.getElementById("public-profile-action");
+      const elStats = document.getElementById("public-stats");
+
+      if (elName) elName.textContent = userData.displayName || "Usuario";
+      if (elImg) elImg.src = finalPhoto;
+      if (elCode) elCode.textContent = userData.userCode || "";
+      if (elBio) elBio.textContent = uiData.biografia || "Sin biografía.";
+
+      // 3. Botón Eliminar Amigo (Solo si sois amigos)
+      if (elAction) {
+        elAction.innerHTML = "";
+        if (friendCheck.exists()) {
+          elAction.innerHTML = `
+                      <button class="btn-danger-outline" onclick="removeFriend('${uid}', '${userData.displayName.replace(/'/g, "\\'")}')">
+                          Eliminar Amigo
+                      </button>`;
         }
       }
 
-      // 5. Cargar reseñas (Igual que tenías)
-      const reviewsList = document.getElementById("public-reviews-list");
-      if (reviewsList) {
-        reviewsList.innerHTML = "<p class='muted-text'>Cargando reseñas...</p>";
-        const reviewsSnap = await getDocs(query(
-          collection(db, "users", uid, "reviews"),
-          orderBy("timestamp", "desc"),
-          limit(3)
-        ));
-        reviewsList.innerHTML = reviewsSnap.empty ? 
-          "<p class='muted-text'>No hay reseñas recientes.</p>" : "";
-        
-        reviewsSnap.forEach(docSnap => {
-          const r = docSnap.data();
-          reviewsList.innerHTML += `
-            <div class="public-review-item">
-              <strong>${r.mangaTitle || "Título"}</strong>
-              <p>"${r.text || ""}"</p>
-            </div>`;
-        });
+      // 4. Lógica de Estadísticas
+      if (elStats) {
+        elStats.innerHTML = "";
+        elStats.classList.remove("stats-locked");
+
+        if (uiData.statsPublic) {
+          elStats.innerHTML = `
+                      <div class="stat-card"><span>${mangasSnap.size}</span><label>Mangas</label></div>
+                      <div class="stat-card"><span>${animesSnap.size}</span><label>Animes</label></div>
+                  `;
+        } else {
+          elStats.classList.add("stats-locked");
+          elStats.innerHTML = `
+                      <div class="stats-overlay" style="grid-column: span 2; display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                          <p>Estadísticas privadas</p>
+                      </div>
+                  `;
+        }
       }
 
-      // 6. Abrir Modal
-      document.getElementById("public-profile-modal")?.classList.remove("hidden");
+      // 5. Cargar reseñas
+      const reviewsList = document.getElementById("public-reviews-list");
+      if (reviewsList) {
+        reviewsList.innerHTML = "";
+        const reviewsSnap = await getDocs(
+          query(
+            collection(db, "users", uid, "reviews"),
+            orderBy("timestamp", "desc"),
+            limit(3),
+          ),
+        );
 
+        if (reviewsSnap.empty) {
+          reviewsList.innerHTML =
+            "<p class='muted-text'>No hay reseñas recientes.</p>";
+        } else {
+          reviewsSnap.forEach((docSnap) => {
+            const r = docSnap.data();
+            reviewsList.innerHTML += `
+                          <div class="public-review-item" style="background: var(--bg-card); padding: 10px; border-radius: 8px; margin-bottom: 8px; border: 1px solid var(--border);">
+                              <strong>${r.mangaTitle || "Título"}</strong>
+                              <p style="font-size: 0.85em; margin-top: 4px;">"${r.text || ""}"</p>
+                          </div>`;
+          });
+        }
+      }
+
+      document
+        .getElementById("public-profile-modal")
+        ?.classList.remove("hidden");
     } catch (error) {
-      console.error("Error en perfil público:", error);
+      console.error("Error al cargar perfil público:", error);
+    }
+  };
+
+  // --- FUNCIÓN PARA ELIMINAR AMIGO ---
+  window.removeFriend = async (friendUid, friendName) => {
+    if (!confirm(`¿Seguro que quieres eliminar a ${friendName} de tus amigos?`))
+      return;
+
+    try {
+      // Borrar recíprocamente
+      await Promise.all([
+        deleteDoc(doc(db, "users", currentUser.uid, "friends", friendUid)),
+        deleteDoc(doc(db, "users", friendUid, "friends", currentUser.uid)),
+      ]);
+
+      alert("Amigo eliminado correctamente.");
+      document.getElementById("public-profile-modal")?.classList.add("hidden");
+      // El onSnapshot de loadFriends se encargará de actualizar la lista visualmente
+    } catch (e) {
+      console.error("Error al eliminar amigo:", e);
     }
   };
 
@@ -1199,12 +1482,12 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     const container = document.getElementById(containerId);
     const grid = document.getElementById(gridId);
     grid.innerHTML = "";
-    
+
     if (items.length === 0) {
       container.style.display = "none";
     } else {
       container.style.display = "block";
-      items.forEach(it => { 
+      items.forEach((it) => {
         const card = document.createElement("div");
         card.className = "mini-card";
         card.innerHTML = `
@@ -1220,13 +1503,13 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     const friendsGrid = document.getElementById("friends-list-grid");
     if (!friendsGrid) return;
 
-    // Escuchamos la subcolección de amigos del usuario
     const q = collection(db, "users", myUid, "friends");
-    
+
     onSnapshot(q, (snapshot) => {
       friendsGrid.innerHTML = "";
       if (snapshot.empty) {
-        friendsGrid.innerHTML = '<p class="muted-text">Aún no tienes amigos.</p>';
+        friendsGrid.innerHTML =
+          '<p class="muted-text">Aún no tienes amigos.</p>';
         return;
       }
 
@@ -1235,10 +1518,11 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
         const friendCard = document.createElement("div");
         friendCard.className = "friend-item-card";
         friendCard.innerHTML = `
-          <img src="${friend.photoURL || './icons/icon-192.png'}">
-          <h4>${friend.displayName}</h4>
-        `;
-        // Al hacer clic, ver su perfil rápido
+                <div class="friend-avatar-wrapper">
+                    <img src="${friend.photoURL || "./icons/icon-192.png"}">
+                </div>
+                <p>${friend.displayName}</p>
+            `;
         friendCard.onclick = () => showPublicProfile(docSnap.id);
         friendsGrid.appendChild(friendCard);
       });
@@ -1249,33 +1533,36 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     // CAMBIO AQUÍ: Apuntamos a la subcolección dentro de tu usuario
     // Según tus reglas: match /users/{userId}/friend_requests/{reqId}
     const q = collection(db, "users", myUid, "friend_requests");
-    
-    onSnapshot(q, (snapshot) => {
-      const list = document.getElementById("requests-items-list");
-      const badge = document.getElementById("request-badge");
-      
-      // Si badge o list no existen en el HTML, evitamos error
-      if (!badge || !list) return;
 
-      const count = snapshot.size;
-      badge.textContent = count;
-      badge.style.display = count === 0 ? "none" : "block"; // O usa toggle("hidden")
-      
-      list.innerHTML = "";
+    onSnapshot(
+      q,
+      (snapshot) => {
+        const list = document.getElementById("requests-items-list");
+        const badge = document.getElementById("request-badge");
 
-      if (count === 0) {
-        list.innerHTML = '<p class="empty-msg" style="padding:10px; font-size:12px; color:var(--muted);">No hay solicitudes</p>';
-        return;
-      }
+        // Si badge o list no existen en el HTML, evitamos error
+        if (!badge || !list) return;
 
-      snapshot.forEach(docSnap => {
-        const req = docSnap.data();
-        const id = docSnap.id; // El ID del remitente
-        
-        const item = document.createElement("div");
-        item.className = "request-item";
-        item.innerHTML = `
-          <img src="${req.fromPhoto || './icons/icon-192.png'}" style="width:30px; height:30px; border-radius:50%;">
+        const count = snapshot.size;
+        badge.textContent = count;
+        badge.style.display = count === 0 ? "none" : "block"; // O usa toggle("hidden")
+
+        list.innerHTML = "";
+
+        if (count === 0) {
+          list.innerHTML =
+            '<p class="empty-msg" style="padding:10px; font-size:12px; color:var(--muted);">No hay solicitudes</p>';
+          return;
+        }
+
+        snapshot.forEach((docSnap) => {
+          const req = docSnap.data();
+          const id = docSnap.id; // El ID del remitente
+
+          const item = document.createElement("div");
+          item.className = "request-item";
+          item.innerHTML = `
+          <img src="${req.fromPhoto || "./icons/icon-192.png"}" style="width:30px; height:30px; border-radius:50%;">
           <div class="req-info">
             <strong style="font-size:13px;">${req.fromName}</strong>
             <div class="req-btns">
@@ -1284,21 +1571,31 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
             </div>
           </div>
         `;
-        list.appendChild(item);
-      });
-    }, (error) => {
-      console.error("Error en el listener:", error);
-    });
+          list.appendChild(item);
+        });
+      },
+      (error) => {
+        console.error("Error en el listener:", error);
+      },
+    );
   }
 
   // Guardar biografía automáticamente al salir del textarea
   userBio?.addEventListener("blur", async () => {
-    await setDoc(prefsDocRef(currentUser.uid), { bio: userBio.value }, { merge: true });
+    await setDoc(
+      prefsDocRef(currentUser.uid),
+      { bio: userBio.value },
+      { merge: true },
+    );
   });
 
   // Guardar privacidad de stats
   statsToggle?.addEventListener("change", async () => {
-    await setDoc(prefsDocRef(currentUser.uid), { statsPublic: statsToggle.checked }, { merge: true });
+    await setDoc(
+      prefsDocRef(currentUser.uid),
+      { statsPublic: statsToggle.checked },
+      { merge: true },
+    );
   });
 
   // Mobile settings
@@ -1652,7 +1949,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
           card.innerHTML = `
           <div class="thumb">
             ${it.imgurl ? `<img src="${it.imgurl}" style="width:100%;height:100%;object-fit:cover">` : ""}
-            <div class="visibility-btn ${isPublic ? 'is-public' : ''}" data-id="${it.id}" title="${isPublic ? 'Público' : 'Privado'}">
+            <div class="visibility-btn ${isPublic ? "is-public" : ""}" data-id="${it.id}" title="${isPublic ? "Público" : "Privado"}">
               ${isPublic ? eyeOpen : eyeClosed}
             </div>
           </div>
@@ -1746,7 +2043,6 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
               btn.innerHTML = eyeClosed;
               btn.title = "Privado";
             }
-
           } catch (error) {
             console.error("Error al cambiar visibilidad:", error);
           }
@@ -2044,7 +2340,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     closeMobileSettings();
     currentView = "friends";
     zmResults && (zmResults.innerHTML = "");
-    gridEl.innerHTML = ""
+    gridEl.innerHTML = "";
     applyView();
   }
 
@@ -2086,7 +2382,10 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
 
   sGoProfile?.addEventListener("click", () => {
     if (currentView === "user") goHome();
-    else { goUser(); closeSettings(); }
+    else {
+      goUser();
+      closeSettings();
+    }
   });
 
   mobileProfile?.addEventListener("click", () => {
@@ -2096,20 +2395,26 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
 
   sGoFriends?.addEventListener("click", () => {
     if (currentView === "friends") goHome();
-    else { goFriends(); closeSettings(); }
+    else {
+      goFriends();
+      closeSettings();
+    }
   });
 
   btnEditNamePage?.addEventListener("click", async () => {
     // 1. Pedimos el nuevo nombre (puedes usar un prompt sencillo para ir rápido)
     const currentName = currentUser.displayName || "Usuario";
-    const newName = prompt("Introduce tu nuevo nombre de usuario:", currentName);
+    const newName = prompt(
+      "Introduce tu nuevo nombre de usuario:",
+      currentName,
+    );
 
     // 2. Validamos que no esté vacío y que no sea el mismo
     if (newName && newName !== currentName) {
       try {
         // 3. Actualizamos en Firebase Auth
         await updateProfile(auth.currentUser, {
-          displayName: newName
+          displayName: newName,
         });
 
         // 4. Actualizamos la interfaz al momento
@@ -2123,96 +2428,116 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
   });
 
   btnSearchFriend?.addEventListener("click", async () => {
-      const code = friendSearchInput.value.trim().toUpperCase();
-      if (!code) return;
+    const code = friendSearchInput.value.trim().toUpperCase();
+    if (!code) return;
 
-      searchResultArea.innerHTML = "Buscando...";
-      btnSearchFriend.disabled = true;
-      
-      try {
-          const q = query(collection(db, "users"), where("userCode", "==", code));
-          const querySnapshot = await getDocs(q);
+    searchResultArea.innerHTML = "Buscando...";
+    btnSearchFriend.disabled = true;
 
-          if (querySnapshot.empty) {
-              searchResultArea.innerHTML = "<p class='muted-text'>Usuario no encontrado.</p>";
-              return;
-          }
+    try {
+      const q = query(collection(db, "users"), where("userCode", "==", code));
+      const querySnapshot = await getDocs(q);
 
-          const targetDoc = querySnapshot.docs[0];
-          const targetData = targetDoc.data();
-          const targetId = targetDoc.id;
+      if (querySnapshot.empty) {
+        searchResultArea.innerHTML =
+          "<p class='muted-text'>Usuario no encontrado.</p>";
+        return;
+      }
 
-          if (targetId === currentUser.uid) {
-              searchResultArea.innerHTML = "<p class='muted-text'>¡Eres tú!</p>";
-              return;
-          }
+      const targetDoc = querySnapshot.docs[0];
+      const targetData = targetDoc.data();
+      const targetId = targetDoc.id;
 
-          // --- NUEVA LÓGICA: Comprobar si ya existe una solicitud enviada ---
-          const checkReq = await getDoc(doc(db, "users", targetId, "friend_requests", currentUser.uid));
-          const yaEnviada = checkReq.exists();
+      if (targetId === currentUser.uid) {
+        searchResultArea.innerHTML = "<p class='muted-text'>¡Eres tú!</p>";
+        return;
+      }
 
-          // Pintamos el resultado
-          searchResultArea.innerHTML = `
-            <div class="friend-card" onclick="showPublicProfile('${targetId}')" style="cursor:pointer">
-              <img src="${targetData.photoURL || './icons/icon-192.png'}" class="friend-avatar">
-              <div class="friend-info">
+      // Comprobar estados simultáneamente
+      const [friendCheck, reqCheck] = await Promise.all([
+        getDoc(doc(db, "users", currentUser.uid, "friends", targetId)),
+        getDoc(doc(db, "users", targetId, "friend_requests", currentUser.uid)),
+      ]);
+
+      let btnText = "Añadir";
+      let btnClass = "primary";
+      let isDisabled = false;
+
+      if (friendCheck.exists()) {
+        btnText = "Amigos";
+        btnClass = "success";
+        isDisabled = true;
+      } else if (reqCheck.exists()) {
+        btnText = "Pendiente";
+        btnClass = "muted";
+        isDisabled = true;
+      }
+
+      searchResultArea.innerHTML = `
+          <div class="search-card-result">
+            <div class="user-main-info" onclick="showPublicProfile('${targetId}')" style="cursor:pointer">
+              <img src="${targetData.photoURL || "./icons/icon-192.png"}" class="avatar-md">
+              <div>
                 <h4>${targetData.displayName}</h4>
                 <p>${targetData.userCode}</p>
               </div>
-              <button class="btn primary btn-small" id="send-req-btn" ${yaEnviada ? 'disabled style="background:var(--muted);"' : ''}>
-                  ${yaEnviada ? 'Esperando respuesta' : 'Añadir'}
-              </button>
             </div>
-          `;
+            <button class="btn-action ${btnClass}" id="res-btn" ${isDisabled ? "disabled" : ""}>
+              ${btnText}
+            </button>
+          </div>
+        `;
 
-          // Lógica del botón Añadir
-          const sendBtn = document.getElementById("send-req-btn");
-          if (sendBtn && !yaEnviada) {
-              sendBtn.onclick = async (e) => {
-                  e.stopPropagation(); // Evita abrir el perfil al dar al botón
-                  
-                  sendBtn.disabled = true;
-                  sendBtn.textContent = "Enviando...";
+      const resBtn = document.getElementById("res-btn");
+      if (resBtn && !isDisabled) {
+        resBtn.onclick = async (e) => {
+          e.stopPropagation();
+          resBtn.disabled = true;
+          resBtn.textContent = "Enviando...";
 
-                  try {
-                      await sendFriendRequest(targetId, targetData);
-                      
-                      // Cambio visual a "Esperando respuesta"
-                      sendBtn.textContent = "Esperando respuesta";
-                      sendBtn.style.background = "var(--muted)";
-                      sendBtn.disabled = true; 
-                  } catch (err) {
-                      console.error("Error al enviar solicitud:", err);
-                      sendBtn.disabled = false;
-                      sendBtn.textContent = "Añadir";
-                      alert("No se pudo enviar la solicitud. Revisa las reglas de Firebase.");
-                  }
-              };
+          try {
+            await sendFriendRequest(targetId, targetData);
+            resBtn.textContent = "Pendiente";
+            resBtn.className = "btn-action muted";
+          } catch (err) {
+            console.error(err);
+            resBtn.disabled = false;
+            resBtn.textContent = "Añadir";
           }
-
-      } catch (error) {
-          console.error("Error en la búsqueda:", error);
-          searchResultArea.innerHTML = "<p class='muted-text'>Error de permisos o red.</p>";
-      } finally {
-          btnSearchFriend.disabled = false;
+        };
       }
+    } catch (error) {
+      console.error("Error:", error);
+      searchResultArea.innerHTML =
+        "<p class='muted-text'>Error de conexión.</p>";
+    } finally {
+      btnSearchFriend.disabled = false;
+    }
   });
-  
-  async function sendFriendRequest(targetUid, targetData) {
 
-    const myCurrentPhoto = currentUser.photoURL || "./icons/icon-192.png";
+  async function sendFriendRequest(targetUid, targetData) {
+    if (!currentUser) return;
+
+    const myPrefs = await getDoc(
+      doc(db, "users", currentUser.uid, "prefs", "ui"),
+    );
+    const myPhoto = myPrefs.exists()
+      ? myPrefs.data().photoURL
+      : currentUser.photoURL || "./icons/icon-192.png";
 
     const myData = {
-      from: auth.currentUser.uid,
-      fromName: auth.currentUser.displayName || "Usuario",
-      fromPhoto: myCurrentPhoto,
+      from: currentUser.uid,
+      fromName: currentUser.displayName || "Usuario",
+      fromPhoto: myPhoto,
+      fromCode: `MT-${currentUser.uid.substring(0, 6).toUpperCase()}`,
       status: "pending",
-      timestamp: new Date()
+      timestamp: new Date(),
     };
 
-    // Guardamos en: users -> ID_DEL_AMIGO -> friend_requests -> MI_ID
-    await setDoc(doc(db, "users", targetUid, "friend_requests", auth.currentUser.uid), myData);
-    alert("Solicitud enviada a " + targetData.displayName);
+    await setDoc(
+      doc(db, "users", targetUid, "friend_requests", currentUser.uid),
+      myData,
+    );
   }
 
   btnVolverPC?.addEventListener("click", goHome);
@@ -2267,10 +2592,16 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
 
   window.acceptFriend = async (fromUid) => {
     if (!currentUser) return;
-    
+
     try {
       // 1. Referencia a la solicitud
-      const reqRef = doc(db, "users", currentUser.uid, "friend_requests", fromUid);
+      const reqRef = doc(
+        db,
+        "users",
+        currentUser.uid,
+        "friend_requests",
+        fromUid,
+      );
       const reqSnap = await getDoc(reqRef);
       if (!reqSnap.exists()) return;
       const reqData = reqSnap.data();
@@ -2285,7 +2616,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
         displayName: reqData.fromName || "Amigo",
         photoURL: reqData.fromPhoto || "./icons/icon-192.png",
         userCode: reqData.fromCode || "",
-        addedAt: new Date()
+        addedAt: new Date(),
       });
 
       // 4. Añadirme a su lista (Ahora las reglas lo permiten)
@@ -2294,12 +2625,12 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
         displayName: myData.displayName,
         photoURL: myData.photoURL || "./icons/icon-192.png",
         userCode: myData.userCode,
-        addedAt: new Date()
+        addedAt: new Date(),
       });
 
       // 5. Borrar solicitud
       await deleteDoc(reqRef);
-      
+
       alert("¡Ahora sois amigos!");
     } catch (error) {
       console.error("Error al aceptar amigo:", error);
@@ -2309,9 +2640,29 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
   window.rejectFriend = async (fromUid) => {
     if (!currentUser) return;
     try {
-      await deleteDoc(doc(db, "users", currentUser.uid, "friend_requests", fromUid));
+      await deleteDoc(
+        doc(db, "users", currentUser.uid, "friend_requests", fromUid),
+      );
     } catch (e) {
       console.error("Error al rechazar:", e);
+    }
+  };
+
+  window.removeFriend = async (friendUid, friendName) => {
+    if (!confirm(`¿Seguro que quieres eliminar a ${friendName} de tus amigos?`))
+      return;
+
+    try {
+      // 1. Borrar de mi lista
+      await deleteDoc(doc(db, "users", currentUser.uid, "friends", friendUid));
+      // 2. Borrarme de su lista
+      await deleteDoc(doc(db, "users", friendUid, "friends", currentUser.uid));
+
+      alert("Amigo eliminado");
+      document.getElementById("public-profile-modal")?.classList.add("hidden");
+      // La lista se actualizará sola gracias al onSnapshot de loadFriends
+    } catch (e) {
+      console.error("Error al eliminar amigo:", e);
     }
   };
 
@@ -2319,7 +2670,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
   btnScrollTop?.addEventListener("click", () => {
     window.scrollTo({
       top: 0,
-      behavior: "smooth"
+      behavior: "smooth",
     });
   });
 
