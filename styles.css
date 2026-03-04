@@ -848,6 +848,19 @@ input:checked + .slider::before {
     right: 12px;
     width: auto;
   }
+
+  .profile-modal-content {
+  background: var(--card);
+  width: 95%;
+  max-height: 90vh;
+  max-width: 95%; /* No ocupa toda la pantalla de alto */
+  overflow-y: auto; /* Permite scroll si el contenido es largo */
+  border-radius: 20px;
+  padding: 30px;
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
 }
 
 /* ============================================X
@@ -1871,19 +1884,6 @@ input:checked + .slider::before {
   display: none !important;
 }
 
-/* MODAL DE PERFIL PÚBLICO - REVISADO */
-#public-profile-modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(15, 23, 42, 0.95); /* Fondo oscuro profundo */
-  display: none; /* Se controla con .hidden */
-  align-items: center;
-  justify-content: center;
-  z-index: 10000; /* Por encima de TODO (settings, barras, etc) */
-  padding: 20px;
-  backdrop-filter: blur(4px); /* Efecto cristal de fondo */
-}
-
 /* IMPORTANTE: Esta regla hace que el JS funcione */
 #public-profile-modal:not(.hidden) {
   display: flex !important;
@@ -2037,6 +2037,5 @@ input:checked + .slider::before {
     pointer-events: auto !important; /* Asegura que reciba clics */
     margin-top: 25px !important;
     display: flex !important;
-    justify-content: center !important;
     clear: both !important; /* Evita que elementos flotantes lo tapen */
 }
