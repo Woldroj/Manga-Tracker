@@ -850,17 +850,17 @@ input:checked + .slider::before {
   }
 
   .profile-modal-content {
-  background: var(--card);
-  width: 95%;
-  max-height: 90vh;
-  max-width: 95%; /* No ocupa toda la pantalla de alto */
-  overflow-y: auto; /* Permite scroll si el contenido es largo */
-  border-radius: 20px;
-  padding: 30px;
-  position: relative;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-}
+    background: var(--card);
+    width: 98% !important; 
+    max-height: 90vh;
+    max-width: 98% !important; /* No ocupa toda la pantalla de alto */
+    overflow-y: auto; /* Permite scroll si el contenido es largo */
+    border-radius: 20px;
+    padding: 30px;
+    position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  }
 }
 
 /* ============================================X
