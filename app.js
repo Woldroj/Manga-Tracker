@@ -520,6 +520,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function openSettings() {
+     if (!currentUser) return alert("Inicia sesión");
     sidebar.classList.add("open");
     overlay.classList.add("open");
     sidebar.setAttribute("aria-hidden", "false");
@@ -1159,6 +1160,8 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
   });
 
   sSignout?.addEventListener("click", async () => {
+    closeMobileSettings();
+    closeSettings();
     await signOut(auth);
   });
 
@@ -1600,6 +1603,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
 
   // Mobile settings
   mobileGear?.addEventListener("click", (e) => {
+     if (!currentUser) return alert("Inicia sesión");
     e.stopPropagation();
     if (mobileSettingsPopup) {
       mobileSettingsPopup.remove();
