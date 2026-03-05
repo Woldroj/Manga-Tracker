@@ -1447,7 +1447,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
         elAction.innerHTML = `
         <button class="btn-danger-outline" 
             onclick="window.removeFriend('${uid}', '${nombre}')">
-            Eliminar de mis amigos
+            Eliminar
         </button>`;
       } else {
         elAction.innerHTML = "";
