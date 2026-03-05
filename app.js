@@ -459,7 +459,7 @@ document.addEventListener("DOMContentLoaded", () => {
     sw.title = key;
     sw.dataset.theme = key;
 
-    if(theme.type === "light") {
+    if(theme.type === "light" && key === "light") {
       sw.style.background = theme["--bg"]
     }
 
