@@ -144,6 +144,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const panel = document.getElementById("mobile-requests-panel");
   const list = document.getElementById("mobile-requests-list");
 
+  const alertBanner = document.getElementById("jikan-alert");
+
   /* -------- STATE -------- */
   let currentView = "home";
   let currentUser = null;
@@ -424,6 +426,39 @@ document.addEventListener("DOMContentLoaded", () => {
     return doc(db, "users", uid, "prefs", "ui");
   }
 
+  let alertTimer; // Variable global para controlar el cierre
+
+  function showAlert() {
+    const banner = document.getElementById("jikan-alert");
+    const progressBar = document.getElementById("alert-progress");
+    if (!banner) return;
+
+    // Si ya había un timer corriendo, lo cancelamos para empezar de nuevo
+    clearTimeout(alertTimer);
+
+    banner.style.display = "block";
+
+    // Reiniciamos la animación de la barra (opcional)
+    if (progressBar) {
+      progressBar.style.transition = "none";
+      progressBar.style.width = "100%";
+      setTimeout(() => {
+        progressBar.style.transition = "width 5s linear";
+        progressBar.style.width = "0%";
+      }, 10);
+    }
+
+    // Cerramos el banner tras 5 segundos
+    alertTimer = setTimeout(() => {
+      banner.style.opacity = "0";
+      banner.style.transition = "opacity 0.5s ease";
+      setTimeout(() => {
+        banner.style.display = "none";
+        banner.style.opacity = "1"; // Reset para la próxima vez
+      }, 500);
+    }, 5000); // 5000 milisegundos = 5 segundos
+  }
+
   function updateSwitchColors(themeName) {
     const theme = THEMES[themeName];
     if (!theme) return;
@@ -459,8 +494,8 @@ document.addEventListener("DOMContentLoaded", () => {
     sw.title = key;
     sw.dataset.theme = key;
 
-    if(theme.type === "light" && key === "light") {
-      sw.style.background = theme["--bg"]
+    if (theme.type === "light" && key === "light") {
+      sw.style.background = theme["--bg"];
     }
 
     sw.addEventListener("click", () => applyTheme(key, true));
@@ -637,6 +672,7 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       res = await fetch(endpoint);
     } catch (e) {
+      showAlert();
       zmResults.innerHTML = `
         <div style="grid-column: 1 / -1; margin-top: 20%; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; text-align: center; color: var(--accent);">
             <svg version="1.0" xmlns="http://www.w3.org/2000/svg"
@@ -675,6 +711,9 @@ c-182 88 -256 89 -438 1 l-102 -50 -141 69 c-149 74 -185 82 -244 56z"/>
     }
 
     if (!res.ok) {
+      if (res.status === 504) {
+        showAlert();
+      }
       zmResults.innerHTML = `
         <div style="grid-column: 1 / -1; margin-top: 20%; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; text-align: center; color: var(--accent);">
             <svg version="1.0" xmlns="http://www.w3.org/2000/svg"
@@ -2759,7 +2798,6 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
 
       // 5. Borrar solicitud
       await deleteDoc(reqRef);
-
     } catch (error) {
       console.error("Error al aceptar amigo:", error);
     }
