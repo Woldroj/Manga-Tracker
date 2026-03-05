@@ -15,7 +15,7 @@
 * **📱 Experiencia de App Nativa (PWA):** Puedes añadirla a tu pantalla de inicio y usarla como una aplicación instalada.
 * **🔍 Detección de Capítulos:** Sistema inteligente para ayudarte a identificar nuevos contenidos disponibles.
 * **🌓 Modos Visuales:** Soporte completo para modo oscuro y claro que se adapta a tus preferencias.
-* **📂 Organización Eficiente:** Clasifica tus series por estado: *Leyendo*, *Terminado* o *Pendiente*.
+* **📂 Organización Eficiente:** Clasifica tus series por estado: *Leyendo* o *Terminado*.
 
 ## 🛠️ Tecnologías Utilizadas
 
