@@ -761,7 +761,7 @@ input:checked + .slider::before {
     font-size: 18px;
   }
 }
-@media (max-width: 520px) {
+@media (max-width: 580px) {
   header.app-header {
     justify-content: center;
   }
@@ -852,7 +852,7 @@ input:checked + .slider::before {
 
   .profile-modal-content {
     background: var(--card);
-    width: 98% !important; 
+    width: 98% !important;
     max-height: 90vh;
     max-width: 98% !important; /* No ocupa toda la pantalla de alto */
     overflow-y: auto; /* Permite scroll si el contenido es largo */
@@ -864,23 +864,23 @@ input:checked + .slider::before {
   }
 
   .btn-danger-outline {
-  background: transparent;
-  color: #ff4d4d;
-  border: 1px solid #ff4d4d;
-  padding: 8px 16px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 600;
-  margin-top: 15px;
-  transition: 0.3s;
-  z-index: 10001;
-  width: 100%;
-}
+    background: transparent;
+    color: #ff4d4d;
+    border: 1px solid #ff4d4d;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    margin-top: 15px;
+    transition: 0.3s;
+    z-index: 10001;
+    width: 100%;
+  }
 
-.btn-danger-outline:hover {
-  background: #ff4d4d;
-  color: white;
-}
+  .btn-danger-outline:hover {
+    background: #ff4d4d;
+    color: white;
+  }
 }
 
 /* ============================================X
@@ -2042,20 +2042,20 @@ input:checked + .slider::before {
 }
 
 #public-bio {
-    white-space: pre-wrap;      /* Respeta saltos de línea manuales */
-    word-wrap: break-word;      /* Rompe palabras largas si es necesario */
-    overflow-wrap: break-word;  /* Estándar moderno para romper líneas */
-    max-width: 100%;            /* No permite que sea más ancho que el modal */
-    line-height: 1.5;           /* Mejora la lectura */
-    color: var(--muted-text);
-    margin-bottom: 20px;
+  white-space: pre-wrap; /* Respeta saltos de línea manuales */
+  word-wrap: break-word; /* Rompe palabras largas si es necesario */
+  overflow-wrap: break-word; /* Estándar moderno para romper líneas */
+  max-width: 100%; /* No permite que sea más ancho que el modal */
+  line-height: 1.5; /* Mejora la lectura */
+  color: var(--muted-text);
+  margin-bottom: 20px;
 }
 
 #public-profile-action {
-    position: relative !important;
-    z-index: 99999 !important; /* Prioridad máxima */
-    pointer-events: auto !important; /* Asegura que reciba clics */
-    margin-top: 25px !important;
-    display: flex !important;
-    clear: both !important; /* Evita que elementos flotantes lo tapen */
+  position: relative !important;
+  z-index: 99999 !important; /* Prioridad máxima */
+  pointer-events: auto !important; /* Asegura que reciba clics */
+  margin-top: 25px !important;
+  display: flex !important;
+  clear: both !important; /* Evita que elementos flotantes lo tapen */
 }
