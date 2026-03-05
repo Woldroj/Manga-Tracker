@@ -881,6 +881,10 @@ input:checked + .slider::before {
     background: #ff4d4d;
     color: white;
   }
+
+  #mobile-requests-panel:not(.hidden) {
+    display: block !important;
+  }
 }
 
 /* ============================================X
@@ -2058,4 +2062,33 @@ input:checked + .slider::before {
   margin-top: 25px !important;
   display: flex !important;
   clear: both !important; /* Evita que elementos flotantes lo tapen */
+}
+
+#mobile-requests-panel {
+    background: rgba(59, 130, 246, 0.15);
+    border: 1px solid var(--accent-2);
+    border-radius: 15px;
+    margin: 10px;
+    padding: 12px;
+    animation: slideDown 0.3s ease-out;
+    display: none;
+}
+
+.requests-header {
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: var(--accent-2);
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.request-card-mini {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--card); /* O el color de tus cards */
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 8px;
 }

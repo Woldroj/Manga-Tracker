@@ -141,6 +141,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const btnMail = document.getElementById("btn-mail-requests");
   const dropdown = document.getElementById("requests-dropdown");
+  const panel = document.getElementById("mobile-requests-panel");
+  const list = document.getElementById("mobile-requests-list");
 
   /* -------- STATE -------- */
   let currentView = "home";
@@ -1163,7 +1165,8 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
   sSignout?.addEventListener("click", async () => {
     friendsView.style.display = "none";
     userView.style.display = "none";
-    btnVolverPC.style.display="none";
+    btnVolverPC.style.display = "none";
+    btnVolverSearch.style.display = "none";
     searchResultArea.innerHTML = "";
     closeMobileSettings();
     closeSettings();
@@ -1512,9 +1515,9 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     });
   }
 
-    closePublicProfile?.addEventListener("click", () => {
-      document.getElementById("public-profile-modal").classList.add("hidden");
-    });
+  closePublicProfile?.addEventListener("click", () => {
+    document.getElementById("public-profile-modal").classList.add("hidden");
+  });
 
   function renderGridInElement(items, gridId, containerId) {
     const container = document.getElementById(containerId);
@@ -1585,49 +1588,88 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
   }
 
   function listenToRequests(myUid) {
-    // CAMBIO AQUÍ: Apuntamos a la subcolección dentro de tu usuario
-    // Según tus reglas: match /users/{userId}/friend_requests/{reqId}
     const q = collection(db, "users", myUid, "friend_requests");
 
     onSnapshot(
       q,
       (snapshot) => {
-        const list = document.getElementById("requests-items-list");
-        const badge = document.getElementById("request-badge");
+        // 1. Definimos la variable que te faltaba extrayendo los datos
+        const requests = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        const count = requests.length;
 
-        // Si badge o list no existen en el HTML, evitamos error
-        if (!badge || !list) return;
+        // 2. Elementos del PC (tus IDs originales)
+        const listPC = document.getElementById("requests-items-list");
+        const badgePC = document.getElementById("request-badge");
 
-        const count = snapshot.size;
-        badge.textContent = count;
-        badge.style.display = count === 0 ? "none" : "block"; // O usa toggle("hidden")
+        // 3. Elementos del Móvil (los IDs que añadimos para la Opción A)
+        const panelMobile = document.getElementById("mobile-requests-panel");
+        const listMobile = document.getElementById("mobile-requests-list");
+        const badgeMobile = document.getElementById("friend-badge-mobile");
 
-        list.innerHTML = "";
-
-        if (count === 0) {
-          list.innerHTML =
-            '<p class="empty-msg" style="padding:10px; font-size:12px; color:var(--muted);">No hay solicitudes</p>';
-          return;
+        // --- LÓGICA PC ---
+        if (badgePC) {
+          badgePC.textContent = count;
+          badgePC.style.display = count === 0 ? "none" : "block";
         }
-
-        snapshot.forEach((docSnap) => {
-          const req = docSnap.data();
-          const id = docSnap.id; // El ID del remitente
-
-          const item = document.createElement("div");
-          item.className = "request-item";
-          item.innerHTML = `
-          <img src="${req.fromPhoto || "./icons/icon-192.png"}" style="width:30px; height:30px; border-radius:50%;">
-          <div class="req-info">
-            <strong style="font-size:13px;">${req.fromName}</strong>
-            <div class="req-btns">
-              <button class="btn-mini btn-accept" onclick="acceptFriend('${id}')">Aceptar</button>
-              <button class="btn-mini btn-reject" onclick="rejectFriend('${id}')">X</button>
+        if (listPC) {
+          if (count === 0) {
+            listPC.innerHTML =
+              '<p class="empty-msg" style="padding:10px; font-size:12px; color:var(--muted);">No hay solicitudes</p>';
+          } else {
+            listPC.innerHTML = requests
+              .map(
+                (req) => `
+          <div class="request-item">
+            <img src="${req.fromPhoto || "./icons/icon-192.png"}" style="width:30px; height:30px; border-radius:50%;">
+            <div class="req-info">
+              <strong style="font-size:13px;">${req.fromName}</strong>
+              <div class="req-btns">
+                <button class="btn-mini btn-accept" onclick="acceptFriend('${req.id}', '${req.fromName}', '${req.fromPhoto}')">Aceptar</button>
+                <button class="btn-mini btn-reject" onclick="rejectFriend('${req.id}')">X</button>
+              </div>
             </div>
           </div>
-        `;
-          list.appendChild(item);
-        });
+        `,
+              )
+              .join("");
+          }
+        }
+
+        // --- LÓGICA MÓVIL (Opción A) ---
+        if (badgeMobile) {
+          badgeMobile.textContent = count;
+          count === 0
+            ? badgeMobile.classList.add("hidden")
+            : badgeMobile.classList.remove("hidden");
+        }
+
+        if (panelMobile && listMobile) {
+          if (count > 0) {
+            panelMobile.classList.remove("hidden");
+            listMobile.innerHTML = requests
+              .map(
+                (req) => `
+            <div class="request-card-mini" style="display:flex; align-items:center; justify-content:space-between; background:var(--card); padding:10px; border-radius:10px; margin-bottom:5px;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <img src="${req.fromPhoto || ""}" style="width:30px;height:30px;border-radius:50%;background:#eee;object-fit:cover;">
+                    <span>${req.fromName}</span>
+                </div>
+                <div style="display:flex; gap:5px;">
+                    <button onclick="acceptFriend('${req.id}', '${req.fromName}', '${req.fromPhoto}')" style="background:#22c55e;color:white;border:none;padding:5px 10px;border-radius:5px;">✓</button>
+                    <button onclick="rejectFriend('${req.id}')" style="background:#64748b;color:white;border:none;padding:5px 10px;border-radius:5px;">✕</button>
+                </div>
+            </div>
+        `,
+              )
+              .join("");
+          } else {
+            panelMobile.classList.add("hidden");
+            listMobile.innerHTML = "";
+          }
+        }
       },
       (error) => {
         console.error("Error en el listener:", error);
@@ -2714,7 +2756,6 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
       // 5. Borrar solicitud
       await deleteDoc(reqRef);
 
-      alert("¡Ahora sois amigos!");
     } catch (error) {
       console.error("Error al aceptar amigo:", error);
     }

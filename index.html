@@ -292,6 +292,25 @@
 
       <div class="friends-sections">
         <section>
+          <div id="mobile-requests-panel" class="hidden only-mobile-panel" style="
+            margin: 15px;
+            padding: 15px;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px dashed #3b82f6;
+            border-radius: 12px;">
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <h3 style="font-size: 0.85rem; color: #3b82f6; text-transform: uppercase; letter-spacing: 1px; margin: 0;">
+                    Solicitudes Pendientes
+                </h3>
+                <span id="requests-count-tag" style="background: #3b82f6; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; font-weight: bold;">0</span>
+            </div>
+            
+            <div id="mobile-requests-list" style="display: flex; flex-direction: column; gap: 10px;"></div>
+          </div>
+        </section>
+
+        <section>
           <h3>Mis Amigos</h3>
             <div id="friends-list-grid" class="friends-grid">
               <p class="muted-text">Aún no tienes amigos agregados.</p>
