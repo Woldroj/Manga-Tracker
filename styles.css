@@ -1479,7 +1479,7 @@ input:checked + .slider::before {
 }
 
 .mini-tag:hover {
-  background: var(--accent-2); /* El azul de tu app */
+  background: var(--muted); /* El azul de tu app */
   border-color: var(--accent-2);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);

@@ -303,7 +303,7 @@ document.addEventListener("DOMContentLoaded", () => {
       "--bg": "#ffffff",
       "--card": "#f8fafc",
       "--accent": "#0f172a",
-      "--accent-2": "#f0f1f5",
+      "--accent-2": "#0f172a",
       "--muted": "#6b7280",
     },
     pink: {
@@ -458,6 +458,10 @@ document.addEventListener("DOMContentLoaded", () => {
     sw.style.background = theme["--accent-2"];
     sw.title = key;
     sw.dataset.theme = key;
+
+    if(theme.type === "light") {
+      sw.style.background = theme["--bg"]
+    }
 
     sw.addEventListener("click", () => applyTheme(key, true));
 
