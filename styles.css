@@ -874,7 +874,7 @@ input:checked + .slider::before {
     margin-top: 15px;
     transition: 0.3s;
     z-index: 10001;
-    width: 100%;
+    width: 100% !important;
   }
 
   .btn-danger-outline:hover {
@@ -884,6 +884,14 @@ input:checked + .slider::before {
 
   #mobile-requests-panel:not(.hidden) {
     display: block !important;
+  }
+
+  .btn.primary {
+    width: 40% !important;
+  }
+
+  .friends-header {
+    width: 100% !important;
   }
 }
 
@@ -1406,6 +1414,12 @@ input:checked + .slider::before {
     bottom: 90px;
     width: 40px;
     height: 40px;
+  }
+}
+
+@media (max-width: 850px) {
+  .btn-danger-outline {
+    width: 100% !important;
   }
 }
 
