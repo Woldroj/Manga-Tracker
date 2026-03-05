@@ -1163,6 +1163,8 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
   sSignout?.addEventListener("click", async () => {
     friendsView.style.display = "none";
     userView.style.display = "none";
+    btnVolverPC.style.display="none";
+    searchResultArea.innerHTML = "";
     closeMobileSettings();
     closeSettings();
     await signOut(auth);
@@ -1427,8 +1429,6 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
 
           await Promise.all([deleteDoc(refMia), deleteDoc(refSuya)]);
 
-          alert("¡Amigo eliminado!");
-
           document
             .getElementById("public-profile-modal")
             .classList.add("hidden");
@@ -1512,10 +1512,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     });
   }
 
-  // Cerrar modal
-  document
-    .getElementById("close-public-profile")
-    ?.addEventListener("click", () => {
+    closePublicProfile?.addEventListener("click", () => {
       document.getElementById("public-profile-modal").classList.add("hidden");
     });
 
@@ -2430,6 +2427,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
   });
 
   btnMail?.addEventListener("click", (e) => {
+    if (!currentUser) return alert("Inicia sesión");
     e.stopPropagation();
     dropdown.classList.toggle("hidden");
   });
@@ -2500,6 +2498,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
       if (querySnapshot.empty) {
         searchResultArea.innerHTML =
           "<p class='muted-text'>Usuario no encontrado.</p>";
+        friendSearchInput.value = "";
         return;
       }
 
@@ -2580,6 +2579,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
           }
         };
       }
+      friendSearchInput.value = "";
     } catch (error) {
       console.error("Error:", error);
       searchResultArea.innerHTML =
@@ -2602,7 +2602,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     const myData = {
       from: currentUser.uid,
       fromName: currentUser.displayName || "Usuario",
-      fromPhoto: myPhoto,
+      fromPhoto: myPhoto || "./icons/icon-192.png",
       fromCode: `MT-${currentUser.uid.substring(0, 6).toUpperCase()}`,
       status: "pending",
       timestamp: new Date(),
@@ -2650,6 +2650,14 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden) {
       document.title = originalTitle;
+    }
+  });
+
+  document.addEventListener("click", (e) => {
+    if (dropdown && !dropdown.classList.contains("hidden")) {
+      if (!dropdown.contains(e.target) && !btnMail.contains(e.target)) {
+        dropdown.classList.add("hidden");
+      }
     }
   });
 

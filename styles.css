@@ -306,6 +306,7 @@ header.app-header {
   background: var(--accent-2);
   color: #fff;
   border-radius: 8px;
+  width: 20%;
 }
 .btn.ghost {
   background: transparent;
@@ -861,6 +862,25 @@ input:checked + .slider::before {
     border: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
   }
+
+  .btn-danger-outline {
+  background: transparent;
+  color: #ff4d4d;
+  border: 1px solid #ff4d4d;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  margin-top: 15px;
+  transition: 0.3s;
+  z-index: 10001;
+  width: 100%;
+}
+
+.btn-danger-outline:hover {
+  background: #ff4d4d;
+  color: white;
+}
 }
 
 /* ============================================X
@@ -1577,7 +1597,6 @@ input:checked + .slider::before {
 #user-page-name:has(.tester-badge) {
   font-weight: 700;
   color: #ffffff;
-  /* Un degradado verde muy elegante */
   background: linear-gradient(90deg, #ffffff, #22c55e);
   -webkit-background-clip: text;
   background-clip: text;
@@ -1592,6 +1611,7 @@ input:checked + .slider::before {
   flex-direction: column;
   gap: 15px;
   margin-bottom: 25px;
+  width: 60%;
 }
 .search-friend-box {
   display: flex;
