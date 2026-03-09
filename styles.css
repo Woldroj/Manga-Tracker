@@ -778,7 +778,7 @@ input:checked + .slider::before {
     text-align: center;
   }
   .mobile-bar {
-    display: flex;
+    display: flex !important;
   }
   .app {
     padding-bottom: 100px;
