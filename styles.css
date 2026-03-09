@@ -946,7 +946,7 @@ input:checked + .slider::before {
 /* checkbox terminado */
 .finish-box {
   margin-top: 6px;
-  display: flex;
+  display: none;
   align-items: center;
 }
 .finish-box label {
@@ -970,6 +970,7 @@ input:checked + .slider::before {
   background: var(--accent-2);
 }
 .finish-box input[type="checkbox"]:checked::after {
+  display: flex !important;
   content: "✔";
   position: absolute;
   top: -2px;
