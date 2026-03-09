@@ -2088,39 +2088,45 @@ input:checked + .slider::before {
 }
 
 #mobile-requests-panel {
-    background: rgba(59, 130, 246, 0.15);
-    border: 1px solid var(--accent-2);
-    border-radius: 15px;
-    margin: 10px;
-    padding: 12px;
-    animation: slideDown 0.3s ease-out;
-    display: none;
+  background: rgba(59, 130, 246, 0.15);
+  border: 1px solid var(--accent-2);
+  border-radius: 15px;
+  margin: 10px;
+  padding: 12px;
+  animation: slideDown 0.3s ease-out;
+  display: none;
 }
 
 .requests-header {
-    font-size: 0.8rem;
-    font-weight: bold;
-    color: var(--accent-2);
-    margin-bottom: 10px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  color: var(--accent-2);
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .request-card-mini {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: var(--card); /* O el color de tus cards */
-    padding: 10px;
-    border-radius: 10px;
-    margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--card); /* O el color de tus cards */
+  padding: 10px;
+  border-radius: 10px;
+  margin-bottom: 8px;
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 #jikan-alert {
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
