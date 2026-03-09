@@ -1544,46 +1544,47 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
 
   // Función auxiliar para renderizar listas
   function renderPublicList(itemsArray, container, icon) {
-  container.innerHTML = "";
-  if (itemsArray.length === 0) {
-    container.innerHTML = "<p class='muted-text' style='font-size:0.8em'>Nada público.</p>";
-    return;
-  }
-
-  itemsArray.forEach((item) => {
-    const tag = document.createElement("div");
-    tag.className = "mini-tag";
-
-    // 1. Extraer datos de progreso
-    const current = Number(item.last) || 0;
-    const total = Number(item.lastKnownChapters) || 0;
-    const isReading = item.status === "reading";
-
-    // 2. Si el usuario lo está leyendo y conocemos el total, calculamos el %
-    if (isReading && total > 0) {
-      const percent = Math.min((current / total) * 100, 100);
-      tag.classList.add("in-progress");
-      
-      // Aplicamos un gradiente que llena el contenedor
-      // Usamos el color de acento (--accent-2) para la parte completada
-      tag.style.background = `linear-gradient(to right, 
-        var(--accent-2) ${percent}%, 
-        var(--card) ${percent}%)`;
-      
-      // Si está casi lleno, podemos cambiar el color del borde para resaltarlo
-      if (percent === 100) {
-        tag.style.borderColor = "var(--accent-2)";
-      }
-    } else if (item.status === "finished") {
-      // Si ya está finalizado, lo mostramos lleno al 100%
-      tag.style.background = "var(--accent-2)";
-      tag.style.color = "#fff";
+    container.innerHTML = "";
+    if (itemsArray.length === 0) {
+      container.innerHTML =
+        "<p class='muted-text' style='font-size:0.8em'>Nada público.</p>";
+      return;
     }
 
-    tag.innerHTML = `<span>${icon} ${item.title}</span>`;
-    container.appendChild(tag);
-  });
-}
+    itemsArray.forEach((item) => {
+      const tag = document.createElement("div");
+      tag.className = "mini-tag";
+
+      // 1. Extraer datos de progreso
+      const current = Number(item.last) || 0;
+      const total = Number(item.lastKnownChapters) || 0;
+      const isReading = item.status === "reading";
+
+      // 2. Si el usuario lo está leyendo y conocemos el total, calculamos el %
+      if (isReading && total > 0) {
+        const percent = Math.min((current / total) * 100, 100);
+        tag.classList.add("in-progress");
+
+        // Aplicamos un gradiente que llena el contenedor
+        // Usamos el color de acento (--accent-2) para la parte completada
+        tag.style.background = `linear-gradient(to right, 
+        var(--accent-2) ${percent}%, 
+        var(--card) ${percent}%)`;
+
+        // Si está casi lleno, podemos cambiar el color del borde para resaltarlo
+        if (percent === 100) {
+          tag.style.borderColor = "var(--accent-2)";
+        }
+      } else if (item.status === "finished") {
+        // Si ya está finalizado, lo mostramos lleno al 100%
+        tag.style.background = "var(--accent-2)";
+        tag.style.color = "#fff";
+      }
+
+      tag.innerHTML = `<span>${icon} ${item.title}</span>`;
+      container.appendChild(tag);
+    });
+  }
 
   closePublicProfile?.addEventListener("click", () => {
     document.getElementById("public-profile-modal").classList.add("hidden");
@@ -2082,6 +2083,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
           const eyeOpen = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
           const eyeClosed = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
           card.className = "card";
+          card.id = `card-${it.id}`;
           card.dataset.id = it.id;
 
           const last = Number(it.last) || 0;
@@ -2352,9 +2354,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
 
             await updateDoc(
               doc(db, "users", currentUser.uid, "mangas", btn.dataset.id),
-              { status: "reading",
-                last: 0
-               },
+              { status: "reading", last: 0 },
             );
 
             await loadMangas("reading");
@@ -2391,20 +2391,31 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     if (finishModal) hideFinishModal();
   });
   finishConfirm?.addEventListener("click", async () => {
-    if (!selectedToFinish) {
-      hideFinishModal();
-      return;
-    }
+    if (!selectedToFinish || !currentUser) return;
+
+    const idABorrar = selectedToFinish; // Guardamos el ID
+
     try {
-      await updateDoc(
-        doc(db, "users", currentUser.uid, "mangas", selectedToFinish),
-        { status: "finished" },
-      );
-      // reload view according to currentFilter (setButtonsForFilter already updates currentFilter)
+      // 1. Actualizamos Firebase (en segundo plano)
+      await updateDoc(doc(db, "users", currentUser.uid, "mangas", idABorrar), {
+        status: "finished",
+      });
+
+      // 2. BUSCAMOS LA TARJETA POR SU ID Y LA BORRAMOS (Sin recargar nada)
+      const tarjeta = document.getElementById(`card-${idABorrar}`);
+      if (tarjeta) {
+        tarjeta.style.transition = "opacity 0.3s ease";
+        tarjeta.style.opacity = "0";
+        setTimeout(() => tarjeta.remove(), 300); // Borrado quirúrgico
+      }
+
       hideFinishModal();
-      await loadMangas(currentFilter);
+      selectedToFinish = null; // Limpiamos
+
+      // IMPORTANTE: Aquí NO ponemos "await loadMangas()".
+      // Al no llamar a esa función, el scroll no se mueve.
     } catch (e) {
-      console.error(e);
+      console.error("Error:", e);
       hideFinishModal();
     }
   });
