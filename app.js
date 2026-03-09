@@ -1,6 +1,6 @@
-/* ================================
-   Manga Tracker - Script principal
-   ================================ */
+/* =============================
+    Manga Tracker - Main Script
+   ============================= */
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-app.js";
 import {
@@ -426,19 +426,17 @@ document.addEventListener("DOMContentLoaded", () => {
     return doc(db, "users", uid, "prefs", "ui");
   }
 
-  let alertTimer; // Variable global para controlar el cierre
+  let alertTimer;
 
   function showAlert() {
     const banner = document.getElementById("jikan-alert");
     const progressBar = document.getElementById("alert-progress");
     if (!banner) return;
 
-    // Si ya había un timer corriendo, lo cancelamos para empezar de nuevo
     clearTimeout(alertTimer);
 
     banner.style.display = "block";
 
-    // Reiniciamos la animación de la barra (opcional)
     if (progressBar) {
       progressBar.style.transition = "none";
       progressBar.style.width = "100%";
@@ -448,15 +446,14 @@ document.addEventListener("DOMContentLoaded", () => {
       }, 10);
     }
 
-    // Cerramos el banner tras 5 segundos
     alertTimer = setTimeout(() => {
       banner.style.opacity = "0";
       banner.style.transition = "opacity 0.5s ease";
       setTimeout(() => {
         banner.style.display = "none";
-        banner.style.opacity = "1"; // Reset para la próxima vez
+        banner.style.opacity = "1";
       }, 500);
-    }, 5000); // 5000 milisegundos = 5 segundos
+    }, 5000);
   }
 
   function updateSwitchColors(themeName) {
@@ -483,7 +480,6 @@ document.addEventListener("DOMContentLoaded", () => {
   Object.keys(THEMES).forEach((key) => {
     const theme = THEMES[key];
 
-    // elegimos contenedor según tipo
     const container = theme.type === "light" ? themeGridLight : themeGridDark;
 
     if (!container) return;
@@ -1020,11 +1016,8 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
       userControls && (userControls.style.display = "flex");
       setUserNameDisplay(user.displayName || user.email);
 
-      // 1. Generar el UserCode
       const userCode = `MT-${user.uid.substring(0, 6).toUpperCase()}`;
 
-      // 2. ACTUALIZACIÓN CRÍTICA: Guardar/Actualizar en la colección global "users"
-      // Esto es lo que permite que el buscador funcione.
       try {
         await setDoc(
           doc(db, "users", user.uid),
@@ -1035,16 +1028,14 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
             uid: user.uid,
           },
           { merge: true },
-        ); // merge: true evita borrar otros datos que pudieras tener
+        );
 
-        // Mostrar tu código en el perfil (asegúrate de que este ID exista en tu HTML)
         const myCodeEl = document.getElementById("my-user-code");
         if (myCodeEl) myCodeEl.textContent = userCode;
       } catch (e) {
         console.error("Error al sincronizar perfil global:", e);
       }
 
-      // 3. Carga de preferencias y fotos (tu lógica original)
       const prefsSnap = await getDoc(prefsDocRef(user.uid));
       if (prefsSnap && prefsSnap.exists() && prefsSnap.data().photoURL) {
         setProfileImage(prefsSnap.data().photoURL);
@@ -1057,13 +1048,11 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
       await loadPrefsForUser(user.uid);
       await goHome();
 
-      // 4. Iniciar escuchas de amigos y solicitudes
       await loadFriends(user.uid);
       if (typeof listenToRequests === "function") {
         listenToRequests(user.uid);
       }
     } else {
-      // Lógica de logout (tu lógica original)
       authControls && (authControls.style.display = "flex");
       userControls && (userControls.style.display = "none");
       setUserNameDisplay("Invitado");
@@ -1216,7 +1205,6 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     await signOut(auth);
   });
 
-  // Toggle del acordeón de reseñas
   reviewsToggle?.addEventListener("click", () => {
     const isHidden = reviewsList.style.display === "none";
     reviewsList.style.display = isHidden ? "block" : "none";
@@ -1231,7 +1219,6 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     const publicContainer = document.getElementById("public-mangas-container");
 
     try {
-      // 1. Cargar Preferencias y Foto (Lógica unificada con el Header)
       const prefsDoc = await getDoc(
         doc(db, "users", currentUser.uid, "prefs", "ui"),
       );
@@ -1297,7 +1284,6 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
         };
       }
 
-      // 2. Obtener todos los mangas/animes
       const querySnapshot = await getDocs(
         collection(db, "users", currentUser.uid, "mangas"),
       );
@@ -1306,8 +1292,6 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
         ...d.data(),
       }));
 
-      // 3. FILTRAR Y RENDERIZAR MINI CARDS PÚBLICAS
-      // Filtramos solo los que tienen el "ojito" activado (isPublic: true)
       const publicItems = allItems.filter((it) => it.isPublic === true);
 
       if (publicContainer) {
@@ -1322,7 +1306,6 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
             const group = publicItems.filter((it) => it.type === tipo);
 
             if (group.length > 0) {
-              // Crear la sección (Manga o Anime)
               const section = document.createElement("div");
               section.className = "user-public-section";
               section.innerHTML = `
@@ -1332,11 +1315,10 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
 
               const grid = section.querySelector(".mini-grid");
 
-              // Crear las Mini Cards (Solo imagen y título)
               group.forEach((it) => {
                 const miniTag = document.createElement("div");
                 miniTag.className = "mini-tag";
-                miniTag.style.position = "relative"; // Necesario para posicionar el bocadillo
+                miniTag.style.position = "relative";
 
                 miniTag.innerHTML = `
                         <span class="tag-icon">${tipo === "Manga" ? "📖" : "🎬"}</span>
@@ -1344,18 +1326,15 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
                     `;
 
                 miniTag.onclick = async (e) => {
-                  // 1. Copiar al portapapeles
                   try {
                     await navigator.clipboard.writeText(it.title);
 
-                    // 2. Crear y mostrar el bocadillo (Tooltip)
                     const tip = document.createElement("div");
                     tip.className = "copy-tooltip";
                     tip.textContent = "¡Copiado!";
 
                     miniTag.appendChild(tip);
 
-                    // 3. Quitarlo después de 1.5 segundos
                     setTimeout(() => {
                       tip.classList.add("out");
                       setTimeout(() => tip.remove(), 200);
@@ -1373,7 +1352,6 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
         }
       }
 
-      // 4. Estadísticas
       const statTotalEl = document.getElementById("stat-total");
       const statChaptersEl = document.getElementById("stat-chapters");
       const statTimeEl = document.getElementById("stat-time");
@@ -1390,7 +1368,6 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
       const horasTotales = Math.floor(minutosTotales / 60);
       if (statTimeEl) statTimeEl.textContent = `${horasTotales}h`;
 
-      // 5. Reseñas
       if (reviewsList) {
         reviewsList.innerHTML = "";
         const itemsWithReview = allItems.filter(
@@ -1414,7 +1391,6 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     const modal = document.getElementById("public-profile-modal");
     modal.classList.remove("hidden");
 
-    // Referencias a elementos
     const elName = document.getElementById("public-username");
     const elBio = document.getElementById("public-bio");
     const elImg = document.getElementById("public-avatar");
@@ -1429,7 +1405,6 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     ];
 
     try {
-      // 1. Cargar todos los datos necesarios
       const [userSnap, uiSnap, allItemsSnap, friendCheck] = await Promise.all([
         getDoc(doc(db, "users", uid)),
         getDoc(doc(db, "users", uid, "prefs", "ui")),
@@ -1441,7 +1416,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
       const userData = userSnap.data();
       const uiData = uiSnap.exists() ? uiSnap.data() : {};
 
-      // --- LÓGICA DE NOMBRE Y BADGES ---
+      // --- BADGES AND LOGIC FOR NAMES ---
 
       const esDorado = DEV_UID.includes(uid);
       const esTester = TEST_UID.includes(uid);
@@ -1459,14 +1434,14 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
       }
       elName.innerHTML = nameHTML;
 
-      // --- FOTO Y BIO ---
+      // --- BIO AND PHOTO ---
       elBio.textContent = uiData.biografia || uiData.bio || "Sin Biografía";
       elImg.src =
         uiData.photoURL || userData.photoURL || "./icons/icon-192.png";
       document.getElementById("public-usercode").textContent =
         userData.userCode || "#000000";
 
-      // --- BOTÓN ELIMINAR AMIGO (Restaurado) ---
+      // --- ELEMINATE FRIEND BUTTON ---
 
       window.removeFriend = async (uid, nombre) => {
         try {
@@ -1496,10 +1471,10 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
         elAction.innerHTML = "";
       }
 
-      // --- PROCESADO DE ITEMS (FILTRO SOLO PÚBLICOS) ---
+      // --- ITEMS PROCESATION ---
       const allDocs = allItemsSnap.docs.map((d) => d.data());
 
-      // FILTRO ESTRICTO: Solo si isPublic es true
+      // ONLY IF ISPUBLIC: TRUE
       const publicItems = allDocs.filter((item) => item.isPublic === true);
 
       const publicMangas = publicItems.filter(
@@ -1509,27 +1484,24 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
         (item) => (item.type || "").toLowerCase().trim() === "anime",
       );
 
-      // --- CÁLCULO DE ESTADÍSTICAS (Capítulos y Tiempo) ---
+      // --- STATISTIC CALCULATION ---
       let totalCaps = 0;
       let totalMinutos = 0;
 
       publicItems.forEach((item) => {
-        // Capítulos/Episodios leídos
         totalCaps += parseInt(item.chaptersRead || item.episodesWatched || 0);
 
-        // Tiempo (Asumiendo que tienes un campo 'runtime' o similar, si no usamos 24min de media para anime)
         if (item.type === "anime") {
           const caps = parseInt(item.episodesWatched || 0);
-          totalMinutos += caps * 24; // 24 min por episodio
+          totalMinutos += caps * 24;
         } else {
           const caps = parseInt(item.chaptersRead || 0);
-          totalMinutos += caps * 5; // 5 min por capítulo de manga (estimado)
         }
       });
 
       const totalHoras = Math.floor(totalMinutos / 60);
 
-      // --- RENDER ESTADÍSTICAS ---
+      // --- RENDER STATISTIC ---
       const container = document.getElementById("public-stats-container");
       container.querySelector(".stats-overlay")?.remove();
 
@@ -1542,7 +1514,6 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     }
   };
 
-  // Función auxiliar para renderizar listas
   function renderPublicList(itemsArray, container, icon) {
     container.innerHTML = "";
     if (itemsArray.length === 0) {
@@ -1555,28 +1526,22 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
       const tag = document.createElement("div");
       tag.className = "mini-tag";
 
-      // 1. Extraer datos de progreso
       const current = Number(item.last) || 0;
       const total = Number(item.lastKnownChapters) || 0;
       const isReading = item.status === "reading";
 
-      // 2. Si el usuario lo está leyendo y conocemos el total, calculamos el %
       if (isReading && total > 0) {
         const percent = Math.min((current / total) * 100, 100);
         tag.classList.add("in-progress");
 
-        // Aplicamos un gradiente que llena el contenedor
-        // Usamos el color de acento (--accent-2) para la parte completada
         tag.style.background = `linear-gradient(to right, 
         var(--accent-2) ${percent}%, 
         var(--card) ${percent}%)`;
 
-        // Si está casi lleno, podemos cambiar el color del borde para resaltarlo
         if (percent === 100) {
           tag.style.borderColor = "var(--accent-2)";
         }
       } else if (item.status === "finished") {
-        // Si ya está finalizado, lo mostramos lleno al 100%
         tag.style.background = "var(--accent-2)";
         tag.style.color = "#fff";
       }
@@ -1625,19 +1590,16 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
         return;
       }
 
-      // Usamos for...of para poder usar await dentro del bucle
       for (const docSnap of snapshot.docs) {
         const friendData = docSnap.data();
         const friendUid = docSnap.id;
 
-        // 1. Buscamos los datos en tiempo real del amigo
         const uiSnap = await getDoc(doc(db, "users", friendUid, "prefs", "ui"));
         const userBaseSnap = await getDoc(doc(db, "users", friendUid));
 
         const uiData = uiSnap.exists() ? uiSnap.data() : {};
         const userBase = userBaseSnap.exists() ? userBaseSnap.data() : {};
 
-        // 2. Foto y Nombre actualizados
         const fotoReal =
           uiData.photoURL || friendData.photoURL || "./icons/icon-192.png";
         const esAdmin = userBase.role === "admin" || userBase.isDev;
@@ -1664,23 +1626,20 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     onSnapshot(
       q,
       (snapshot) => {
-        // 1. Definimos la variable que te faltaba extrayendo los datos
         const requests = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }));
         const count = requests.length;
 
-        // 2. Elementos del PC (tus IDs originales)
         const listPC = document.getElementById("requests-items-list");
         const badgePC = document.getElementById("request-badge");
 
-        // 3. Elementos del Móvil (los IDs que añadimos para la Opción A)
         const panelMobile = document.getElementById("mobile-requests-panel");
         const listMobile = document.getElementById("mobile-requests-list");
         const badgeMobile = document.getElementById("friend-badge-mobile");
 
-        // --- LÓGICA PC ---
+        // --- PC LOGIC ---
         if (badgePC) {
           badgePC.textContent = count;
           badgePC.style.display = count === 0 ? "none" : "block";
@@ -1709,7 +1668,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
           }
         }
 
-        // --- LÓGICA MÓVIL (Opción A) ---
+        // --- MOBILE LOGIC ---
         if (badgeMobile) {
           badgeMobile.textContent = count;
           count === 0
@@ -1748,7 +1707,6 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     );
   }
 
-  // Guardar biografía automáticamente al salir del textarea
   userBio?.addEventListener("blur", async () => {
     await setDoc(
       prefsDocRef(currentUser.uid),
@@ -1757,7 +1715,6 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     );
   });
 
-  // Guardar privacidad de stats
   statsToggle?.addEventListener("change", async () => {
     await setDoc(
       prefsDocRef(currentUser.uid),
@@ -1766,7 +1723,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     );
   });
 
-  // Mobile settings
+  // MOBILE SETTINGS
   mobileGear?.addEventListener("click", (e) => {
     if (!currentUser) return alert("Inicia sesión");
     e.stopPropagation();
@@ -1799,12 +1756,10 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
 
     renderMobileThemes();
 
-    // Define esta función dentro o fuera de tu evento
     function renderMobileThemes() {
       const mbGridLight = document.getElementById("mb-theme-grid-light");
       const mbGridDark = document.getElementById("mb-theme-grid-dark");
 
-      // Recorremos tu objeto de temas (THEMES)
       Object.keys(THEMES).forEach((key) => {
         const theme = THEMES[key];
         const container = theme.type === "light" ? mbGridLight : mbGridDark;
@@ -1813,20 +1768,17 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
           const sw = document.createElement("div");
           sw.className = "theme-swatch";
           sw.style.background = theme["--accent-2"];
-          // Si el tema actual es el seleccionado, puedes añadirle una clase 'active'
           if (localStorage.getItem("mt_theme") === key)
             sw.classList.add("active");
 
           sw.onclick = () => {
             applyTheme(key, true);
-            // Opcional: cerrar popup al elegir tema
           };
           container.appendChild(sw);
         }
       });
     }
 
-    // Evita que al tocar dentro se cierre
     c.addEventListener("click", (ev) => ev.stopPropagation());
 
     c.querySelector("#mb-change-name").onclick = async () => {
@@ -1868,7 +1820,6 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     };
   });
 
-  /* cerrar tocando fuera */
   document.addEventListener("click", () => {
     if (mobileSettingsPopup) closeMobileSettings();
   });
@@ -2013,7 +1964,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
 
   /* -------- LOAD MANGAS (reading | finished) -------- */
   async function loadMangas(status = "reading") {
-    // 🔹 Mostrar skeleton
+    // Show skeleton
     gridEl.innerHTML = "";
 
     for (let i = 0; i < 6; i++) {
@@ -2161,7 +2112,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
         });
       });
 
-      /* ===== EVENTOS ===== */
+      /* ===== EVENTS ===== */
 
       gridEl.querySelectorAll(".edit-btn").forEach((b) => {
         b.onclick = (e) => {
@@ -2184,26 +2135,22 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
         };
       });
 
-      /* ===== EVENTO PARA EL OJITO (CORREGIDO) ===== */
+      /* ===== EVENT FOR THE EYE ===== */
       gridEl.querySelectorAll(".visibility-btn").forEach((btn) => {
         btn.onclick = async (e) => {
           e.preventDefault();
-          e.stopPropagation(); // Esto evita que se sume +1 capítulo
+          e.stopPropagation();
 
-          // DEFINIMOS LOS ICONOS AQUÍ DENTRO para evitar el error de "not defined"
           const eyeOpen = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
           const eyeClosed = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
 
           const id = btn.dataset.id;
-          // Comprobamos si actualmente es público mirando la clase
           const isNowPublic = !btn.classList.contains("is-public");
 
           try {
-            // 1. Actualizar en Firebase Firestore
             const docRef = doc(db, "users", currentUser.uid, "mangas", id);
             await updateDoc(docRef, { isPublic: isNowPublic });
 
-            // 2. Cambiar la apariencia visual
             if (isNowPublic) {
               btn.classList.add("is-public");
               btn.innerHTML = eyeOpen;
@@ -2238,11 +2185,10 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
             let delta = 1;
 
             if (e.button === 2)
-              delta = -1; // click derecho
+              delta = -1;
             else if (e.altKey)
               delta = parseInt(prompt("¿Cuántos capítulos leíste?", "1")) || 0;
 
-            // Si es negativo no bloqueamos, pero si es 0, salimos
             if (delta === 0) return;
 
             const old = Number(snap.data().last) || 0;
@@ -2252,7 +2198,6 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
             if (newValue < 0) newValue = 0;
             if (totalS > 0 && newValue > totalS) newValue = totalS;
 
-            // Si llegamos al final
             if (totalS > 0 && newValue === totalS) {
               selectedToFinish = snap.id;
               showFinishModal();
@@ -2299,7 +2244,6 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
             const diffX = touchEndX - touchStartX;
             const diffY = touchEndY - touchStartY;
 
-            // Evitar activar con scroll vertical
             if (Math.abs(diffY) > Math.abs(diffX)) return;
 
             const threshold = 60;
@@ -2393,27 +2337,23 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
   finishConfirm?.addEventListener("click", async () => {
     if (!selectedToFinish || !currentUser) return;
 
-    const idABorrar = selectedToFinish; // Guardamos el ID
+    const idABorrar = selectedToFinish;
 
     try {
-      // 1. Actualizamos Firebase (en segundo plano)
       await updateDoc(doc(db, "users", currentUser.uid, "mangas", idABorrar), {
         status: "finished",
       });
 
-      // 2. BUSCAMOS LA TARJETA POR SU ID Y LA BORRAMOS (Sin recargar nada)
       const tarjeta = document.getElementById(`card-${idABorrar}`);
       if (tarjeta) {
         tarjeta.style.transition = "opacity 0.3s ease";
         tarjeta.style.opacity = "0";
-        setTimeout(() => tarjeta.remove(), 300); // Borrado quirúrgico
+        setTimeout(() => tarjeta.remove(), 300);
       }
 
       hideFinishModal();
-      selectedToFinish = null; // Limpiamos
+      selectedToFinish = null;
 
-      // IMPORTANTE: Aquí NO ponemos "await loadMangas()".
-      // Al no llamar a esa función, el scroll no se mueve.
     } catch (e) {
       console.error("Error:", e);
       hideFinishModal();
@@ -2584,22 +2524,18 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
   });
 
   btnEditNamePage?.addEventListener("click", async () => {
-    // 1. Pedimos el nuevo nombre (puedes usar un prompt sencillo para ir rápido)
     const currentName = currentUser.displayName || "Usuario";
     const newName = prompt(
       "Introduce tu nuevo nombre de usuario:",
       currentName,
     );
 
-    // 2. Validamos que no esté vacío y que no sea el mismo
     if (newName && newName !== currentName) {
       try {
-        // 3. Actualizamos en Firebase Auth
         await updateProfile(auth.currentUser, {
           displayName: newName,
         });
 
-        // 4. Actualizamos la interfaz al momento
         if (userPageName) userPageName.textContent = newName;
         if (userDisplay) userDisplay.textContent = newName;
       } catch (error) {
@@ -2636,7 +2572,6 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
         return;
       }
 
-      // --- LA CLAVE: Traer también las preferencias de UI del usuario encontrado ---
       const [friendCheck, reqCheck, targetUiSnap] = await Promise.all([
         getDoc(doc(db, "users", currentUser.uid, "friends", targetId)),
         getDoc(doc(db, "users", targetId, "friend_requests", currentUser.uid)),
@@ -2645,11 +2580,9 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
 
       const targetUiData = targetUiSnap.exists() ? targetUiSnap.data() : {};
 
-      // Foto actualizada o la básica
       const fotoReal =
         targetUiData.photoURL || targetData.photoURL || "./icons/icon-192.png";
 
-      // Lógica de nombre dorado para el resultado de búsqueda
       const isDev = targetData.role === "admin" || targetData.isDev;
       const nameClass = isDev ? "name-gold" : "";
       const badge = isDev
@@ -2788,9 +2721,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
 
   const btnScrollTop = document.getElementById("btn-scroll-top");
 
-  // 1. Detectar el scroll para mostrar/ocultar el botón
   window.addEventListener("scroll", () => {
-    // Si bajamos más de 300px, mostramos el botón
     if (window.scrollY > 300) {
       btnScrollTop.classList.add("show");
     } else {
@@ -2802,7 +2733,6 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     if (!currentUser) return;
 
     try {
-      // 1. Referencia a la solicitud
       const reqRef = doc(
         db,
         "users",
@@ -2814,11 +2744,9 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
       if (!reqSnap.exists()) return;
       const reqData = reqSnap.data();
 
-      // 2. Mis datos para enviárselos al amigo
       const mySnap = await getDoc(doc(db, "users", currentUser.uid));
       const myData = mySnap.data();
 
-      // 3. Añadir al amigo en mi lista
       await setDoc(doc(db, "users", currentUser.uid, "friends", fromUid), {
         uid: fromUid,
         displayName: reqData.fromName || "Amigo",
@@ -2827,7 +2755,6 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
         addedAt: new Date(),
       });
 
-      // 4. Añadirme a su lista (Ahora las reglas lo permiten)
       await setDoc(doc(db, "users", fromUid, "friends", currentUser.uid), {
         uid: currentUser.uid,
         displayName: myData.displayName,
@@ -2836,7 +2763,6 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
         addedAt: new Date(),
       });
 
-      // 5. Borrar solicitud
       await deleteDoc(reqRef);
     } catch (error) {
       console.error("Error al aceptar amigo:", error);
@@ -2859,20 +2785,16 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
       return;
 
     try {
-      // 1. Borrar de mi lista
       await deleteDoc(doc(db, "users", currentUser.uid, "friends", friendUid));
-      // 2. Borrarme de su lista
       await deleteDoc(doc(db, "users", friendUid, "friends", currentUser.uid));
 
       alert("Amigo eliminado");
       document.getElementById("public-profile-modal")?.classList.add("hidden");
-      // La lista se actualizará sola gracias al onSnapshot de loadFriends
     } catch (e) {
       console.error("Error al eliminar amigo:", e);
     }
   };
 
-  // 2. Función para subir suavemente
   btnScrollTop?.addEventListener("click", () => {
     window.scrollTo({
       top: 0,
