@@ -1544,19 +1544,46 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
 
   // Función auxiliar para renderizar listas
   function renderPublicList(itemsArray, container, icon) {
-    container.innerHTML = "";
-    if (itemsArray.length === 0) {
-      container.innerHTML =
-        "<p class='muted-text' style='font-size:0.8em'>Nada público.</p>";
-      return;
-    }
-    itemsArray.forEach((item) => {
-      const tag = document.createElement("div");
-      tag.className = "mini-tag";
-      tag.innerHTML = `<span class="tag-icon">${icon}</span><span class="tag-text">${item.title}</span>`;
-      container.appendChild(tag);
-    });
+  container.innerHTML = "";
+  if (itemsArray.length === 0) {
+    container.innerHTML = "<p class='muted-text' style='font-size:0.8em'>Nada público.</p>";
+    return;
   }
+
+  itemsArray.forEach((item) => {
+    const tag = document.createElement("div");
+    tag.className = "mini-tag";
+
+    // 1. Extraer datos de progreso
+    const current = Number(item.last) || 0;
+    const total = Number(item.lastKnownChapters) || 0;
+    const isReading = item.status === "reading";
+
+    // 2. Si el usuario lo está leyendo y conocemos el total, calculamos el %
+    if (isReading && total > 0) {
+      const percent = Math.min((current / total) * 100, 100);
+      tag.classList.add("in-progress");
+      
+      // Aplicamos un gradiente que llena el contenedor
+      // Usamos el color de acento (--accent-2) para la parte completada
+      tag.style.background = `linear-gradient(to right, 
+        var(--accent-2) ${percent}%, 
+        var(--card) ${percent}%)`;
+      
+      // Si está casi lleno, podemos cambiar el color del borde para resaltarlo
+      if (percent === 100) {
+        tag.style.borderColor = "var(--accent-2)";
+      }
+    } else if (item.status === "finished") {
+      // Si ya está finalizado, lo mostramos lleno al 100%
+      tag.style.background = "var(--accent-2)";
+      tag.style.color = "#fff";
+    }
+
+    tag.innerHTML = `<span>${icon} ${item.title}</span>`;
+    container.appendChild(tag);
+  });
+}
 
   closePublicProfile?.addEventListener("click", () => {
     document.getElementById("public-profile-modal").classList.add("hidden");
