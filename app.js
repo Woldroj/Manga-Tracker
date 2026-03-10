@@ -1986,11 +1986,10 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
         return;
       }
 
-      if (unsubscribeMangas) unsubscribeMangas();
+      if (unsubscribeMangas) unsubscribeMangas
 
       const col = collection(db, "users", currentUser.uid, "mangas");
       const snap = await getDocs(col);
-      const q = query(col, where("status", "==", status));
 
       const items = snap.docs.map((d) => {
         const data = { id: d.id, ...d.data() };
