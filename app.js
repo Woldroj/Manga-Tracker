@@ -156,6 +156,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let mobileSettingsPopup = null;
   window.timeBoxEnabled = false;
   window.addEventListener("resize", mobileBarDisplayCheck);
+  let mangasCache = {};
 
   /* -------- THEMES -------- */
   const THEMES = {
@@ -1964,17 +1965,16 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
 
   /* -------- LOAD MANGAS (reading | finished) -------- */
   async function loadMangas(status = "reading") {
-    // Show skeleton
     gridEl.innerHTML = "";
 
     for (let i = 0; i < 6; i++) {
       const sk = document.createElement("div");
       sk.className = "skeleton-card";
       sk.innerHTML = `
-                <div class="skeleton-thumb"></div>
-                <div class="skeleton-line"></div>
-                <div class="skeleton-line short"></div>
-            `;
+      <div class="skeleton-thumb"></div>
+      <div class="skeleton-line"></div>
+      <div class="skeleton-line short"></div>
+    `;
       gridEl.appendChild(sk);
     }
 
@@ -1987,7 +1987,12 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
 
       const col = collection(db, "users", currentUser.uid, "mangas");
       const snap = await getDocs(col);
-      const items = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+
+      const items = snap.docs.map((d) => {
+        const data = { id: d.id, ...d.data() };
+        mangasCache[d.id] = data;
+        return data;
+      });
 
       const filtered = items.filter(
         (it) => (it.status || "reading") === status,
@@ -2031,8 +2036,10 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
         group.forEach((it) => {
           const card = document.createElement("article");
           const isPublic = it.isPublic || false;
-          const eyeOpen = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
-          const eyeClosed = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
+
+          const eyeOpen = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+          const eyeClosed = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
+
           card.className = "card";
           card.id = `card-${it.id}`;
           card.dataset.id = it.id;
@@ -2049,9 +2056,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
               <div class="progress-bar">
                 <div class="progress-fill" style="width:${percent}%"></div>
               </div>
-              <div class="progress-text">
-                ${last} / ${total}
-              </div>
+              <div class="progress-text">${last} / ${total}</div>
             </div>
           `;
           } else {
@@ -2070,7 +2075,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
           card.innerHTML = `
           <div class="thumb">
             ${it.imgurl ? `<img src="${it.imgurl}" style="width:100%;height:100%;object-fit:cover">` : ""}
-            <div class="visibility-btn ${isPublic ? "is-public" : ""}" data-id="${it.id}" title="${isPublic ? "Público" : "Privado"}">
+            <div class="visibility-btn ${isPublic ? "is-public" : ""}" data-id="${it.id}">
               ${isPublic ? eyeOpen : eyeClosed}
             </div>
           </div>
@@ -2085,26 +2090,21 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
             ${
               status === "reading"
                 ? `<div class="finish-box">
-                  <label>
-                    <input type="checkbox" class="finish-check" data-id="${it.id}">
-                    Terminado
-                  </label>
-                </div>`
+                    <label>
+                      <input type="checkbox" class="finish-check" data-id="${it.id}">
+                      Terminado
+                    </label>
+                  </div>`
                 : `<div class="finished-label">Finalizado ✔</div>
-                <button type="button" class="small restore-btn" data-id="${it.id}" style="margin-top:8px;">
-                  Restaurar
-                </button>`
+                   <button type="button" class="small restore-btn" data-id="${it.id}">
+                     Restaurar
+                   </button>`
             }
           </div>
 
           <div class="actions">
-            <a class="link" href="${it.url || "#"}" target="_blank" rel="noopener">Ir →</a>
-            <div style="display:flex;gap:6px;">
-              <button type="button" class="small del-btn" data-id="${it.id}"
-                style="background:transparent;border:1px solid rgba(255,255,255,0.12); color:var(--error);">
-                Borrar
-              </button>
-            </div>
+            <a class="link" href="${it.url || "#"}" target="_blank">Ir →</a>
+            <button class="small del-btn" data-id="${it.id}">Borrar</button>
           </div>
         `;
 
@@ -2112,59 +2112,56 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
         });
       });
 
-      /* ===== EVENTS ===== */
-
-      gridEl.querySelectorAll(".edit-btn").forEach((b) => {
-        b.onclick = (e) => {
-          e.stopPropagation();
-          openForm(b.dataset.id);
-        };
-      });
+      /* DELETE */
 
       gridEl.querySelectorAll(".del-btn").forEach((b) => {
         b.onclick = async (e) => {
           e.preventDefault();
-          e.stopPropagation();
           if (!confirm("¿Eliminar?")) return;
 
           await deleteDoc(
             doc(db, "users", currentUser.uid, "mangas", b.dataset.id),
           );
+          delete mangasCache[b.dataset.id];
+
           const card = b.closest(".card");
           if (card) card.remove();
         };
       });
 
-      /* ===== EVENT FOR THE EYE ===== */
+      /* VISIBILITY */
+
       gridEl.querySelectorAll(".visibility-btn").forEach((btn) => {
         btn.onclick = async (e) => {
-          e.preventDefault();
           e.stopPropagation();
-
-          const eyeOpen = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
-          const eyeClosed = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
 
           const id = btn.dataset.id;
           const isNowPublic = !btn.classList.contains("is-public");
 
-          try {
-            const docRef = doc(db, "users", currentUser.uid, "mangas", id);
-            await updateDoc(docRef, { isPublic: isNowPublic });
+          const eyeOpen = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+          const eyeClosed = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
 
-            if (isNowPublic) {
-              btn.classList.add("is-public");
-              btn.innerHTML = eyeOpen;
-              btn.title = "Público";
-            } else {
-              btn.classList.remove("is-public");
-              btn.innerHTML = eyeClosed;
-              btn.title = "Privado";
-            }
-          } catch (error) {
-            console.error("Error al cambiar visibilidad:", error);
+          await updateDoc(doc(db, "users", currentUser.uid, "mangas", id), {
+            isPublic: isNowPublic,
+          });
+
+          // actualizar cache
+          mangasCache[id].isPublic = isNowPublic;
+
+          // actualizar UI
+          if (isNowPublic) {
+            btn.classList.add("is-public");
+            btn.innerHTML = eyeOpen;
+            btn.title = "Público";
+          } else {
+            btn.classList.remove("is-public");
+            btn.innerHTML = eyeClosed;
+            btn.title = "Privado";
           }
         };
       });
+
+      /* PROGRESS CLICK */
 
       if (status === "reading") {
         gridEl.querySelectorAll(".card").forEach((card) => {
@@ -2178,131 +2175,58 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
               return;
 
             const id = card.dataset.id;
-            const docRef = doc(db, "users", currentUser.uid, "mangas", id);
-            const snap = await getDoc(docRef);
-            if (!snap.exists()) return;
+            const data = mangasCache[id];
 
             let delta = 1;
 
-            if (e.button === 2)
-              delta = -1;
+            if (e.button === 2) delta = -1;
             else if (e.altKey)
               delta = parseInt(prompt("¿Cuántos capítulos leíste?", "1")) || 0;
 
-            if (delta === 0) return;
+            if (!delta) return;
 
-            const old = Number(snap.data().last) || 0;
-            const totalS = Number(snap.data().lastKnownChapters) || 0;
+            const old = Number(data.last) || 0;
+            const total = Number(data.lastKnownChapters) || 0;
 
             let newValue = old + delta;
-            if (newValue < 0) newValue = 0;
-            if (totalS > 0 && newValue > totalS) newValue = totalS;
 
-            if (totalS > 0 && newValue === totalS) {
-              selectedToFinish = snap.id;
+            if (newValue < 0) newValue = 0;
+            if (total > 0 && newValue > total) newValue = total;
+
+            /* ===== CHECK FINISH ===== */
+
+            if (total > 0 && newValue === total && old !== total) {
+              selectedToFinish = id;
+
               showFinishModal();
+
               finishModal.querySelector("h3").textContent =
-                `¿Marcar "${snap.data().title}" como terminado?`;
+                `¿Marcar "${data.title}" como terminado?`;
+
               finishModal.querySelector("p").textContent =
-                `Has alcanzado el último capítulo (${totalS}). ¿Quieres marcarlo como terminado?`;
+                `Has alcanzado el último capítulo (${total}). ¿Quieres marcarlo como terminado?`;
             }
 
-            await updateDoc(docRef, { last: String(newValue) });
+            /* ===== UPDATE FIREBASE ===== */
+
+            await updateDoc(doc(db, "users", currentUser.uid, "mangas", id), {
+              last: String(newValue),
+            });
+
+            mangasCache[id].last = newValue;
 
             const strong = card.querySelector(".last strong");
-            if (strong) strong.textContent = String(newValue);
+            if (strong) strong.textContent = newValue;
 
-            if (totalS > 0) {
-              const percent = Math.min((newValue / totalS) * 100, 100);
-              const fill = card.querySelector(".progress-fill");
-              const text = card.querySelector(".progress-text");
-
-              if (fill) fill.style.width = percent + "%";
-              if (text) text.textContent = `${newValue} / ${totalS}`;
+            if (total > 0) {
+              const percent = Math.min((newValue / total) * 100, 100);
+              card.querySelector(".progress-fill").style.width = percent + "%";
+              card.querySelector(".progress-text").textContent =
+                `${newValue} / ${total}`;
             }
 
             if (window.timeBoxEnabled) calculateTotalTime();
           });
-
-          // ===== SWIPE MOBILE =====
-          let touchStartX = 0;
-          let touchStartY = 0;
-
-          card.addEventListener(
-            "touchstart",
-            (e) => {
-              touchStartX = e.changedTouches[0].screenX;
-              touchStartY = e.changedTouches[0].screenY;
-            },
-            { passive: true },
-          );
-
-          card.addEventListener("touchend", async (e) => {
-            const touchEndX = e.changedTouches[0].screenX;
-            const touchEndY = e.changedTouches[0].screenY;
-
-            const diffX = touchEndX - touchStartX;
-            const diffY = touchEndY - touchStartY;
-
-            if (Math.abs(diffY) > Math.abs(diffX)) return;
-
-            const threshold = 60;
-            if (Math.abs(diffX) < threshold) return;
-
-            const id = card.dataset.id;
-            const docRef = doc(db, "users", currentUser.uid, "mangas", id);
-            const snap = await getDoc(docRef);
-            if (!snap.exists()) return;
-
-            const old = Number(snap.data().last) || 0;
-            const totalS = Number(snap.data().lastKnownChapters) || 0;
-
-            let delta = diffX > 0 ? 1 : -1;
-            let newValue = old + delta;
-
-            if (newValue < 0) newValue = 0;
-            if (totalS > 0 && newValue > totalS) newValue = totalS;
-
-            await updateDoc(docRef, { last: String(newValue) });
-
-            const strong = card.querySelector(".last strong");
-            if (strong) strong.textContent = String(newValue);
-
-            if (totalS > 0) {
-              const percent = Math.min((newValue / totalS) * 100, 100);
-              const fill = card.querySelector(".progress-fill");
-              const text = card.querySelector(".progress-text");
-
-              if (fill) fill.style.width = percent + "%";
-              if (text) text.textContent = `${newValue} / ${totalS}`;
-            }
-
-            if (window.timeBoxEnabled) calculateTotalTime();
-          });
-        });
-
-        gridEl.querySelectorAll(".finish-check").forEach((chk) => {
-          chk.onchange = () => {
-            if (chk.checked) {
-              selectedToFinish = chk.dataset.id;
-              showFinishModal();
-            }
-          };
-        });
-      }
-
-      if (status === "finished") {
-        gridEl.querySelectorAll(".restore-btn").forEach((btn) => {
-          btn.onclick = async (e) => {
-            e.stopPropagation();
-
-            await updateDoc(
-              doc(db, "users", currentUser.uid, "mangas", btn.dataset.id),
-              { status: "reading", last: 0 },
-            );
-
-            await loadMangas("reading");
-          };
         });
       }
 
@@ -2353,7 +2277,6 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
 
       hideFinishModal();
       selectedToFinish = null;
-
     } catch (e) {
       console.error("Error:", e);
       hideFinishModal();
