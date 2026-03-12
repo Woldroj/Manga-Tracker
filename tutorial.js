@@ -15,7 +15,7 @@ const tutorialSteps = [
   },
   {
     id: 2,
-    text: "En este Tutorial aprenderás a gestionar tu lista. Puedes Saltartelo cuando quieras si quieres.",
+    text: "En este Tutorial aprenderás a gestionar tu lista. Puedes Saltartelo cuando quieras.",
     target: null,
   },
   {
@@ -117,12 +117,12 @@ const tutorialSteps = [
   },
   {
     id: 23,
-    text: "Aquí puedes cambiar el diseño con temas claros.",
+    text: "Puedes cambiar el diseño con temas claros.",
     target: "theme-light",
   },
   {
     id: 23.5,
-    text: "Aquí puedes cambiar el diseño con temas oscuros",
+    text: "Y tambien con temas oscuros",
     target: "theme-dark",
   },
   {
@@ -133,7 +133,7 @@ const tutorialSteps = [
   },
   {
     id: 25,
-    text: "Aquí ves tu biografía, tus estadísticas y los mangas o animes que tienes en público.",
+    text: "Aquí verás tu biografía, tus estadísticas y los mangas o animes que tienes en público.",
     target: "user-view",
   },
   { id: 26, text: "Este es tu 'Código de Amigo'.", target: "my-user-code" },
@@ -163,7 +163,7 @@ const tutorialSteps = [
   },
   {
     id: 29,
-    text: "¡Has encontrado a MangaBot! Envía solicitud.",
+    text: "¡Me has encontrado! Envíame una solicitud solicitud.",
     target: "search-result-area",
     mustAction: true,
   },
@@ -174,13 +174,18 @@ const tutorialSteps = [
   },
   {
     id: 30,
-    text: "Entramos en su perfil para ver sus estadísticas.",
+    text: "Entremos en mi perfil.",
     target: "friends-list-grid",
     mustAction: true,
   },
   {
+    id: 30.1,
+    text: "Aqui puedes ver el perfil de tus amigos y cotillear sus cosas :>",
+    target: "profile-modal-content",
+  },
+  {
     id: 30.3,
-    text: "Dale a la 'x' para salir de su perfil",
+    text: "Dale a la 'x' para salir del perfil",
     target: "close-public-profile",
     mustAction: true,
   },
