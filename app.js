@@ -1,7 +1,7 @@
 /* =============================
     Manga Tracker - Main Script
    ============================= */
-
+import { tutorial } from "./tutorial.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-app.js";
 import {
   getAuth,
@@ -41,7 +41,8 @@ const firebaseConfig = {
 };
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const db = getFirestore(app);
+export const db = getFirestore(app);
+export let currentUser = null;
 
 /* -------- BOOTSTRAP -------- */
 
@@ -572,8 +573,19 @@ document.addEventListener("DOMContentLoaded", () => {
     sidebar.setAttribute("aria-hidden", "true");
   }
 
-  closeBtn?.addEventListener("click", closeSettings);
-  gearBtn?.addEventListener("click", openSettings);
+  closeBtn?.addEventListener("click", () => {
+    closeSettings();
+  });
+  gearBtn?.addEventListener("click", () => {
+    openSettings();
+    if (window.tutorial?.active && window.tutorial.steps[window.tutorial.currentStep].id === 22) {
+      notifyTutorial(22);
+    }
+    if (window.tutorial?.active && window.tutorial.steps[window.tutorial.currentStep].id === 26.5) {
+      notifyTutorial(26.5);
+    }
+
+  });
   overlay?.addEventListener("click", closeSettings);
 
   /* -------- PROFILE HELPERS -------- */
@@ -872,6 +884,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
 
           addBtn.textContent = "✔ Añadido";
           addBtn.disabled = true;
+          notifyTutorial(7);
         };
       }
       zmResults.appendChild(card);
@@ -895,6 +908,14 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
 
     if (currentView === "home") {
       loadMangas("reading");
+    }
+
+    if (tutorial.active) {
+      tutorial.tempData.mangaId = prefsDocRef.id;
+    }
+
+    if (tutorial.active && tutorial.steps[tutorial.currentStep].mustAction) {
+      tutorial.nextStep();
     }
   }
 
@@ -921,6 +942,22 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
       if (data.jikanId) userJikanIds.add(data.jikanId);
     });
   }
+
+  zmQueryInput?.addEventListener("input", (e) => {
+    if (
+      window.tutorial?.active &&
+      window.tutorial.steps[window.tutorial.currentStep].id === 5
+    ) {
+      const targetText = "Death Note";
+      const currentLength = e.target.value.length;
+
+      // Si el usuario borra, permitimos que borre, pero si escribe...
+      if (currentLength > 0) {
+        // Forzamos el valor a la parte correspondiente de "Death Note"
+        e.target.value = targetText.substring(0, currentLength);
+      }
+    }
+  });
 
   zmSearchBtn.addEventListener("click", async () => {
     const q = zmQueryInput.value.trim();
@@ -955,6 +992,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     } finally {
       hideSearchLoader();
     }
+    notifyTutorial(6);
   });
 
   async function mobileBarDisplayCheck() {
@@ -1049,6 +1087,15 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
 
       await loadPrefsForUser(user.uid);
       await goHome();
+
+      const userDoc = await getDoc(doc(db, "users", user.uid));
+      // Verificamos si NO ha completado el tutorial
+      if (!userDoc.exists() || !userDoc.data().tutorialCompleted) {
+        console.log("Detectado usuario nuevo, iniciando tutorial...");
+        setTimeout(() => {
+          tutorial.start(user);
+        }, 1500); // Pequeño retraso para que la interfaz cargue bien
+      }
 
       await loadFriends(user.uid);
       if (typeof listenToRequests === "function") {
@@ -1389,6 +1436,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
   }
 
   window.showPublicProfile = async (uid) => {
+    notifyTutorial(30);
     if (!uid) return;
     const modal = document.getElementById("public-profile-modal");
     modal.classList.remove("hidden");
@@ -1555,6 +1603,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
 
   closePublicProfile?.addEventListener("click", () => {
     document.getElementById("public-profile-modal").classList.add("hidden");
+    notifyTutorial(30.3)
   });
 
   function renderGridInElement(items, gridId, containerId) {
@@ -1955,9 +2004,13 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
   filterToggle.addEventListener("click", (e) => {
     e.stopPropagation();
     filterBox.classList.toggle("hidden");
+    notifyTutorial(4);
   });
 
-  filterBox?.addEventListener("click", (e) => e.stopPropagation());
+  filterBox?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    notifyTutorial(4.5);
+  });
   filterBox?.addEventListener("mousedown", (e) => e.stopPropagation());
 
   document.addEventListener("click", () => {
@@ -1986,7 +2039,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
         return;
       }
 
-      if (unsubscribeMangas) unsubscribeMangas
+      if (unsubscribeMangas) unsubscribeMangas;
 
       const col = collection(db, "users", currentUser.uid, "mangas");
       const snap = await getDocs(col);
@@ -2113,6 +2166,10 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
 
           gridEl.appendChild(card);
         });
+        if (window.tutorial && window.tutorial.active) {
+          // Forzamos al tutorial a que refresque su resaltado tras el render
+          window.tutorial.showStep();
+        }
       });
 
       /* DELETE */
@@ -2136,6 +2193,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
 
       gridEl.querySelectorAll(".visibility-btn").forEach((btn) => {
         btn.onclick = async (e) => {
+          notifyTutorial(20);
           e.stopPropagation();
 
           const id = btn.dataset.id;
@@ -2181,10 +2239,15 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
             const data = mangasCache[id];
 
             let delta = 1;
+            notifyTutorial(12);
 
-            if (e.button === 2) delta = -1;
-            else if (e.altKey)
+            if (e.button === 2) {
+              delta = -1;
+              notifyTutorial(13);
+            } else if (e.altKey) {
+              notifyTutorial(14);
               delta = parseInt(prompt("¿Cuántos capítulos leíste?", "1")) || 0;
+            }
 
             if (!delta) return;
 
@@ -2240,6 +2303,12 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     }
   }
 
+  function notifyTutorial(stepId) {
+    if (tutorial.active && tutorial.steps[tutorial.currentStep].id === stepId) {
+      tutorial.nextStep();
+    }
+  }
+
   /* -------- FINISH MODAL HANDLERS -------- */
   const finishModal = document.getElementById("finish-modal");
   const finishConfirm = document.getElementById("finish-confirm");
@@ -2280,6 +2349,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
 
       hideFinishModal();
       selectedToFinish = null;
+      notifyTutorial(16);
     } catch (e) {
       console.error("Error:", e);
       hideFinishModal();
@@ -2405,11 +2475,20 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     applyView();
   }
 
-  btnVolverSearch?.addEventListener("click", volverDesdeBusqueda);
+  btnVolverSearch?.addEventListener("click", () => {
+    volverDesdeBusqueda();
+    if (window.tutorial?.active && window.tutorial.steps[window.tutorial.currentStep].id === 8) {
+      notifyTutorial(8);
+    }
+    if (window.tutorial?.active && window.tutorial.steps[window.tutorial.currentStep].id === 30.6) {
+      notifyTutorial(30.6);
+    }
+  });
 
   btnFinalizadosPC?.addEventListener("click", () => {
     if (currentView === "finished") goHome();
     else goFinished();
+    notifyTutorial(18);
   });
 
   btnFinalizadosMobile?.addEventListener("click", () => {
@@ -2433,6 +2512,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     else {
       goUser();
       closeSettings();
+      notifyTutorial(24);
     }
   });
 
@@ -2446,6 +2526,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     else {
       goFriends();
       closeSettings();
+      notifyTutorial(27);
     }
   });
 
@@ -2472,6 +2553,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
   });
 
   btnSearchFriend?.addEventListener("click", async () => {
+    notifyTutorial(28.5);
     const code = friendSearchInput.value.trim().toUpperCase();
     if (!code) return;
 
@@ -2546,9 +2628,16 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
             </div>
         `;
 
+      if (window.tutorial && window.tutorial.active) {
+        setTimeout(() => {
+          window.tutorial.showStep();
+        }, 300);
+      }
+
       const resBtn = document.getElementById("res-btn");
       if (resBtn && !isDisabled) {
         resBtn.onclick = async (e) => {
+          notifyTutorial(29);
           e.stopPropagation();
           resBtn.disabled = true;
           resBtn.textContent = "Enviando...";

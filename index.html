@@ -38,6 +38,7 @@
 <!-- HTML -->
 </head>
 <body data-theme="dark">
+  <div id="tutorial-blocker" class="tutorial-blocker hidden"></div>
   <div class="app">
     <header class="app-header">
       <div class="brand">
@@ -104,7 +105,7 @@
 
             <div class="settings-divider"></div>
             <!-- TEMAS CLAROS -->
-            <div class="settings-section">
+            <div class="settings-section" id="theme-light">
               <h4>Claros</h4>
               <div class="theme-grid" id="theme-grid-light"></div>
             </div>
@@ -112,7 +113,7 @@
             <div class="settings-divider"></div>
 
             <!-- TEMAS OSCUROS -->
-            <div class="settings-section">
+            <div class="settings-section" id="theme-dark">
               <h4>Oscuros</h4>
               <div class="theme-grid" id="theme-grid-dark"></div>
             </div>
@@ -440,5 +441,16 @@
 ></script>
 
 <script type="module" src="app.js"></script>
+<script type="module" src="tutorial.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <div id="tutorial-overlay" class="hidden">
+    <div id="tutorial-box">
+      <p id="tutorial-text"></p>
+      <div class="tutorial-actions">
+        <button onclick="skipTutorial()">Saltar</button>
+        <button id="next-step-btn" onclick="tutorial.nextStep()">Siguiente</button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
