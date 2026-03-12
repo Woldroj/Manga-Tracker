@@ -2169,7 +2169,7 @@ input:checked + .slider::before {
 #tutorial-overlay {
   position: fixed;
   z-index: 99999;
-  background: #ffffff;
+  background: var(--card);
   padding: 24px;
   border-radius: 16px;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
@@ -2199,21 +2199,25 @@ input:checked + .slider::before {
 
 #tutorial-text {
   font-family: "Segoe UI", Roboto, sans-serif;
-  color: #333;
+  color: var(--accent);
   font-size: 15px;
   line-height: 1.5;
   margin: 0;
 }
 
-#next-step-btn {
+#next-step-btn, #skip-btn {
   background-color: var(--accent-2); /* Un azul/violeta moderno */
-  color: white;
+  color: var(--accent);
   border: none;
   padding: 10px 20px;
   border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
   align-self: flex-end;
+}
+
+#skip-btn {
+  background-color: #0f172a00;
 }
 
 .tutorial-fade-in {
