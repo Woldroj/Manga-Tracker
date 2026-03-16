@@ -68,7 +68,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnAdd = document.getElementById("btn-add");
 
   // Mobile
-  const mobileAdd = document.getElementById("mobile-add");
   const mobileGear = document.getElementById("mobile-gear");
   const mobileProfile = document.getElementById("mobile-profile");
   const filePhotoInput = document.getElementById("file-photo");
@@ -133,8 +132,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const sGoFriends = document.getElementById("s-goFriends");
   const btnSearchFriend = document.getElementById("btn-search-friend");
   const friendSearchInput = document.getElementById("friend-search-input");
-  const friendRequestsList = document.getElementById("friend-requests-list");
-  const friendsList = document.getElementById("friends-list");
   const searchResultArea = document.getElementById("search-result-area");
 
   const publicProfileModal = document.getElementById("public-profile-modal");
@@ -142,10 +139,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const btnMail = document.getElementById("btn-mail-requests");
   const dropdown = document.getElementById("requests-dropdown");
-  const panel = document.getElementById("mobile-requests-panel");
-  const list = document.getElementById("mobile-requests-list");
-
-  const alertBanner = document.getElementById("jikan-alert");
 
   /* -------- STATE -------- */
   let currentView = "home";
@@ -1878,37 +1871,6 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
       mobileSettingsPopup = null;
     }
   }
-  /* ---------- DATA / CARDS ---------- */
-  /* categories */
-  const categories = {
-    Manga: [
-      "Acción",
-      "Aventura",
-      "Comedia",
-      "Drama",
-      "Misterio",
-      "Fantasía",
-      "Romance",
-      "Seinen",
-      "Shonen",
-      "Otro",
-    ],
-    Anime: [
-      "Acción",
-      "Aventura",
-      "Comedia",
-      "Drama",
-      "Misterio",
-      "Fantasía",
-      "Romance",
-      "Slice of Life",
-      "Mecha",
-      "Isekai",
-      "Otro",
-    ],
-  };
-
-  const fields = ["title", "genre", "last", "url", "imgurl", "type"];
 
   /* ======= SAGA DETECTION ====== */
 
