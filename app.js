@@ -1789,9 +1789,6 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
 
     c.innerHTML = `
     <h3>Ajustes</h3>
-    <button id="mb-change-name">Cambiar nombre</button>
-    <button id="mb-change-photo">Cambiar foto</button>
-    <button id="mb-toggle-timebox">Mostrar tiempo consumido</button>
     <div class="settings-divider"></div>
     <h4 style="margin-top:10px">Claros</h4>
     <div class="theme-grid" id="mb-theme-grid-light"></div>
