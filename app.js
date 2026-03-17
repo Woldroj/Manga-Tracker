@@ -571,13 +571,18 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   gearBtn?.addEventListener("click", () => {
     openSettings();
-    if (window.tutorial?.active && window.tutorial.steps[window.tutorial.currentStep].id === 22) {
+    if (
+      window.tutorial?.active &&
+      window.tutorial.steps[window.tutorial.currentStep].id === 22
+    ) {
       notifyTutorial(22);
     }
-    if (window.tutorial?.active && window.tutorial.steps[window.tutorial.currentStep].id === 26.5) {
+    if (
+      window.tutorial?.active &&
+      window.tutorial.steps[window.tutorial.currentStep].id === 26.5
+    ) {
       notifyTutorial(26.5);
     }
-
   });
   overlay?.addEventListener("click", closeSettings);
 
@@ -1596,7 +1601,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
 
   closePublicProfile?.addEventListener("click", () => {
     document.getElementById("public-profile-modal").classList.add("hidden");
-    notifyTutorial(30.3)
+    notifyTutorial(30.3);
   });
 
   function renderGridInElement(items, gridId, containerId) {
@@ -2183,8 +2188,40 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
 
       /* PROGRESS CLICK */
 
+      /* PROGRESS CLICK & SWIPE (MOBILE) */
+
       if (status === "reading") {
         gridEl.querySelectorAll(".card").forEach((card) => {
+          // Variables locales para el gesto en esta tarjeta
+          let touchstartX = 0;
+          let touchendX = 0;
+
+          // --- EVENTOS TÁCTILES (MÓVIL) ---
+          card.addEventListener(
+            "touchstart",
+            (e) => {
+              touchstartX = e.changedTouches[0].screenX;
+            },
+            { passive: true },
+          );
+
+          card.addEventListener(
+            "touchend",
+            async (e) => {
+              touchendX = e.changedTouches[0].screenX;
+              const deltaX = touchendX - touchstartX;
+
+              // Si el desplazamiento es mayor a 60px, es un swipe
+              if (Math.abs(deltaX) > 60) {
+                const id = card.dataset.id;
+                const delta = deltaX > 0 ? 1 : -1; // Derecha suma, Izquierda resta
+                await updateMangaProgress(card, id, delta);
+              }
+            },
+            { passive: true },
+          );
+
+          // --- EVENTO CLIC (PC) ---
           card.addEventListener("mousedown", async (e) => {
             if (
               e.target.closest("button") ||
@@ -2195,64 +2232,62 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
               return;
 
             const id = card.dataset.id;
-            const data = mangasCache[id];
-
             let delta = 1;
-            notifyTutorial(12);
 
             if (e.button === 2) {
               delta = -1;
-              notifyTutorial(13);
             } else if (e.altKey) {
-              notifyTutorial(14);
               delta = parseInt(prompt("¿Cuántos capítulos leíste?", "1")) || 0;
             }
 
             if (!delta) return;
-
-            const old = Number(data.last) || 0;
-            const total = Number(data.lastKnownChapters) || 0;
-
-            let newValue = old + delta;
-
-            if (newValue < 0) newValue = 0;
-            if (total > 0 && newValue > total) newValue = total;
-
-            /* ===== CHECK FINISH ===== */
-
-            if (total > 0 && newValue === total && old !== total) {
-              selectedToFinish = id;
-
-              showFinishModal();
-
-              finishModal.querySelector("h3").textContent =
-                `¿Marcar "${data.title}" como terminado?`;
-
-              finishModal.querySelector("p").textContent =
-                `Has alcanzado el último capítulo (${total}). ¿Quieres marcarlo como terminado?`;
-            }
-
-            /* ===== UPDATE FIREBASE ===== */
-
-            await updateDoc(doc(db, "users", currentUser.uid, "mangas", id), {
-              last: String(newValue),
-            });
-
-            mangasCache[id].last = newValue;
-
-            const strong = card.querySelector(".last strong");
-            if (strong) strong.textContent = newValue;
-
-            if (total > 0) {
-              const percent = Math.min((newValue / total) * 100, 100);
-              card.querySelector(".progress-fill").style.width = percent + "%";
-              card.querySelector(".progress-text").textContent =
-                `${newValue} / ${total}`;
-            }
-
-            if (window.timeBoxEnabled) calculateTotalTime();
+            await updateMangaProgress(card, id, delta);
           });
         });
+      }
+
+      // --- FUNCIÓN AUXILIAR DE ACTUALIZACIÓN (Para no repetir código) ---
+      async function updateMangaProgress(card, id, delta) {
+        const data = mangasCache[id];
+        const old = Number(data.last) || 0;
+        const total = Number(data.lastKnownChapters) || 0;
+
+        let newValue = old + delta;
+        if (newValue < 0) newValue = 0;
+        if (total > 0 && newValue > total) newValue = total;
+        if (newValue === old) return;
+
+        // Notificar al tutorial según la dirección
+        if (delta > 0) notifyTutorial(12);
+        else notifyTutorial(13);
+
+        /* ===== CHECK FINISH ===== */
+        if (total > 0 && newValue === total && old !== total) {
+          selectedToFinish = id;
+          showFinishModal();
+          finishModal.querySelector("h3").textContent =
+            `¿Marcar "${data.title}" como terminado?`;
+        }
+
+        /* ===== UPDATE FIREBASE ===== */
+        await updateDoc(doc(db, "users", currentUser.uid, "mangas", id), {
+          last: String(newValue),
+        });
+
+        mangasCache[id].last = newValue;
+
+        // Actualizar UI
+        const strong = card.querySelector(".last strong");
+        if (strong) strong.textContent = newValue;
+
+        if (total > 0) {
+          const percent = Math.min((newValue / total) * 100, 100);
+          card.querySelector(".progress-fill").style.width = percent + "%";
+          card.querySelector(".progress-text").textContent =
+            `${newValue} / ${total}`;
+        }
+
+        if (window.timeBoxEnabled) calculateTotalTime();
       }
 
       if (window.timeBoxEnabled) calculateTotalTime();
@@ -2436,10 +2471,16 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
 
   btnVolverSearch?.addEventListener("click", () => {
     volverDesdeBusqueda();
-    if (window.tutorial?.active && window.tutorial.steps[window.tutorial.currentStep].id === 8) {
+    if (
+      window.tutorial?.active &&
+      window.tutorial.steps[window.tutorial.currentStep].id === 8
+    ) {
       notifyTutorial(8);
     }
-    if (window.tutorial?.active && window.tutorial.steps[window.tutorial.currentStep].id === 30.6) {
+    if (
+      window.tutorial?.active &&
+      window.tutorial.steps[window.tutorial.currentStep].id === 30.6
+    ) {
       notifyTutorial(30.6);
     }
   });
