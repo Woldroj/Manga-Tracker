@@ -289,7 +289,6 @@ header.app-header {
   align-items: center;
 }
 .controls input,
-.controls button,
 .controls select {
   padding: 8px 12px;
   border-radius: 8px;
@@ -2205,7 +2204,8 @@ input:checked + .slider::before {
   margin: 0;
 }
 
-#next-step-btn, #skip-btn {
+#next-step-btn,
+#skip-btn {
   background-color: var(--accent-2); /* Un azul/violeta moderno */
   color: var(--accent);
   border: none;
@@ -2235,27 +2235,45 @@ input:checked + .slider::before {
   }
 }
 
+.auth-actions {
+  display: flex;
+  width: 100%; /* Debe coincidir con el ancho de los inputs */
+  justify-content: space-between; /* Uno a cada punta */
+  gap: 10px;
+  margin-top: 5px;
+}
+
 #btn-reset-password {
-    background: transparent;
-    color: #ffffff;
-    border: 1px solid rgba(255, 255, 255, 0.5); /* Borde blanco semi-transparente */
-    padding: 8px 15px;
-    border-radius: 20px; /* Bordes redondeados tipo cápsula */
-    font-size: 13px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    text-decoration: none;
-    display: inline-block;
-    margin-top: 15px;
-    font-family: inherit;
+  background: transparent;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.5); /* Borde blanco semi-transparente */
+  padding: 8px 15px;
+  border-radius: 20px; /* Bordes redondeados tipo cápsula */
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-block;
+  margin-top: 15px;
+  font-family: inherit;
 }
 
 #btn-reset-password:hover {
-    background: rgba(255, 255, 255, 0.1); /* Brillo sutil al pasar el ratón */
-    border-color: #ffffff;
-    transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.1); /* Brillo sutil al pasar el ratón */
+  border-color: #ffffff;
+  transform: translateY(-1px);
 }
 
 #btn-reset-password:active {
-    transform: translateY(0);
+  transform: translateY(0);
+}
+#btn-login {
+  flex-grow: 1;
+  width: auto;
+  background: var(--accent-2);
+  color: var(--accent);
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: none;
+  font-size: 14px;
 }
