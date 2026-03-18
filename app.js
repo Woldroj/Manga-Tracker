@@ -157,6 +157,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* -------- THEMES -------- */
   const THEMES = {
+    
     // DARK THEMES
 
     dark: {
