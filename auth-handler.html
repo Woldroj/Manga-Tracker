@@ -2,7 +2,7 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <title>Verificación de correo – MangaTracker</title>
+    <title>Gestión de Cuenta – MangaTracker</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <style>
       body {
@@ -22,12 +22,37 @@
       }
       h1 {
         font-size: 24px;
+        margin-bottom: 10px;
       }
       p {
         color: #94a3b8;
+        margin-bottom: 20px;
       }
+
+      /* Estilos para el formulario de reset */
+      .input-group {
+        text-align: left;
+        margin-bottom: 15px;
+      }
+      label {
+        display: block;
+        font-size: 14px;
+        margin-bottom: 5px;
+        color: #cbd5e1;
+      }
+      input {
+        width: 100%;
+        padding: 10px;
+        background: #0f172a;
+        border: 1px solid #334155;
+        border-radius: 6px;
+        color: white;
+        box-sizing: border-box;
+      }
+
       .btn {
-        margin-top: 18px;
+        width: 100%;
+        margin-top: 10px;
         background: #3b82f6;
         border: none;
         padding: 12px 18px;
@@ -37,13 +62,46 @@
         cursor: pointer;
         display: inline-block;
         text-decoration: none;
+        font-weight: bold;
+      }
+      .btn:hover {
+        background: #2563eb;
+      }
+      .hidden {
+        display: none;
       }
     </style>
   </head>
   <body>
     <div class="box">
-      <h1>Verificando correo…</h1>
+      <h1 id="title">Procesando...</h1>
       <p id="status">Por favor espera…</p>
+
+      <div id="reset-form" class="hidden">
+        <div class="input-group">
+          <label>Nueva contraseña:</label>
+          <input
+            type="password"
+            id="new-password"
+            placeholder="Mínimo 6 caracteres"
+          />
+        </div>
+        <div class="input-group">
+          <label>Confirmar contraseña:</label>
+          <input
+            type="password"
+            id="confirm-password"
+            placeholder="Repite la contraseña"
+          />
+        </div>
+        <button class="btn" id="btn-save">Cambiar contraseña</button>
+      </div>
+
+      <div id="action-completed" class="hidden">
+        <a class="btn" href="https://woldroj.github.io/Manga-Tracker/"
+          >Ir al inicio de sesión</a
+        >
+      </div>
     </div>
 
     <script type="module">
@@ -51,6 +109,8 @@
       import {
         getAuth,
         applyActionCode,
+        confirmPasswordReset,
+        verifyPasswordResetCode,
       } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-auth.js";
 
       const firebaseConfig = {
@@ -60,36 +120,35 @@
         storageBucket: "mangatracker-63f14.firebasestorage.app",
         messagingSenderId: "612200334218",
         appId: "1:612200334218:web:1cd7349bbc61b71ad7fe73",
-        measurementId: "G-1VY5WJG76J",
       };
 
       const app = initializeApp(firebaseConfig);
       const auth = getAuth(app);
 
-      // Obtiene la acción de la URL
       const urlParams = new URLSearchParams(window.location.search);
       const mode = urlParams.get("mode");
       const oobCode = urlParams.get("oobCode");
-      const statusEl = document.getElementById("status");
 
-      async function verifyEmail() {
+      const titleEl = document.getElementById("title");
+      const statusEl = document.getElementById("status");
+      const resetForm = document.getElementById("reset-form");
+      const actionCompleted = document.getElementById("action-completed");
+
+      // --- LÓGICA DE VERIFICACIÓN DE EMAIL ---
+      async function handleVerifyEmail() {
+        titleEl.textContent = "Verificando correo...";
         try {
           await applyActionCode(auth, oobCode);
-          statusEl.innerHTML = `
-            <strong>¡Correo verificado con éxito! 🎉</strong><br><br>
-            Ya puedes iniciar sesión en la aplicación.
-            <br><br>
-            <a class="btn" href="https://woldroj.github.io/Manga-Tracker/">Ir a la app</a>
-        `;
+          statusEl.innerHTML =
+            "<strong>¡Correo verificado con éxito! 🎉</strong><br>Ya puedes iniciar sesión.";
+          actionCompleted.classList.remove("hidden");
         } catch (error) {
-          console.error(error);
-          statusEl.innerHTML = `
-            <strong>Error al verificar el correo ❌</strong><br><br>
-            Puede que el enlace haya expirado o ya haya sido usado.<br><br>
-            <a class="btn" href="https://woldroj.github.io/Manga-Tracker/">Volver</a>
-        `;
+          statusEl.innerHTML =
+            "<strong>Error ❌</strong><br>El enlace ha expirado o ya ha sido usado.";
+          actionCompleted.classList.remove("hidden");
         }
       }
+
       // --- LÓGICA DE RECUPERACIÓN DE CONTRASEÑA ---
       async function handleResetPassword() {
         titleEl.textContent = "Nueva Contraseña";
