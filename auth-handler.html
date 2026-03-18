@@ -1,28 +1,32 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-<meta charset="UTF-8">
-<title>Verificación de correo – MangaTracker</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<style>
-    body {
+  <head>
+    <meta charset="UTF-8" />
+    <title>Verificación de correo – MangaTracker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      body {
         background: #0f172a;
         color: #f1f5f9;
-        font-family: 'Inter', sans-serif;
+        font-family: "Inter", sans-serif;
         text-align: center;
         padding: 40px;
-    }
-    .box {
+      }
+      .box {
         max-width: 420px;
         margin: auto;
         padding: 25px;
         background: #1e293b;
         border-radius: 12px;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.4);
-    }
-    h1 { font-size: 24px; }
-    p { color: #94a3b8; }
-    .btn {
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+      }
+      h1 {
+        font-size: 24px;
+      }
+      p {
+        color: #94a3b8;
+      }
+      .btn {
         margin-top: 18px;
         background: #3b82f6;
         border: none;
@@ -33,64 +37,111 @@
         cursor: pointer;
         display: inline-block;
         text-decoration: none;
-    }
-</style>
-</head>
-<body>
+      }
+    </style>
+  </head>
+  <body>
+    <div class="box">
+      <h1>Verificando correo…</h1>
+      <p id="status">Por favor espera…</p>
+    </div>
 
-<div class="box">
-    <h1>Verificando correo…</h1>
-    <p id="status">Por favor espera…</p>
-</div>
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-app.js";
+      import {
+        getAuth,
+        applyActionCode,
+      } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-auth.js";
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-app.js";
-import { getAuth, applyActionCode } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-auth.js";
+      const firebaseConfig = {
+        apiKey: "AIzaSyBjGHgNC4CHglfh75yMxXYcLMij8aywcQc",
+        authDomain: "mangatracker-63f14.firebaseapp.com",
+        projectId: "mangatracker-63f14",
+        storageBucket: "mangatracker-63f14.firebasestorage.app",
+        messagingSenderId: "612200334218",
+        appId: "1:612200334218:web:1cd7349bbc61b71ad7fe73",
+        measurementId: "G-1VY5WJG76J",
+      };
 
-const firebaseConfig = {
-    apiKey: "AIzaSyBjGHgNC4CHglfh75yMxXYcLMij8aywcQc",
-    authDomain: "mangatracker-63f14.firebaseapp.com",
-    projectId: "mangatracker-63f14",
-    storageBucket: "mangatracker-63f14.firebasestorage.app",
-    messagingSenderId: "612200334218",
-    appId: "1:612200334218:web:1cd7349bbc61b71ad7fe73",
-    measurementId: "G-1VY5WJG76J"
-};
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+      // Obtiene la acción de la URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const mode = urlParams.get("mode");
+      const oobCode = urlParams.get("oobCode");
+      const statusEl = document.getElementById("status");
 
-// Obtiene la acción de la URL
-const urlParams = new URLSearchParams(window.location.search);
-const mode = urlParams.get('mode');
-const oobCode = urlParams.get('oobCode');
-const statusEl = document.getElementById('status');
-
-async function verifyEmail() {
-    try {
-        await applyActionCode(auth, oobCode);
-        statusEl.innerHTML = `
+      async function verifyEmail() {
+        try {
+          await applyActionCode(auth, oobCode);
+          statusEl.innerHTML = `
             <strong>¡Correo verificado con éxito! 🎉</strong><br><br>
             Ya puedes iniciar sesión en la aplicación.
             <br><br>
             <a class="btn" href="https://woldroj.github.io/Manga-Tracker/">Ir a la app</a>
         `;
-    } catch (error) {
-        console.error(error);
-        statusEl.innerHTML = `
+        } catch (error) {
+          console.error(error);
+          statusEl.innerHTML = `
             <strong>Error al verificar el correo ❌</strong><br><br>
             Puede que el enlace haya expirado o ya haya sido usado.<br><br>
             <a class="btn" href="https://woldroj.github.io/Manga-Tracker/">Volver</a>
         `;
-    }
-}
+        }
+      }
+      // --- LÓGICA DE RECUPERACIÓN DE CONTRASEÑA ---
+      async function handleResetPassword() {
+        titleEl.textContent = "Nueva Contraseña";
+        try {
+          // Verificar que el código es válido antes de mostrar el formulario
+          const email = await verifyPasswordResetCode(auth, oobCode);
+          statusEl.textContent = `Restableciendo contraseña para: ${email}`;
+          resetForm.classList.remove("hidden");
 
-if (mode === "verifyEmail") {
-    verifyEmail();
-} else {
-    statusEl.textContent = "Acción desconocida.";
-}
-</script>
+          document.getElementById("btn-save").onclick = async () => {
+            const newPass = document.getElementById("new-password").value;
+            const confirmPass =
+              document.getElementById("confirm-password").value;
 
-</body>
+            if (newPass.length < 6) {
+              alert("La contraseña debe tener al menos 6 caracteres.");
+              return;
+            }
+            if (newPass !== confirmPass) {
+              alert("Las contraseñas no coinciden.");
+              return;
+            }
+
+            try {
+              await confirmPasswordReset(auth, oobCode, newPass);
+              resetForm.classList.add("hidden");
+              statusEl.innerHTML =
+                "<strong>¡Contraseña cambiada! ✅</strong><br>Ya puedes volver a la app e iniciar sesión.";
+              actionCompleted.classList.remove("hidden");
+            } catch (e) {
+              alert("Error al cambiar la contraseña. Reintenta.");
+            }
+          };
+        } catch (error) {
+          statusEl.innerHTML =
+            "<strong>Error ❌</strong><br>El enlace es inválido o ha caducado.";
+          actionCompleted.classList.remove("hidden");
+        }
+      }
+
+      // --- SELECTOR DE MODO ---
+      if (oobCode) {
+        if (mode === "verifyEmail") {
+          handleVerifyEmail();
+        } else if (mode === "resetPassword") {
+          handleResetPassword();
+        } else {
+          statusEl.textContent = "Acción no soportada.";
+        }
+      } else {
+        statusEl.textContent = "Falta el código de acción.";
+      }
+    </script>
+  </body>
 </html>

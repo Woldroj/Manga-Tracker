@@ -2234,3 +2234,28 @@ input:checked + .slider::before {
     transform: translateY(0);
   }
 }
+
+#btn-reset-password {
+    background: transparent;
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.5); /* Borde blanco semi-transparente */
+    padding: 8px 15px;
+    border-radius: 20px; /* Bordes redondeados tipo cápsula */
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+    margin-top: 15px;
+    font-family: inherit;
+}
+
+#btn-reset-password:hover {
+    background: rgba(255, 255, 255, 0.1); /* Brillo sutil al pasar el ratón */
+    border-color: #ffffff;
+    transform: translateY(-1px);
+}
+
+#btn-reset-password:active {
+    transform: translateY(0);
+}

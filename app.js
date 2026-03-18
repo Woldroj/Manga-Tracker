@@ -11,6 +11,7 @@ import {
   onAuthStateChanged,
   updateProfile,
   sendEmailVerification,
+  sendPasswordResetEmail,
 } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-auth.js";
 import {
   getFirestore,
@@ -65,6 +66,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Buttons
   const btnLogin = document.getElementById("btn-login");
+  const forgotBtn = document.getElementById("btn-reset-password");
   const btnAdd = document.getElementById("btn-add");
 
   // Mobile
@@ -1166,6 +1168,42 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
       }
     }
   });
+
+  /* --- RECUPERAR CONTRASEÑA --- */
+  const handleForgotPassword = async () => {
+    // Asegúrate de que el ID "login-email" coincida con el de tu <input> de correo
+    const emailInput = document.getElementById("email");
+    const email = emailInput?.value.trim();
+
+    if (!email) {
+      alert(
+        "Por favor, escribe tu correo electrónico en el campo de email primero.",
+      );
+      emailInput?.focus();
+      return;
+    }
+
+    try {
+      await sendPasswordResetEmail(auth, email);
+      alert(
+        "¡Correo enviado! Revisa tu bandeja de entrada (y spam) para restablecer tu contraseña.",
+      );
+    } catch (error) {
+      console.error("Error en reset password:", error.code);
+      switch (error.code) {
+        case "auth/user-not-found":
+          alert("No existe ninguna cuenta con este correo electrónico.");
+          break;
+        case "auth/invalid-email":
+          alert("El formato del correo electrónico no es válido.");
+          break;
+        default:
+          alert("Error: " + error.message);
+      }
+    }
+  };
+  
+  if (forgotBtn) forgotBtn.onclick = handleForgotPassword;
 
   /* -------- SETTINGS / PROFILE actions -------- */
   sChangeName?.addEventListener("click", async () => {
