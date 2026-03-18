@@ -1052,6 +1052,13 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     currentUser = user;
 
     if (user) {
+      if (!user.emailVerified) {
+        console.log("Usuario logueado pero email no verificado.");
+        authControls && (authControls.style.display = "flex"); // Mantenemos controles de login
+        userControls && (userControls.style.display = "none");
+        // Opcional: podrías mostrar un mensaje específico aquí tipo "Revisa tu correo"
+        return;
+      }
       authControls && (authControls.style.display = "none");
       userControls && (userControls.style.display = "flex");
       setUserNameDisplay(user.displayName || user.email);
@@ -1202,7 +1209,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
       }
     }
   };
-  
+
   if (forgotBtn) forgotBtn.onclick = handleForgotPassword;
 
   /* -------- SETTINGS / PROFILE actions -------- */
