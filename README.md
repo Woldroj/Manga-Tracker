@@ -2,6 +2,13 @@
 
 ![MangaTracker Banner](./icons/icon-512.png)
 
+---
+
+![JavaScript](https://img.shields.io/badge/javascript-%23323330.svg?style=for-the-badge&logo=javascript&logoColor=%23F7DF1E)
+![Firebase](https://img.shields.io/badge/firebase-%23039BE5.svg?style=for-the-badge&logo=firebase)
+![PWA](https://img.shields.io/badge/PWA-orange?style=for-the-badge&logo=pwa)
+![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)
+
 **MangaTracker** is a modern web application (PWA) designed to manage your manga reading and anime viewing quickly, easily, and elegantly. Forget about complicated lists; keep your progress up to date with a mobile-optimized interface and instant synchronization.
 
 [🚀 Open MangaTracker](https://woldroj.github.io/Manga-Tracker/)
