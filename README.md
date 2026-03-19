@@ -24,6 +24,29 @@
 * **🌓 Visual Modes:** Full support for dark and light modes to suit your preferences.
 * **📂 Efficient Organization:** Categorize your series by status: *Reading* or *Completed*.
 
+---
+
+## 🎓 Interactive Onboarding (Tutorial)
+
+To ensure a smooth start for every user, MangaTracker includes a built-in **Interactive Tutorial** that triggers upon the first verified login. Key functions include:
+
+* **Step-by-Step Guidance:** Highlights essential UI elements like the "Add" button, search bar, and user settings.
+* **Visual Overlays:** Dims the background to focus the user's attention on specific features.
+* **Progress Tracking:** Saves completion status to the cloud so you only see it once.
+* **Contextual Help:** Explains how to sync with external sources and manage your library effectively.
+
+---
+
+## 📸 Preview & Interface
+
+The application is built with a **Mobile-First** approach, ensuring that managing your manga is comfortable from anywhere with just one hand.
+
+| Mobile View | Desktop View |
+| :---: | :---: |
+| ![Mobile Preview](./Interface-Design/mobile-version.png) | ![Desktop Preview](./Interface-Design/desktop-version.png) |
+
+---
+
 ## 🛠️ Built With
 
 * **Architecture:** HTML5, CSS3 (Modern variables, Grid/Flexbox), and Vanilla JavaScript (ES6+).
@@ -33,15 +56,11 @@
 
 ## 📱 How to Use the App
 
-1.  **Access:** Go to the official URL and sign up or log in with your account.
-2.  **Add Content:** Register your favorite manga or anime.
-3.  **Tracking:** Update the chapter count as you progress; the app will save changes automatically.
-4.  **Installation:** On your mobile device, select "Add to Home Screen" from your browser to use it as a native app.
-
-## 📸 Preview
-
-> [!NOTE]
-> The application is built with a **Mobile-First** approach, ensuring that managing your manga is comfortable from anywhere with just one hand.
+1.  **Access:** Go to the official URL and sign up.
+2.  **Verification:** Check your email to verify your account and unlock all features.
+3.  **Tutorial:** Follow the interactive guide to learn the basics.
+4.  **Add Content:** Register your favorite manga or anime and update your progress.
+5.  **Installation:** On your mobile device, select "Add to Home Screen" from your browser.
 
 ---
 
