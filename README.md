@@ -2,52 +2,53 @@
 
 ![MangaTracker Banner](./icons/icon-512.png)
 
-**MangaTracker** es una aplicación web moderna (PWA) diseñada para gestionar tus lecturas de manga y visualizaciones de anime de forma rápida, sencilla y elegante. Olvida las listas complicadas; mantén tu progreso al día con una interfaz optimizada para dispositivos móviles y sincronización instantánea.
+**MangaTracker** is a modern web application (PWA) designed to manage your manga reading and anime viewing quickly, easily, and elegantly. Forget about complicated lists; keep your progress up to date with a mobile-optimized interface and instant synchronization.
 
-[🚀 Abrir MangaTracker](https://woldroj.github.io/Manga-Tracker/)
+[🚀 Open MangaTracker](https://woldroj.github.io/Manga-Tracker/)
 
 ---
 
-## ✨ Características Principales
+## ✨ Key Features
 
-* **⚡ Carga Instantánea:** Diseñada para ser ligera y rápida, incluso en conexiones lentas.
-* **☁️ Sincronización en la Nube:** Gracias a la integración con Firebase, tus datos te acompañan en cualquier dispositivo al iniciar sesión.
-* **📱 Experiencia de App Nativa (PWA):** Puedes añadirla a tu pantalla de inicio y usarla como una aplicación instalada.
-* **🔍 Detección de Capítulos:** Sistema inteligente para ayudarte a identificar nuevos contenidos disponibles.
-* **🌓 Modos Visuales:** Soporte completo para modo oscuro y claro que se adapta a tus preferencias.
-* **📂 Organización Eficiente:** Clasifica tus series por estado: *Leyendo* o *Terminado*.
+* **⚡ Instant Loading:** Designed to be lightweight and fast, even on slow connections.
+* **☁️ Cloud Sync:** Thanks to Firebase integration, your data follows you on any device when you log in.
+* **📱 Native App Experience (PWA):** Add it to your home screen and use it just like an installed application.
+* **🔍 Chapter Detection:** Smart system to help you identify new available content.
+* **🌓 Visual Modes:** Full support for dark and light modes to suit your preferences.
+* **📂 Efficient Organization:** Categorize your series by status: *Reading* or *Completed*.
 
-## 🛠️ Tecnologías Utilizadas
+## 🛠️ Built With
 
-* **Arquitectura:** HTML5, CSS3 (Variables modernas, Grid/Flexbox) y JavaScript Vanilla (ES6+).
-* **Backend:** [Firebase](https://firebase.google.com/) (Autenticación y base de datos en tiempo real Firestore).
-* **PWA:** Service Workers y Web App Manifest para una experiencia móvil fluida.
-* **Diseño:** Tipografía Inter para una legibilidad superior y estética minimalista.
+* **Architecture:** HTML5, CSS3 (Modern variables, Grid/Flexbox), and Vanilla JavaScript (ES6+).
+* **Backend:** [Firebase](https://firebase.google.com/) (Authentication and Firestore real-time database).
+* **PWA:** Service Workers and Web App Manifest for a fluid mobile experience.
+* **Design:** Inter typography for superior readability and a minimalist aesthetic.
 
-## 📱 Cómo usar la App
+## 📱 How to Use the App
 
-1.  **Acceso:** Entra a la URL oficial y regístrate o inicia sesión con tu cuenta.
-2.  **Añadir Contenido:** Registra tus mangas o animes favoritos.
-3.  **Seguimiento:** Actualiza el número de capítulos conforme avanzas; la app guardará los cambios automáticamente.
-4.  **Instalación:** En tu móvil, selecciona "Añadir a la pantalla de inicio" desde tu navegador para usarla como una app nativa.
+1.  **Access:** Go to the official URL and sign up or log in with your account.
+2.  **Add Content:** Register your favorite manga or anime.
+3.  **Tracking:** Update the chapter count as you progress; the app will save changes automatically.
+4.  **Installation:** On your mobile device, select "Add to Home Screen" from your browser to use it as a native app.
 
-## 📸 Previsualización
+## 📸 Preview
 
 > [!NOTE]
-> La aplicación está construida con un enfoque *Mobile-First*, garantizando que la gestión de tus mangas sea cómoda desde cualquier lugar con una sola mano.
+> The application is built with a **Mobile-First** approach, ensuring that managing your manga is comfortable from anywhere with just one hand.
 
 ---
 
-## 🤝 Contribuciones
+## 🤝 Contributing
 
-Si eres desarrollador y quieres proponer mejoras estéticas o de funcionalidad:
-1. Haz un **Fork** del proyecto.
-2. Crea una rama para tu mejora: `git checkout -b feature/NuevaMejora`.
-3. Haz un **Push** de tus cambios y abre un **Pull Request**.
+If you are a developer and want to propose aesthetic or functional improvements:
 
-## 📄 Licencia
+1.  **Fork** the project.
+2.  Create a branch for your improvement: `git checkout -b feature/NewImprovement`.
+3.  **Push** your changes and open a **Pull Request**.
 
-Este proyecto se distribuye bajo la licencia MIT.
+## 📄 License
+
+This project is distributed under the **MIT License**.
 
 ---
-Desarrollado con pasión por [woldroj](https://github.com/woldroj)
+Developed with passion by [woldroj](https://github.com/woldroj)
