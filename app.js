@@ -2176,7 +2176,6 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
           gridEl.appendChild(card);
         });
         if (window.tutorial && window.tutorial.active) {
-          // Forzamos al tutorial a que refresque su resaltado tras el render
           window.tutorial.showStep();
         }
       });
@@ -2215,10 +2214,8 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
             isPublic: isNowPublic,
           });
 
-          // actualizar cache
           mangasCache[id].isPublic = isNowPublic;
 
-          // actualizar UI
           if (isNowPublic) {
             btn.classList.add("is-public");
             btn.innerHTML = eyeOpen;
@@ -2231,19 +2228,16 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
         };
       });
 
-      /* PROGRESS CLICK */
-
       /* PROGRESS CLICK & SWIPE (MOBILE) */
 
       if (status === "reading") {
         gridEl.querySelectorAll(".card").forEach((card) => {
-          // Variables locales para el gesto en esta tarjeta
           let touchstartX = 0;
-          let touchstartY = 0; // Añadimos el inicio en Y
+          let touchstartY = 0;
           let touchendX = 0;
-          let touchendY = 0; // Añadimos el final en Y
+          let touchendY = 0;
 
-          // --- EVENTOS TÁCTILES (MÓVIL) ---
+          // --- TACTILES EVENTS (MOBILE) ---
           card.addEventListener(
             "touchstart",
             (e) => {
@@ -2274,7 +2268,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
             { passive: true },
           );
 
-          // --- EVENTO CLIC (PC) ---
+          // --- CLICK EVENT (PC) ---
           card.addEventListener("mousedown", async (e) => {
             if (
               e.target.closest("button") ||
@@ -2310,7 +2304,6 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
         if (total > 0 && newValue > total) newValue = total;
         if (newValue === old) return;
 
-        // Notificar al tutorial según la dirección
         if (delta > 0) notifyTutorial(12);
         else notifyTutorial(13);
 
@@ -2329,7 +2322,6 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
 
         mangasCache[id].last = newValue;
 
-        // Actualizar UI
         const strong = card.querySelector(".last strong");
         if (strong) strong.textContent = newValue;
 
