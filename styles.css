@@ -252,7 +252,8 @@ header.app-header {
 }
 
 #s-goProfile,
-#s-goFriends {
+#s-goFriends,
+#s-goSupport {
   display: flex;
   justify-content: flex-start;
   align-items: center;
