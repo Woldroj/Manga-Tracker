@@ -157,7 +157,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* -------- THEMES -------- */
   const THEMES = {
-    
     // DARK THEMES
 
     dark: {
@@ -2240,13 +2239,16 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
         gridEl.querySelectorAll(".card").forEach((card) => {
           // Variables locales para el gesto en esta tarjeta
           let touchstartX = 0;
+          let touchstartY = 0; // Añadimos el inicio en Y
           let touchendX = 0;
+          let touchendY = 0; // Añadimos el final en Y
 
           // --- EVENTOS TÁCTILES (MÓVIL) ---
           card.addEventListener(
             "touchstart",
             (e) => {
               touchstartX = e.changedTouches[0].screenX;
+              touchstartY = e.changedTouches[0].screenY;
             },
             { passive: true },
           );
@@ -2255,12 +2257,17 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
             "touchend",
             async (e) => {
               touchendX = e.changedTouches[0].screenX;
-              const deltaX = touchendX - touchstartX;
+              touchendY = e.changedTouches[0].screenY;
 
-              // Si el desplazamiento es mayor a 60px, es un swipe
-              if (Math.abs(deltaX) > 60) {
+              const deltaX = touchendX - touchstartX;
+              const deltaY = touchendY - touchstartY;
+
+              if (
+                Math.abs(deltaX) > 60 &&
+                Math.abs(deltaX) > Math.abs(deltaY)
+              ) {
                 const id = card.dataset.id;
-                const delta = deltaX > 0 ? 1 : -1; // Derecha suma, Izquierda resta
+                const delta = deltaX > 0 ? 1 : -1;
                 await updateMangaProgress(card, id, delta);
               }
             },
