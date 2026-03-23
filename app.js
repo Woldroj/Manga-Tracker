@@ -28,6 +28,7 @@ import {
   onSnapshot,
   orderBy,
   limit,
+  serverTimestamp,
 } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-firestore.js";
 
 /* -------- CONFIG -------- */
@@ -141,6 +142,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const btnMail = document.getElementById("btn-mail-requests");
   const dropdown = document.getElementById("requests-dropdown");
+
+  // Support
+  const sGoSupport = document.getElementById("s-goSupport");
+  const supportView = document.getElementById("support-view");
+  const settingsContent = document.querySelector(".settings-content");
 
   /* -------- STATE -------- */
   let currentView = "home";
@@ -628,12 +634,15 @@ document.addEventListener("DOMContentLoaded", () => {
     if (currentView === "finished") {
       userView.style.display = "none";
       searchBox && (searchBox.style.display = "none");
+      supportView.style.display = "none";
       friendsView.style.display = "none";
       btnAdd && (btnAdd.style.display = "none");
       btnVolverSearch && (btnVolverSearch.style.display = "none");
+      timeBox && (timeBox.style.display = "none");
     } else if (currentView === "search") {
       userView.style.display = "none";
       searchBox && (searchBox.style.display = "");
+      supportView.style.display = "none";
       friendsView.style.display = "none";
       btnAdd && (btnAdd.style.display = "");
       btnVolverSearch && (btnVolverSearch.style.display = "inline-block");
@@ -641,6 +650,7 @@ document.addEventListener("DOMContentLoaded", () => {
     } else if (currentView === "user") {
       userView.style.display = "block";
       searchBox && (searchBox.style.display = "none");
+      supportView.style.display = "none";
       friendsView.style.display = "none";
       btnAdd && (btnAdd.style.display = "none");
       btnVolverSearch && (btnVolverSearch.style.display = "inline-block");
@@ -648,6 +658,15 @@ document.addEventListener("DOMContentLoaded", () => {
       timeBox && (timeBox.style.display = "none");
     } else if (currentView === "friends") {
       friendsView.style.display = "block";
+      userView.style.display = "none";
+      supportView.style.display = "none";
+      searchBox && (searchBox.style.display = "none");
+      btnAdd && (btnAdd.style.display = "none");
+      btnVolverSearch && (btnVolverSearch.style.display = "inline-block");
+      timeBox && (timeBox.style.display = "none");
+    } else if (currentView === "support") {
+      supportView.style.display = "block";
+      friendsView.style.display = "none";
       userView.style.display = "none";
       searchBox && (searchBox.style.display = "none");
       btnAdd && (btnAdd.style.display = "none");
@@ -657,6 +676,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // home
       friendsView.style.display = "none";
       userView.style.display = "none";
+      supportView.style.display = "none";
       searchBox && (searchBox.style.display = "");
       btnAdd && (btnAdd.style.display = "");
       btnVolverSearch && (btnVolverSearch.style.display = "none");
@@ -994,6 +1014,233 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     }
     notifyTutorial(6);
   });
+
+  /* ==========================================
+   SISTEMA DE SOPORTE TÉCNICO 
+   ========================================== */
+
+  const MI_UID_ADMIN = "wv0cbOYYzbgZBp3s7JqDWjw80mq2";
+
+  if (sGoSupport) {
+    sGoSupport.onclick = () => {
+      // Usamos tu sistema de navegación
+      currentView = "support";
+      applyView();
+
+      // Solo cargamos si hay usuario
+      if (currentUser) {
+        loadUserTickets();
+        // SOLO intentamos cargar admin si el UID coincide (evita errores de permiso)
+        if (currentUser.uid === MI_UID_ADMIN) {
+          const adminView = document.getElementById("admin-view");
+          if (adminView) {
+            adminView.classList.remove("hidden");
+            loadAdminTickets();
+          }
+        }
+      }
+    };
+  }
+
+  // Control de visibilidad del formulario (Centrado)
+  document.getElementById("btn-show-form")?.addEventListener("click", () => {
+    document.getElementById("btn-show-form").classList.add("hidden");
+    document.getElementById("ticket-form-container").classList.remove("hidden");
+  });
+
+  document
+    .getElementById("btn-cancel-ticket")
+    ?.addEventListener("click", () => {
+      document.getElementById("btn-show-form").classList.remove("hidden");
+      document.getElementById("ticket-form-container").classList.add("hidden");
+    });
+
+  // --- ENVIAR TICKET ---
+  const btnSendTicket = document.getElementById("btn-send-ticket");
+  if (btnSendTicket) {
+    btnSendTicket.onclick = async () => {
+      const msgInput = document.getElementById("support-msg");
+      const message = msgInput.value.trim();
+
+      if (!message) return;
+      if (!currentUser) return alert("Debes iniciar sesión.");
+
+      try {
+        btnSendTicket.disabled = true;
+
+        // Verificar límite (getDocs es directo, no es listener)
+        const qActive = query(
+          collection(db, "support_tickets"),
+          where("userId", "==", currentUser.uid),
+          where("status", "==", "open"),
+        );
+        const activeSnap = await getDocs(qActive);
+
+        if (activeSnap.size >= 3) {
+          alert("Máximo 3 tickets abiertos.");
+          btnSendTicket.disabled = false;
+          return;
+        }
+
+        await addDoc(collection(db, "support_tickets"), {
+          userId: currentUser.uid,
+          userName: currentUser.displayName || currentUser.email,
+          message: message,
+          status: "open",
+          adminReply: "",
+          createdAt: serverTimestamp(),
+        });
+
+        msgInput.value = "";
+        document
+          .getElementById("ticket-form-container")
+          .classList.add("hidden");
+        document.getElementById("btn-show-form").classList.remove("hidden");
+      } catch (error) {
+        console.error("Error:", error);
+      } finally {
+        btnSendTicket.disabled = false;
+      }
+    };
+  }
+
+  // --- CARGAR TICKETS (Fix Cargando Infinito) ---
+  function loadUserTickets() {
+    const container = document.getElementById("user-tickets-list");
+    const quotaCard = document.querySelector(".support-info-card");
+    const btnNew = document.getElementById("btn-show-form");
+
+    if (!currentUser || !container) return;
+
+    // REGLA: Si es Admin, ocultamos la parte de crear tickets
+    if (currentUser.uid === MI_UID_ADMIN) {
+      // Usamos display none directo y clases para asegurar que desaparezcan
+      if (quotaCard)
+        quotaCard.style.setProperty("display", "none", "important");
+      if (btnNew) btnNew.style.setProperty("display", "none", "important");
+      document.getElementById("admin-view")?.classList.remove("hidden");
+    } else {
+      if (quotaCard) quotaCard.style.display = "block";
+      if (btnNew) btnNew.style.display = "block";
+      document.getElementById("admin-view")?.classList.add("hidden");
+    }
+
+    const q = query(
+      collection(db, "support_tickets"),
+      where("userId", "==", currentUser.uid),
+      orderBy("createdAt", "desc"),
+    );
+
+    onSnapshot(q, (snapshot) => {
+      container.innerHTML = "";
+      const ahora = new Date().getTime();
+      const cincoDiasEnMs = 5 * 24 * 60 * 60 * 1000;
+
+      snapshot.forEach(async (docSnap) => {
+        const t = docSnap.data();
+
+        // --- LÓGICA DE AUTO-BORRADO (5 DÍAS) ---
+        if (t.status === "resolved" && t.resolvedAt) {
+          const fechaResolucion = t.resolvedAt.toDate().getTime();
+          if (ahora - fechaResolucion > cincoDiasEnMs) {
+            await deleteDoc(doc(db, "support_tickets", docSnap.id));
+            return; // Saltamos este ticket, ya se está borrando
+          }
+        }
+
+        // --- RENDERIZADO ---
+        const isResolved = t.status === "resolved";
+        const card = document.createElement("div");
+        card.className = `ticket-card ${isResolved ? "resolved" : ""}`;
+
+        card.innerHTML = `
+                <div class="ticket-header" style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-size:0.75rem; color:var(--muted)">${t.createdAt?.toDate().toLocaleDateString()}</span>
+                    <span class="badge ${t.status}">${t.status === "open" ? "Pendiente" : "Solucionado"}</span>
+                </div>
+                <p style="margin:10px 0;"><strong>Tú:</strong> ${t.message}</p>
+                ${
+                  t.adminReply
+                    ? `
+                    <div class="reply-box" style="padding:10px; background:rgba(0,0,0,0.2); border-radius:8px; margin-top:10px;">
+                        <p style="margin:0; font-size:0.9rem;"><strong style="color:var(--accent-2)">Soporte:</strong> ${t.adminReply}</p>
+                    </div>
+                `
+                    : ""
+                }
+            `;
+        container.appendChild(card);
+      });
+
+      // Actualizar contador solo si NO es admin
+      if (currentUser.uid !== MI_UID_ADMIN) {
+        const activos = snapshot.docs.filter(
+          (d) => d.data().status === "open",
+        ).length;
+        const restantes = 3 - activos;
+        const quotaText = document.getElementById("quota-status");
+        const quotaFill = document.getElementById("quota-fill");
+        if (quotaText)
+          quotaText.innerHTML = `Te quedan <strong>${restantes} tickets</strong> disponibles`;
+        if (quotaFill) quotaFill.style.width = `${(restantes / 3) * 100}%`;
+      }
+    });
+  }
+
+  function loadAdminTickets() {
+    const container = document.getElementById("admin-tickets-list");
+    if (!container) return;
+
+    const q = query(
+      collection(db, "support_tickets"),
+      where("status", "==", "open"),
+      orderBy("createdAt", "asc"),
+    );
+
+    onSnapshot(q, (snapshot) => {
+      container.innerHTML = "";
+      if (snapshot.empty) {
+        container.innerHTML =
+          "<p style='text-align:center; color:var(--accent-2)'>No hay tickets pendientes de responder. ¡Buen trabajo!</p>";
+        return;
+      }
+
+      snapshot.forEach((docSnap) => {
+        const t = docSnap.data();
+        const div = document.createElement("div");
+        div.className = "ticket-card admin-mode";
+        div.style.borderLeft = "4px solid #f59e0b";
+        div.innerHTML = `
+        <p style="font-size:0.7rem; color:var(--muted); margin-bottom:5px;">De: ${t.userName}</p>
+        <p style="margin-bottom:10px;">${t.message}</p>
+        <textarea id="reply-input-${docSnap.id}" placeholder="Escribe la respuesta..." 
+          style="width:100%; background:var(--bg); color:white; border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:8px; font-family:inherit; resize:none;"></textarea>
+        <button class="btn primary" style="margin-top:8px; width:100%; padding:8px;" onclick="responderTicket('${docSnap.id}')">
+          Enviar Respuesta
+        </button>
+      `;
+        container.appendChild(div);
+      });
+    });
+  }
+
+  // --- FUNCIÓN GLOBAL PARA RESPONDER TICKETS (ADMIN) ---
+  window.responderTicket = async (ticketId) => {
+    const replyInput = document.getElementById(`reply-input-${ticketId}`);
+    const replyText = replyInput?.value.trim();
+    if (!replyText) return alert("Escribe una respuesta.");
+
+    try {
+      await updateDoc(doc(db, "support_tickets", ticketId), {
+        adminReply: replyText,
+        status: "resolved",
+        resolvedAt: serverTimestamp(), // Guardamos cuándo se resolvió para el borrado de 5 días
+      });
+      alert("Ticket resuelto.");
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   async function mobileBarDisplayCheck() {
     const activeEl = document.activeElement;
@@ -1839,6 +2086,14 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     <h4 style="margin-top:14px">Oscuros</h4>
     <div class="theme-grid" id="mb-theme-grid-dark"></div>
     <div class="settings-divider"></div>
+    <div id="mb-goSupport">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="24" height="24">
+                    <path d="M3 18v-6a9 9 0 0 1 18 0v6"></path>
+                    <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z"></path>
+                    <path d="M3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path>
+                </svg>
+                <div class="label">Soporte</div>
+            </div>
     <button id="mb-signout">Cerrar sesión</button>
   `;
 
@@ -1872,36 +2127,12 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
 
     c.addEventListener("click", (ev) => ev.stopPropagation());
 
-    c.querySelector("#mb-change-name").onclick = async () => {
-      const n = prompt("Nuevo nombre:");
-      if (!n || n.length > 20) return;
-      await updateProfile(currentUser, { displayName: n });
-      await setDoc(
-        doc(db, "users", currentUser.uid),
-        { displayName: n },
-        { merge: true },
-      );
-      setUserNameDisplay(n);
-      closeMobileSettings();
-    };
-
-    c.querySelector("#mb-change-photo").onclick = () => {
-      filePhotoInput.click();
-      closeMobileSettings();
-    };
-
-    c.querySelector("#mb-toggle-timebox").onclick = async () => {
-      const v = !window.timeBoxEnabled;
-      if (currentUser) {
-        await setDoc(
-          prefsDocRef(currentUser.uid),
-          { showTimeBox: v },
-          { merge: true },
-        );
+    c.querySelector("#mb-goSupport").onclick = async () => {
+      if (currentView === "support") goHome();
+      else {
+        goSupport();
+        closeMobileSettings();
       }
-      window.timeBoxEnabled = v;
-      localStorage.setItem("mt_showTimeBox", v ? "1" : "0");
-      updateTimeBoxVisibility();
       closeMobileSettings();
     };
 
@@ -2500,6 +2731,14 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     applyView();
   }
 
+  function goSupport() {
+    closeMobileSettings();
+    currentView = "support";
+    zmResults && (zmResults.innerHTML = "");
+    gridEl.innerHTML = "";
+    applyView();
+  }
+
   function goSearch() {
     closeMobileSettings();
     currentView = "search";
@@ -2572,6 +2811,14 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
       goFriends();
       closeSettings();
       notifyTutorial(27);
+    }
+  });
+
+  sGoSupport?.addEventListener("click", () => {
+    if (currentView === "suppor") goHome();
+    else {
+      goSupport();
+      closeSettings();
     }
   });
 

@@ -261,7 +261,8 @@ header.app-header {
 }
 
 #s-goProfile,
-#s-goFriends {
+#s-goFriends,
+#s-goSupport {
   cursor: pointer;
 }
 
@@ -2277,4 +2278,138 @@ input:checked + .slider::before {
   border-radius: 8px;
   border: none;
   font-size: 14px;
+}
+
+/* ==========================================
+   VISTA DE SOPORTE (CORREGIDA Y CENTRADA)
+   ========================================== */
+
+/* Contenedor principal centrado */
+.support-wrapper {
+  max-width: 550px; /* Ancho máximo para que se vea bien en PC y móvil */
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 25px; /* Espacio entre las cajitas */
+  padding: 10px;
+}
+
+.support-header {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+/* Bloque de Cuota (La barrita de 3 tickets) */
+.support-info-card {
+  background: var(--card);
+  padding: 20px;
+  border-radius: 15px;
+  border: 1px solid rgba(255,255,255,0.05);
+  box-shadow: var(--shadow);
+}
+
+.quota-bar {
+  width: 100%;
+  height: 8px;
+  background: rgba(0,0,0,0.2);
+  border-radius: 10px;
+  margin: 10px 0;
+  overflow: hidden;
+}
+
+#quota-fill {
+  height: 100%;
+  background: var(--accent-2);
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Tickets Individuales */
+.ticket-card {
+  background: var(--card);
+  border-radius: 12px;
+  padding: 15px;
+  margin-bottom: 15px;
+  border: 1px solid rgba(255,255,255,0.03);
+}
+
+/* Formulario */
+.ticket-form {
+  background: var(--card);
+  padding: 20px;
+  border-radius: 15px;
+  margin-top: 15px;
+  animation: slideIn 0.3s ease;
+}
+
+#support-msg {
+  width: 100%;
+  min-height: 100px;
+  background: var(--bg);
+  color: white;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px;
+  padding: 12px;
+  margin: 15px 0;
+  font-family: inherit;
+  resize: none;
+}
+
+/* Panel Admin más separado */
+.admin-section {
+  margin-top: 50px;
+  padding: 20px;
+  background: rgba(255,255,255,0.02);
+  border-radius: 20px;
+  border: 1px dashed rgba(255,255,255,0.1);
+}
+
+.admin-separator {
+  text-align: center;
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 3px;
+  margin-bottom: 20px;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Ticket solucionado */
+.ticket-card.resolved {
+    border-left: 4px solid #10b981 !important; /* Verde esmeralda */
+    background: rgba(16, 185, 129, 0.05);
+}
+
+.badge.resolved {
+    background: #10b981;
+    color: white;
+}
+
+.admin-hidden {
+    display: none !important;
+}
+
+/* Ajuste para que el formulario no quede debajo de la barra móvil */
+.support-wrapper {
+    padding-bottom: 100px; /* Suficiente espacio para que la barra móvil no tape el botón Enviar */
+}
+
+/* El contenedor del formulario también necesita aire abajo */
+.ticket-form {
+    margin-bottom: 20px;
+}
+
+#support-view {
+    /* Esto permite que la página haga scroll suficiente para superar la barra móvil */
+    padding-bottom: 80px; 
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Si tu barra móvil mide 60px, le damos 80px de margen al formulario */
+#ticket-form-container {
+    margin-bottom: 40px; 
 }

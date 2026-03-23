@@ -137,6 +137,17 @@
               <div class="label">Amigos</div>
             </div>
 
+            <div class="settings-divider"></div>
+
+            <div class="settings-section" id="s-goSupport">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="24" height="24">
+                    <path d="M3 18v-6a9 9 0 0 1 18 0v6"></path>
+                    <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z"></path>
+                    <path d="M3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path>
+                </svg>
+                <div class="label">Soporte</div>
+            </div>
+
           </div>
 
           <!-- FOOTER -->
@@ -363,6 +374,48 @@
       </div>
     </div>
   </div>
+
+<div class="support-view" id="support-view">
+  <div class="support-wrapper">
+    
+    <div class="support-header">
+      <h2>Soporte Técnico</h2>
+    </div>
+
+    <div class="support-info-card">
+      <p id="quota-status">Cargando cupo de tickets...</p>
+      <div class="quota-bar">
+        <div id="quota-fill" style="width: 0%"></div>
+      </div>
+      <small>Puedes tener hasta 3 tickets abiertos. Una vez resueltos, podrás abrir más.</small>
+    </div>
+
+    <div id="user-tickets-list" class="tickets-container">
+      <div class="loading-spinner">Cargando tus tickets...</div>
+    </div>
+
+    <div class="support-actions">
+      <button id="btn-show-form" class="btn-new-ticket">
+        <span>+</span> Nuevo Ticket de Soporte
+      </button>
+
+      <div id="ticket-form-container" class="ticket-form hidden">
+        <h3>Abrir nuevo ticket</h3>
+        <textarea id="support-msg" placeholder="Describe tu problema, duda o sugerencia con detalle..."></textarea>
+        <div class="form-actions">
+          <button id="btn-cancel-ticket" class="btn-secondary">Cancelar</button>
+          <button id="btn-send-ticket" class="btn-primary">Enviar Mensaje</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="admin-view" class="admin-section hidden">
+      <div class="admin-separator">PANEL DE ADMINISTRADOR</div>
+      <div id="admin-tickets-list"></div>
+    </div>
+    
+  </div>
+</div>
 
   <!-- mobile bottom bar -->
   <div class="mobile-bar" id="mobile-bar" aria-hidden="true">
