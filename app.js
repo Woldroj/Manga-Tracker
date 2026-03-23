@@ -2094,6 +2094,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
                 </svg>
                 <div class="label">Soporte</div>
             </div>
+    <div class="settings-divider"></div>
     <button id="mb-signout">Cerrar sesión</button>
   `;
 
