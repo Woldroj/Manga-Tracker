@@ -1023,6 +1023,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
 
   if (sGoSupport) {
     sGoSupport.onclick = () => {
+      supportView.classList.remove("hidden");
       // Usamos tu sistema de navegación
       currentView = "support";
       applyView();
@@ -1105,84 +1106,154 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
   }
 
   // --- CARGAR TICKETS (Fix Cargando Infinito) ---
+  // Variable fuera para evitar duplicar escuchadores
+  let supportSnapshotUnsubscribe = null;
+
   function loadUserTickets() {
+    console.log("🔍 [SOPORTE] 1. Iniciando loadUserTickets...");
+
     const container = document.getElementById("user-tickets-list");
     const quotaCard = document.querySelector(".support-info-card");
     const btnNew = document.getElementById("btn-show-form");
 
-    if (!currentUser || !container) return;
-
-    // REGLA: Si es Admin, ocultamos la parte de crear tickets
-    if (currentUser.uid === MI_UID_ADMIN) {
-      // Usamos display none directo y clases para asegurar que desaparezcan
-      if (quotaCard)
-        quotaCard.style.setProperty("display", "none", "important");
-      if (btnNew) btnNew.style.setProperty("display", "none", "important");
-      document.getElementById("admin-view")?.classList.remove("hidden");
-    } else {
-      if (quotaCard) quotaCard.style.display = "block";
-      if (btnNew) btnNew.style.display = "block";
-      document.getElementById("admin-view")?.classList.add("hidden");
+    if (!container) {
+      console.error(
+        "❌ [SOPORTE] Error: No se encontró el contenedor 'user-tickets-list'",
+      );
+      return;
     }
 
-    const q = query(
-      collection(db, "support_tickets"),
-      where("userId", "==", currentUser.uid),
-      orderBy("createdAt", "desc"),
-    );
+    // Si ya existe una suscripción activa, la cerramos
+    if (supportSnapshotUnsubscribe) {
+      console.log("♻️ [SOPORTE] Limpiando suscripción previa...");
+      supportSnapshotUnsubscribe();
+    }
 
-    onSnapshot(q, (snapshot) => {
-      container.innerHTML = "";
-      const ahora = new Date().getTime();
-      const cincoDiasEnMs = 5 * 24 * 60 * 60 * 1000;
+    console.log("🔍 [SOPORTE] 2. Esperando a onAuthStateChanged...");
 
-      snapshot.forEach(async (docSnap) => {
-        const t = docSnap.data();
+    onAuthStateChanged(auth, (user) => {
+      console.log(
+        "📡 [SOPORTE] 3. onAuthStateChanged disparado. User:",
+        user ? user.uid : "null",
+      );
 
-        // --- LÓGICA DE AUTO-BORRADO (5 DÍAS) ---
-        if (t.status === "resolved" && t.resolvedAt) {
-          const fechaResolucion = t.resolvedAt.toDate().getTime();
-          if (ahora - fechaResolucion > cincoDiasEnMs) {
-            await deleteDoc(doc(db, "support_tickets", docSnap.id));
-            return; // Saltamos este ticket, ya se está borrando
-          }
-        }
+      if (!user) {
+        console.warn("⚠️ [SOPORTE] No hay usuario autenticado todavia.");
+        container.innerHTML =
+          "<p style='text-align:center; padding:20px;'>Debes iniciar sesión para ver soporte.</p>";
+        return;
+      }
 
-        // --- RENDERIZADO ---
-        const isResolved = t.status === "resolved";
-        const card = document.createElement("div");
-        card.className = `ticket-card ${isResolved ? "resolved" : ""}`;
+      const isAdmin = user.uid === MI_UID_ADMIN;
+      console.log("👑 [SOPORTE] 4. ¿Es Admin?:", isAdmin);
 
-        card.innerHTML = `
-                <div class="ticket-header" style="display:flex; justify-content:space-between; align-items:center;">
-                    <span style="font-size:0.75rem; color:var(--muted)">${t.createdAt?.toDate().toLocaleDateString()}</span>
-                    <span class="badge ${t.status}">${t.status === "open" ? "Pendiente" : "Solucionado"}</span>
-                </div>
-                <p style="margin:10px 0;"><strong>Tú:</strong> ${t.message}</p>
-                ${
-                  t.adminReply
-                    ? `
-                    <div class="reply-box" style="padding:10px; background:rgba(0,0,0,0.2); border-radius:8px; margin-top:10px;">
-                        <p style="margin:0; font-size:0.9rem;"><strong style="color:var(--accent-2)">Soporte:</strong> ${t.adminReply}</p>
-                    </div>
-                `
-                    : ""
+      // 1. GESTIÓN DE INTERFAZ (ADMIN VS USER)
+      if (isAdmin) {
+        console.log("🛠️ [SOPORTE] 5a. Aplicando modo Admin (Ocultando cuotas)");
+        if (quotaCard)
+          quotaCard.style.setProperty("display", "none", "important");
+        if (btnNew) btnNew.style.setProperty("display", "none", "important");
+        document.getElementById("admin-view")?.classList.remove("hidden");
+      } else {
+        console.log("👤 [SOPORTE] 5b. Aplicando modo Usuario");
+        if (quotaCard) quotaCard.style.display = "block";
+        if (btnNew) btnNew.style.display = "block";
+        document.getElementById("admin-view")?.classList.add("hidden");
+      }
+
+      // 2. CONSULTA A FIRESTORE
+      console.log("🛰️ [SOPORTE] 6. Creando Query y lanzando onSnapshot...");
+      try {
+        const q = query(
+          collection(db, "support_tickets"),
+          where("userId", "==", user.uid),
+          orderBy("createdAt", "desc"),
+        );
+
+        supportSnapshotUnsubscribe = onSnapshot(
+          q,
+          (snapshot) => {
+            console.log(
+              "📥 [SOPORTE] 7. Recibido Snapshot. Documentos:",
+              snapshot.size,
+            );
+
+            container.innerHTML = "";
+            const ahora = new Date().getTime();
+            const cincoDiasEnMs = 5 * 24 * 60 * 60 * 1000;
+
+            if (snapshot.empty) {
+              console.log("📭 [SOPORTE] No hay tickets para este usuario.");
+              container.innerHTML = `<div class="ticket-card" style="text-align:center; opacity:0.6;">No tienes tickets creados.</div>`;
+            }
+
+            snapshot.forEach(async (docSnap) => {
+              const t = docSnap.data();
+              console.log(
+                "📄 [SOPORTE] Procesando ticket:",
+                docSnap.id,
+                "Estado:",
+                t.status,
+              );
+
+              // Lógica de auto-borrado
+              if (t.status === "resolved" && t.resolvedAt) {
+                const fechaResolucion = t.resolvedAt.toDate().getTime();
+                if (ahora - fechaResolucion > cincoDiasEnMs) {
+                  console.log(
+                    "🗑️ [SOPORTE] Borrando ticket antiguo:",
+                    docSnap.id,
+                  );
+                  await deleteDoc(doc(db, "support_tickets", docSnap.id));
+                  return;
                 }
-            `;
-        container.appendChild(card);
-      });
+              }
 
-      // Actualizar contador solo si NO es admin
-      if (currentUser.uid !== MI_UID_ADMIN) {
-        const activos = snapshot.docs.filter(
-          (d) => d.data().status === "open",
-        ).length;
-        const restantes = 3 - activos;
-        const quotaText = document.getElementById("quota-status");
-        const quotaFill = document.getElementById("quota-fill");
-        if (quotaText)
-          quotaText.innerHTML = `Te quedan <strong>${restantes} tickets</strong> disponibles`;
-        if (quotaFill) quotaFill.style.width = `${(restantes / 3) * 100}%`;
+              const isResolved = t.status === "resolved";
+              const card = document.createElement("div");
+              card.className = `ticket-card ${isResolved ? "resolved" : ""}`;
+              card.innerHTML = `
+            <div class="ticket-header">
+                <span style="color:var(--muted)">${t.createdAt?.toDate().toLocaleDateString() || "..."}</span>
+                <span class="badge ${t.status}">${t.status === "open" ? "Pendiente" : "Solucionado"}</span>
+            </div>
+            <p><strong>Tú:</strong> ${t.message}</p>
+            ${t.adminReply ? `<div class="reply-box"><p><strong>Soporte:</strong> ${t.adminReply}</p></div>` : ""}
+          `;
+              container.appendChild(card);
+            });
+
+            // 3. ACTUALIZAR CUOTA DINÁMICA (Solo si NO es admin)
+            if (!isAdmin) {
+              console.log("📊 [SOPORTE] 8. Actualizando visual de cuotas...");
+              const activos = snapshot.docs.filter(
+                (d) => d.data().status === "open",
+              ).length;
+              const restantes = Math.max(0, 3 - activos);
+              const quotaText = document.getElementById("quota-status");
+              const quotaFill = document.getElementById("quota-fill");
+
+              if (quotaText)
+                quotaText.innerHTML = `Te quedan <strong>${restantes} tickets</strong> disponibles`;
+              if (quotaFill)
+                quotaFill.style.width = `${(restantes / 3) * 100}%`;
+            }
+
+            console.log("🏁 [SOPORTE] 9. Renderizado completado.");
+          },
+          (error) => {
+            console.error(
+              "🔥 [SOPORTE] ERROR en onSnapshot:",
+              error.code,
+              error.message,
+            );
+          },
+        );
+      } catch (queryError) {
+        console.error(
+          "💥 [SOPORTE] Error critico al construir la Query:",
+          queryError,
+        );
       }
     });
   }
@@ -2131,6 +2202,8 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     c.querySelector("#mb-goSupport").onclick = async () => {
       if (currentView === "support") goHome();
       else {
+        supportView.classList.remove("hidden");
+        loadUserTickets();
         goSupport();
         closeMobileSettings();
       }
@@ -3105,7 +3178,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
 
   btnScrollTop?.addEventListener("click", () => {
     window.scrollTo({
-      top: 0,
+      top: 0, 
       behavior: "smooth",
     });
   });
