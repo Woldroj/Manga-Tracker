@@ -1142,14 +1142,12 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
         if(container)
           container.style.setProperty("display", "none", "important");
       } else {
-        console.log("👤 [SOPORTE] 5b. Aplicando modo Usuario");
         if (quotaCard) quotaCard.style.display = "block";
         if (btnNew) btnNew.style.display = "block";
         document.getElementById("admin-view")?.classList.add("hidden");
       }
 
       // 2. CONSULTA A FIRESTORE
-      console.log("🛰️ [SOPORTE] 6. Creando Query y lanzando onSnapshot...");
       try {
         const q = query(
           collection(db, "support_tickets"),
@@ -1160,37 +1158,21 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
         supportSnapshotUnsubscribe = onSnapshot(
           q,
           (snapshot) => {
-            console.log(
-              "📥 [SOPORTE] 7. Recibido Snapshot. Documentos:",
-              snapshot.size,
-            );
 
             container.innerHTML = "";
             const ahora = new Date().getTime();
             const cincoDiasEnMs = 5 * 24 * 60 * 60 * 1000;
 
             if (snapshot.empty) {
-              console.log("📭 [SOPORTE] No hay tickets para este usuario.");
               container.innerHTML = `<div class="ticket-card" style="text-align:center; opacity:0.6;">No tienes tickets creados.</div>`;
             }
 
             snapshot.forEach(async (docSnap) => {
               const t = docSnap.data();
-              console.log(
-                "📄 [SOPORTE] Procesando ticket:",
-                docSnap.id,
-                "Estado:",
-                t.status,
-              );
-
               // Lógica de auto-borrado
               if (t.status === "resolved" && t.resolvedAt) {
                 const fechaResolucion = t.resolvedAt.toDate().getTime();
                 if (ahora - fechaResolucion > cincoDiasEnMs) {
-                  console.log(
-                    "🗑️ [SOPORTE] Borrando ticket antiguo:",
-                    docSnap.id,
-                  );
                   await deleteDoc(doc(db, "support_tickets", docSnap.id));
                   return;
                 }
@@ -1212,7 +1194,6 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
 
             // 3. ACTUALIZAR CUOTA DINÁMICA (Solo si NO es admin)
             if (!isAdmin) {
-              console.log("📊 [SOPORTE] 8. Actualizando visual de cuotas...");
               const activos = snapshot.docs.filter(
                 (d) => d.data().status === "open",
               ).length;
@@ -1226,21 +1207,9 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
                 quotaFill.style.width = `${(restantes / 3) * 100}%`;
             }
 
-            console.log("🏁 [SOPORTE] 9. Renderizado completado.");
-          },
-          (error) => {
-            console.error(
-              "🔥 [SOPORTE] ERROR en onSnapshot:",
-              error.code,
-              error.message,
-            );
           },
         );
       } catch (queryError) {
-        console.error(
-          "💥 [SOPORTE] Error critico al construir la Query:",
-          queryError,
-        );
       }
     });
   }
