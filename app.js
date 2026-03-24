@@ -1109,50 +1109,38 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
   let supportSnapshotUnsubscribe = null;
 
   function loadUserTickets() {
-    console.log("🔍 [SOPORTE] 1. Iniciando loadUserTickets...");
 
     const container = document.getElementById("user-tickets-list");
     const quotaCard = document.querySelector(".support-info-card");
     const btnNew = document.getElementById("btn-show-form");
 
     if (!container) {
-      console.error(
-        "❌ [SOPORTE] Error: No se encontró el contenedor 'user-tickets-list'",
-      );
       return;
     }
 
     // Si ya existe una suscripción activa, la cerramos
     if (supportSnapshotUnsubscribe) {
-      console.log("♻️ [SOPORTE] Limpiando suscripción previa...");
       supportSnapshotUnsubscribe();
     }
 
-    console.log("🔍 [SOPORTE] 2. Esperando a onAuthStateChanged...");
-
     onAuthStateChanged(auth, (user) => {
-      console.log(
-        "📡 [SOPORTE] 3. onAuthStateChanged disparado. User:",
-        user ? user.uid : "null",
-      );
 
       if (!user) {
-        console.warn("⚠️ [SOPORTE] No hay usuario autenticado todavia.");
         container.innerHTML =
           "<p style='text-align:center; padding:20px;'>Debes iniciar sesión para ver soporte.</p>";
         return;
       }
 
       const isAdmin = user.uid === MI_UID_ADMIN;
-      console.log("👑 [SOPORTE] 4. ¿Es Admin?:", isAdmin);
 
       // 1. GESTIÓN DE INTERFAZ (ADMIN VS USER)
       if (isAdmin) {
-        console.log("🛠️ [SOPORTE] 5a. Aplicando modo Admin (Ocultando cuotas)");
         if (quotaCard)
           quotaCard.style.setProperty("display", "none", "important");
         if (btnNew) btnNew.style.setProperty("display", "none", "important");
         document.getElementById("admin-view")?.classList.remove("hidden");
+        if(container)
+          container.style.setProperty("display", "none", "important");
       } else {
         console.log("👤 [SOPORTE] 5b. Aplicando modo Usuario");
         if (quotaCard) quotaCard.style.display = "block";
