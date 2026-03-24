@@ -146,7 +146,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // Support
   const sGoSupport = document.getElementById("s-goSupport");
   const supportView = document.getElementById("support-view");
-  const settingsContent = document.querySelector(".settings-content");
 
   /* -------- STATE -------- */
   let currentView = "home";
@@ -1610,6 +1609,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     btnVolverPC.style.display = "none";
     btnVolverSearch.style.display = "none";
     searchResultArea.innerHTML = "";
+    supportView.style.display = "none";
     closeMobileSettings();
     closeSettings();
     await signOut(auth);
