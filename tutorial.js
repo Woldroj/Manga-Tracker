@@ -163,7 +163,7 @@ const tutorialSteps = [
   },
   {
     id: 29,
-    text: "¡Me has encontrado! Envíame una solicitud solicitud.",
+    text: "¡Me has encontrado! Envíame una solicitud.",
     target: "search-result-area",
     mustAction: true,
   },
