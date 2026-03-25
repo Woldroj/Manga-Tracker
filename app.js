@@ -1261,9 +1261,8 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
       await updateDoc(doc(db, "support_tickets", ticketId), {
         adminReply: replyText,
         status: "resolved",
-        resolvedAt: serverTimestamp(), // Guardamos cuándo se resolvió para el borrado de 5 días
+        resolvedAt: serverTimestamp(),
       });
-      alert("Ticket resuelto.");
     } catch (e) {
       console.error(e);
     }
@@ -1328,9 +1327,8 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     if (user) {
       if (!user.emailVerified) {
         console.log("Usuario logueado pero email no verificado.");
-        authControls && (authControls.style.display = "flex"); // Mantenemos controles de login
+        authControls && (authControls.style.display = "flex");
         userControls && (userControls.style.display = "none");
-        // Opcional: podrías mostrar un mensaje específico aquí tipo "Revisa tu correo"
         return;
       }
       authControls && (authControls.style.display = "none");
@@ -1370,12 +1368,12 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
       await goHome();
 
       const userDoc = await getDoc(doc(db, "users", user.uid));
-      // Verificamos si NO ha completado el tutorial
+      
       if (!userDoc.exists() || !userDoc.data().tutorialCompleted) {
         console.log("Detectado usuario nuevo, iniciando tutorial...");
         setTimeout(() => {
           tutorial.start(user);
-        }, 1500); // Pequeño retraso para que la interfaz cargue bien
+        }, 1500);
       }
 
       await loadFriends(user.uid);
@@ -1452,7 +1450,6 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
 
   /* --- RECUPERAR CONTRASEÑA --- */
   const handleForgotPassword = async () => {
-    // Asegúrate de que el ID "login-email" coincida con el de tu <input> de correo
     const emailInput = document.getElementById("email");
     const email = emailInput?.value.trim();
 
