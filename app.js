@@ -1921,27 +1921,6 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     notifyTutorial(30.3);
   });
 
-  function renderGridInElement(items, gridId, containerId) {
-    const container = document.getElementById(containerId);
-    const grid = document.getElementById(gridId);
-    grid.innerHTML = "";
-
-    if (items.length === 0) {
-      container.style.display = "none";
-    } else {
-      container.style.display = "block";
-      items.forEach((it) => {
-        const card = document.createElement("div");
-        card.className = "mini-card";
-        card.innerHTML = `
-          <div class="mini-card-image" style="background-image: url('${it.image}')"></div>
-          <div class="mini-card-title">${it.title}</div>
-        `;
-        grid.appendChild(card);
-      });
-    }
-  }
-
   async function loadFriends(myUid) {
     const friendsGrid = document.getElementById("friends-list-grid");
     if (!friendsGrid) return;
