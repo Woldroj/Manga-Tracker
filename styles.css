@@ -2414,3 +2414,61 @@ input:checked + .slider::before {
 #ticket-form-container {
     margin-bottom: 40px; 
 }
+
+.btn-new-ticket {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    
+    /* Colores y Fondo */
+    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+    color: white;
+    
+    /* Dimensiones y Bordes */
+    padding: 14px 24px;
+    border: none;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 300px;
+    margin: 20px auto;
+    
+    /* Tipografía */
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    
+    /* Interactividad */
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
+}
+
+.btn-new-ticket .icon {
+    font-size: 1.4rem;
+    line-height: 1;
+    transition: transform 0.3s ease;
+}
+
+/* --- Efectos --- */
+
+.btn-new-ticket:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
+    filter: brightness(1.1);
+}
+
+.btn-new-ticket:hover .icon {
+    transform: rotate(90deg);
+}
+
+.btn-new-ticket:active {
+    transform: translateY(0);
+    filter: brightness(0.9);
+}
+
+/* Estilo para cuando está oculto (si usas la clase hidden) */
+.btn-new-ticket.hidden {
+    display: none !important;
+}
