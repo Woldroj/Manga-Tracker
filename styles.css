@@ -2422,8 +2422,8 @@ input:checked + .slider::before {
     gap: 12px;
     
     /* Colores y Fondo */
-    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-    color: white;
+    background: var(--accent-2);
+    color: var(--bg);
     
     /* Dimensiones y Bordes */
     padding: 14px 24px;
