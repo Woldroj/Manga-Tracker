@@ -1,6 +1,18 @@
 /* =============================
     Manga Tracker - Main Script
    ============================= */
+
+/* -------- SERVICE WORKER REGISTRATION -------- */
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js') // Asegúrate de que el nombre sea exacto
+            .then(reg => console.log('✅ Service Worker registrado con éxito', reg))
+            .catch(err => console.error('❌ Error al registrar el Service Worker', err));
+    });
+}
+
+/* -------- IMPORTS -------- */
+
 import { tutorial } from "./tutorial.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-app.js";
 import {
