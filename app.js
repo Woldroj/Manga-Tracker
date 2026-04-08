@@ -1,8 +1,8 @@
-/* =============================
-    Manga Tracker - Main Script
-   ============================= */
+/*  =============================
+   * Manga Tracker - Main Script
+   ! ============================= */
 
-/* -------- SERVICE WORKER REGISTRATION -------- */
+//* -------- SERVICE WORKER REGISTRATION -------- */
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js') // Asegúrate de que el nombre sea exacto
@@ -11,7 +11,7 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-/* -------- IMPORTS -------- */
+//* -------- IMPORTS -------- */
 
 import { tutorial } from "./tutorial.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-app.js";
@@ -43,7 +43,7 @@ import {
   serverTimestamp,
 } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-firestore.js";
 
-/* -------- CONFIG -------- */
+//* -------- CONFIG -------- */
 const firebaseConfig = {
   apiKey: "AIzaSyBjGHgNC4CHglfh75yMxXYcLMij8aywcQc",
   authDomain: "mangatracker-63f14.firebaseapp.com",
@@ -58,12 +58,12 @@ const auth = getAuth(app);
 export const db = getFirestore(app);
 export let currentUser = null;
 
-/* -------- BOOTSTRAP -------- */
+//* -------- BOOTSTRAP -------- */
 
 document.addEventListener("DOMContentLoaded", () => {
-  /* -------- DOM REFS -------- */
+  //* -------- DOM REFS -------- */
 
-  // Areas and Displays
+  //? Areas and Displays
   const authControls = document.getElementById("auth-controls");
   const userControls = document.getElementById("user-controls");
   const userDisplay = document.getElementById("user-display");
@@ -77,30 +77,30 @@ document.addEventListener("DOMContentLoaded", () => {
   const sGoProfile = document.getElementById("s-goProfile");
   const searchLoader = document.getElementById("searchLoader");
 
-  // Buttons
+  //? Buttons
   const btnLogin = document.getElementById("btn-login");
   const forgotBtn = document.getElementById("btn-reset-password");
   const btnAdd = document.getElementById("btn-add");
 
-  // Mobile
+  //? Mobile
   const mobileGear = document.getElementById("mobile-gear");
   const mobileProfile = document.getElementById("mobile-profile");
   const filePhotoInput = document.getElementById("file-photo");
 
-  // Main Grid and Empry States
+  //? Main Grid and Empry States
   const gridEl = document.getElementById("grid");
   const empty = document.getElementById("empty");
 
-  // Modal
+  //? Modal
   const modal = document.getElementById("modal");
   const preview = document.getElementById("preview");
 
-  // Time Box
+  //? Time Box
   const timeBox = document.getElementById("time-box");
   const timeBoxValue = document.getElementById("time-box-value");
   const timeBoxSwitch = document.getElementById("timebox-switch");
 
-  // Buttons navigation PC/Mobile
+  //? Buttons navigation PC/Mobile
   const btnFinalizadosPC = document.getElementById("btn-finalizados-pc");
   const btnVolverPC = document.getElementById("btn-volver-pc");
   const btnVolverSearch = document.getElementById("btn-volver-search");
@@ -110,7 +110,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnHomeMobile = document.getElementById("mobile-home");
   const btnFriendsMobile = document.getElementById("mobile-friends");
 
-  // API JIKAN
+  //? API JIKAN
   const zmQueryInput = document.getElementById("zm-query");
   const zmSearchBtn = document.getElementById("zm-search-btn");
   const zmResults = document.getElementById("zm-results");
@@ -129,7 +129,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const themeGridLight = document.getElementById("theme-grid-light");
   const themeGridDark = document.getElementById("theme-grid-dark");
 
-  // User Page
+  //? User Page
   const userView = document.getElementById("user-view");
   const userPageAvatar = document.getElementById("user-page-avatar");
   const userPageName = document.getElementById("user-page-name");
@@ -142,7 +142,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const reviewsList = document.getElementById("reviews-list");
   const btnEditNamePage = document.getElementById("btn-edit-name-page");
 
-  // Social Zone
+  //? Social Zone
   const friendsView = document.getElementById("friends-view");
   const sGoFriends = document.getElementById("s-goFriends");
   const btnSearchFriend = document.getElementById("btn-search-friend");
@@ -155,11 +155,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnMail = document.getElementById("btn-mail-requests");
   const dropdown = document.getElementById("requests-dropdown");
 
-  // Support
+  //? Support
   const sGoSupport = document.getElementById("s-goSupport");
   const supportView = document.getElementById("support-view");
 
-  /* -------- STATE -------- */
+  //* -------- STATE -------- */
   let currentView = "home";
   let currentUser = null;
   let editId = null;
@@ -172,10 +172,10 @@ document.addEventListener("DOMContentLoaded", () => {
   let mangasCache = {};
   let unsubscribeMangas = null;
 
-  /* -------- THEMES -------- */
+  //* -------- THEMES -------- */
   const THEMES = {
     
-    // DARK THEMES
+    //? DARK THEMES
     dark: { type: "dark", "--bg": "#0f172a", "--card": "#1e293b", "--accent": "#f1f5f9", "--accent-2": "#3b82f6", "--muted": "#94a3b8" },
     black: { type: "dark", "--bg": "#0f0f0f", "--card": "#1a1a1a", "--accent": "#f5f5f5", "--accent-2": "#888888", "--muted": "#5a5a5a" },
     pinkDark: { type: "dark", "--bg": "#1a0b14", "--card": "#2a1020", "--accent": "#fde7f3", "--accent-2": "#ec4899", "--muted": "#c58aa6" },
@@ -193,7 +193,7 @@ document.addEventListener("DOMContentLoaded", () => {
     iceDark: { type: "dark", "--bg": "#041926", "--card": "#06283a", "--accent": "#e6f7ff", "--accent-2": "#38bdf8", "--muted": "#94a3b8" },
     indigoDark: { type: "dark", "--bg": "#0c0a24", "--card": "#161238", "--accent": "#ecebff", "--accent-2": "#6366f1", "--muted": "#a6a9e5" },
 
-    // LIGHT THEMES
+    //? LIGHT THEMES
     blue: { type: "light", "--bg": "#b4d4ff", "--card": "#d1eafa", "--accent": "#0b1220", "--accent-2": "#3b82f6", "--muted": "#64748b" },
     light: { type: "light", "--bg": "#ffffff", "--card": "#f8fafc", "--accent": "#0f172a", "--accent-2": "#0f172a", "--muted": "#6b7280" },
     pink: { type: "light", "--bg": "#ffcfe2", "--card": "#ffd8da", "--accent": "#2b2a2a", "--accent-2": "#ec4899", "--muted": "#7c4a5b" },
@@ -251,16 +251,16 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!theme) return;
     const root = document.documentElement;
 
-    // Switch Color off
+    //* Switch Color off
     root.style.setProperty(
       "--switch-off",
       themeName === "dark" || themeName === "black" ? "#555" : "#ccc",
     );
 
-    // Switch Color on
+    //* Switch Color on
     root.style.setProperty("--switch-on", theme["--accent-2"]);
 
-    // Switch Circle Color
+    //* Switch Circle Color
     root.style.setProperty(
       "--switch-circle",
       themeName === "dark" || themeName === "black" ? "#f1f5f9" : "#fff",
@@ -380,7 +380,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   overlay?.addEventListener("click", closeSettings);
 
-  /* -------- PROFILE HELPERS -------- */
+  //* -------- PROFILE HELPERS -------- */
   function setProfileImage(url) {
     const mobileImg = document.getElementById("mobile-profile-img");
     const mobileInitial = document.getElementById("mobile-profile-initial");
@@ -459,7 +459,7 @@ document.addEventListener("DOMContentLoaded", () => {
       btnVolverSearch && (btnVolverSearch.style.display = "inline-block");
       timeBox && (timeBox.style.display = "none");
     } else {
-      // home
+      //? home
       friendsView.style.display = "none";
       userView.style.display = "none";
       supportView.style.display = "none";
@@ -758,9 +758,9 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
       const targetText = "Death Note";
       const currentLength = e.target.value.length;
 
-      // Si el usuario borra, permitimos que borre, pero si escribe...
+      //! Si el usuario borra, permitimos que borre, pero si escribe...
       if (currentLength > 0) {
-        // Forzamos el valor a la parte correspondiente de "Death Note"
+        //! Forzamos el valor a la parte correspondiente de "Death Note"
         e.target.value = targetText.substring(0, currentLength);
       }
     }
@@ -803,7 +803,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
   });
 
   /* ==========================================
-   SISTEMA DE SOPORTE TÉCNICO 
+    *SISTEMA DE SOPORTE TÉCNICO 
    ========================================== */
 
   const MI_UID_ADMIN = "wv0cbOYYzbgZBp3s7JqDWjw80mq2";
@@ -811,14 +811,14 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
   if (sGoSupport) {
     sGoSupport.onclick = () => {
       supportView.classList.remove("hidden");
-      // Usamos tu sistema de navegación
+      //! Usamos tu sistema de navegación
       currentView = "support";
       applyView();
 
-      // Solo cargamos si hay usuario
+      //! Solo cargamos si hay usuario
       if (currentUser) {
         loadUserTickets();
-        // SOLO intentamos cargar admin si el UID coincide (evita errores de permiso)
+        //! SOLO intentamos cargar admin si el UID coincide (evita errores de permiso)
         if (currentUser.uid === MI_UID_ADMIN) {
           const adminView = document.getElementById("admin-view");
           if (adminView) {
@@ -830,7 +830,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     };
   }
 
-  // Control de visibilidad del formulario (Centrado)
+  //? Control de visibilidad del formulario (Centrado)
   document.getElementById("btn-show-form")?.addEventListener("click", () => {
     document.getElementById("btn-show-form").classList.add("hidden");
     document.getElementById("ticket-form-container").classList.remove("hidden");
@@ -843,7 +843,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
       document.getElementById("ticket-form-container").classList.add("hidden");
     });
 
-  // --- ENVIAR TICKET ---
+  //* --- ENVIAR TICKET ---
   const btnSendTicket = document.getElementById("btn-send-ticket");
   if (btnSendTicket) {
     btnSendTicket.onclick = async () => {
@@ -856,7 +856,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
       try {
         btnSendTicket.disabled = true;
 
-        // Verificar límite (getDocs es directo, no es listener)
+        //? Verificar límite (getDocs es directo, no es listener)
         const qActive = query(
           collection(db, "support_tickets"),
           where("userId", "==", currentUser.uid),
@@ -892,8 +892,8 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     };
   }
 
-  // --- CARGAR TICKETS (Fix Cargando Infinito) ---
-  // Variable fuera para evitar duplicar escuchadores
+  //* --- CARGAR TICKETS (Fix Cargando Infinito) ---
+  //! Variable fuera para evitar duplicar escuchadores
   let supportSnapshotUnsubscribe = null;
 
   function loadUserTickets() {
@@ -906,7 +906,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
       return;
     }
 
-    // Si ya existe una suscripción activa, la cerramos
+    //! Si ya existe una suscripción activa, la cerramos
     if (supportSnapshotUnsubscribe) {
       supportSnapshotUnsubscribe();
     }
@@ -921,7 +921,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
 
       const isAdmin = user.uid === MI_UID_ADMIN;
 
-      // 1. GESTIÓN DE INTERFAZ (ADMIN VS USER)
+      //* 1. GESTIÓN DE INTERFAZ (ADMIN VS USER)
       if (isAdmin) {
         if (quotaCard)
           quotaCard.style.setProperty("display", "none", "important");
@@ -935,7 +935,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
         document.getElementById("admin-view")?.classList.add("hidden");
       }
 
-      // 2. CONSULTA A FIRESTORE
+      //* 2. CONSULTA A FIRESTORE
       try {
         const q = query(
           collection(db, "support_tickets"),
@@ -957,7 +957,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
 
             snapshot.forEach(async (docSnap) => {
               const t = docSnap.data();
-              // Lógica de auto-borrado
+              //! Lógica de auto-borrado
               if (t.status === "resolved" && t.resolvedAt) {
                 const fechaResolucion = t.resolvedAt.toDate().getTime();
                 if (ahora - fechaResolucion > cincoDiasEnMs) {
@@ -980,7 +980,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
               container.appendChild(card);
             });
 
-            // 3. ACTUALIZAR CUOTA DINÁMICA (Solo si NO es admin)
+            //* 3. ACTUALIZAR CUOTA DINÁMICA (Solo si NO es admin)
             if (!isAdmin) {
               const activos = snapshot.docs.filter(
                 (d) => d.data().status === "open",
@@ -1039,7 +1039,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     });
   }
 
-  // --- FUNCIÓN GLOBAL PARA RESPONDER TICKETS (ADMIN) ---
+  //* --- FUNCIÓN GLOBAL PARA RESPONDER TICKETS (ADMIN) ---
   window.responderTicket = async (ticketId) => {
     const replyInput = document.getElementById(`reply-input-${ticketId}`);
     const replyText = replyInput?.value.trim();
@@ -1077,7 +1077,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     }
   }
 
-  /* -------- LOAD PREFS -------- */
+  //* -------- LOAD PREFS -------- */
   async function loadPrefsForUser(uid) {
     try {
       const prefsRef = prefsDocRef(uid);
@@ -1108,7 +1108,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     }
   }
 
-  /* -------- AUTH STATE -------- */
+  //* -------- AUTH STATE -------- */
   onAuthStateChanged(auth, async (user) => {
     currentUser = user;
 
@@ -1186,7 +1186,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     }
   });
 
-  /* -------- AUTH (login/register) -------- */
+  //* -------- AUTH (login/register) -------- */
   btnLogin?.addEventListener("click", async () => {
     const email = document.getElementById("email").value.trim();
     const password = document.getElementById("password").value;
@@ -1236,7 +1236,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     }
   });
 
-  /* --- RECUPERAR CONTRASEÑA --- */
+  //* --- RECUPERAR CONTRASEÑA --- */
   const handleForgotPassword = async () => {
     const emailInput = document.getElementById("email");
     const email = emailInput?.value.trim();
@@ -1271,7 +1271,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
 
   if (forgotBtn) forgotBtn.onclick = handleForgotPassword;
 
-  /* -------- SETTINGS / PROFILE actions -------- */
+  //* -------- SETTINGS / PROFILE actions -------- */
   sChangeName?.addEventListener("click", async () => {
     if (!currentUser) return alert("Inicia sesión");
     settingsMenu.classList.remove("open");
@@ -1447,7 +1447,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
       const publicItems = allItems.filter((it) => it.isPublic === true);
 
       if (publicContainer) {
-        publicContainer.innerHTML = ""; // Limpiar contenedor
+        publicContainer.innerHTML = ""; //! Limpiar contenedor
 
         if (publicItems.length === 0) {
           publicContainer.innerHTML = `<p style="opacity:0.5; text-align:center; padding:20px;">No tienes contenido público todavía. ¡Usa el icono del ojo en tus listas!</p>`;
@@ -1569,7 +1569,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
       const userData = userSnap.data();
       const uiData = uiSnap.exists() ? uiSnap.data() : {};
 
-      // --- BADGES AND LOGIC FOR NAMES ---
+      //* --- BADGES AND LOGIC FOR NAMES ---
 
       const esDorado = DEV_UID.includes(uid);
       const esTester = TEST_UID.includes(uid);
@@ -1587,14 +1587,14 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
       }
       elName.innerHTML = nameHTML;
 
-      // --- BIO AND PHOTO ---
+      //* --- BIO AND PHOTO ---
       elBio.textContent = uiData.biografia || uiData.bio || "Sin Biografía";
       elImg.src =
         uiData.photoURL || userData.photoURL || "./icons/icon-192.png";
       document.getElementById("public-usercode").textContent =
         userData.userCode || "#000000";
 
-      // --- ELEMINATE FRIEND BUTTON ---
+      //* --- ELEMINATE FRIEND BUTTON ---
 
       window.removeFriend = async (uid, nombre) => {
         try {
@@ -1624,10 +1624,10 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
         elAction.innerHTML = "";
       }
 
-      // --- ITEMS PROCESATION ---
+      //* --- ITEMS PROCESATION ---
       const allDocs = allItemsSnap.docs.map((d) => d.data());
 
-      // ONLY IF ISPUBLIC: TRUE
+      //! ONLY IF ISPUBLIC: TRUE
       const publicItems = allDocs.filter((item) => item.isPublic === true);
 
       const publicMangas = publicItems.filter(
@@ -1637,7 +1637,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
         (item) => (item.type || "").toLowerCase().trim() === "anime",
       );
 
-      // --- STATISTIC CALCULATION ---
+      //* --- STATISTIC CALCULATION ---
       let totalCaps = 0;
       let totalMinutos = 0;
 
@@ -1654,7 +1654,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
 
       const totalHoras = Math.floor(totalMinutos / 60);
 
-      // --- RENDER STATISTIC ---
+      //* --- RENDER STATISTIC ---
       const container = document.getElementById("public-stats-container");
       container.querySelector(".stats-overlay")?.remove();
 
@@ -1772,7 +1772,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
         const listMobile = document.getElementById("mobile-requests-list");
         const badgeMobile = document.getElementById("friend-badge-mobile");
 
-        // --- PC LOGIC ---
+        //* --- PC LOGIC ---
         if (badgePC) {
           badgePC.textContent = count;
           badgePC.style.display = count === 0 ? "none" : "block";
@@ -1801,7 +1801,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
           }
         }
 
-        // --- MOBILE LOGIC ---
+        //* --- MOBILE LOGIC ---
         if (badgeMobile) {
           badgeMobile.textContent = count;
           count === 0
@@ -1856,7 +1856,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     );
   });
 
-  // MOBILE SETTINGS
+  //? MOBILE SETTINGS
   mobileGear?.addEventListener("click", (e) => {
     if (!currentUser) return alert("Inicia sesión");
     e.stopPropagation();
@@ -1948,29 +1948,29 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     }
   }
 
-  /* ======= SAGA DETECTION ====== */
+  //* ======= SAGA DETECTION ====== */
 
   function getBaseName(title) {
     if (!title) return "";
 
     let t = title.toLowerCase();
 
-    // Delete common saga/season words
+    //! Delete common saga/season words
     t = t.replace(
       /\b(season|temporada|temp|part|parte|saga|arc|chapter|capítulo|capitulo|ova|special|movie|film)\b/g,
       "",
     );
 
-    // Delete S1 / T2 / etc
+    //! Delete S1 / T2 / etc
     t = t.replace(/\b(s|t)\d+\b/g, "");
 
-    // Delete 1st, 2nd, etc
+    //! Delete 1st, 2nd, etc
     t = t.replace(/\b(\d+st|\d+nd|\d+rd|\d+th)\b/g, "");
 
-    //  Delete standalone numbers (to avoid confusion with titles that have numbers but are not seasons, e.g. "One Piece")
+    //! Delete standalone numbers (to avoid confusion with titles that have numbers but are not seasons, e.g. "One Piece")
     t = t.replace(/\b\d+\b/g, "");
 
-    // Delete special characters and extra spaces
+    //! Delete special characters and extra spaces
     t = t.replace(/[\.\-–:_]/g, " ");
     t = t.replace(/\s+/g, " ").trim();
 
@@ -1994,7 +1994,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     return 0;
   }
 
-  /* IMAGE PREVIEW */
+  //* IMAGE PREVIEW */
   document
     .getElementById("fakefile")
     ?.addEventListener("click", () => document.getElementById("file")?.click());
@@ -2016,11 +2016,11 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
       : "";
   });
 
-  /* -------- UI helper: toggle buttons according to filter -------- */
+  //* -------- UI helper: toggle buttons according to filter -------- */
   function setButtonsForFilter(filter) {
     currentFilter = filter;
 
-    // PC
+    //? PC
     if (btnFinalizadosPC)
       btnFinalizadosPC.style.display =
         filter === "finished" ? "none" : "inline-block";
@@ -2028,7 +2028,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
       btnVolverPC.style.display =
         filter === "finished" ? "inline-block" : "none";
 
-    // Mobile
+    //? Mobile
     if (btnFinalizadosMobile)
       btnFinalizadosMobile.style.display =
         filter === "finished" ? "flex" : "flex";
@@ -2052,7 +2052,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     filterBox?.classList.add("hidden");
   });
 
-  /* -------- LOAD MANGAS (reading | finished) -------- */
+  //* -------- LOAD MANGAS (reading | finished) -------- */
   async function loadMangas(status = "reading") {
     gridEl.innerHTML = "";
 
@@ -2206,7 +2206,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
         }
       });
 
-      /* DELETE */
+      //* DELETE */
 
       gridEl.querySelectorAll(".del-btn").forEach((b) => {
         b.onclick = async (e) => {
@@ -2223,7 +2223,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
         };
       });
 
-      /* VISIBILITY */
+      //* VISIBILITY */
 
       gridEl.querySelectorAll(".visibility-btn").forEach((btn) => {
         btn.onclick = async (e) => {
@@ -2254,7 +2254,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
         };
       });
 
-      /* PROGRESS CLICK & SWIPE (MOBILE) */
+      //* PROGRESS CLICK & SWIPE (MOBILE) */
 
       if (status === "reading") {
         gridEl.querySelectorAll(".card").forEach((card) => {
@@ -2263,7 +2263,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
           let touchendX = 0;
           let touchendY = 0;
 
-          // --- TACTILES EVENTS (MOBILE) ---
+          //? --- TACTILES EVENTS (MOBILE) ---
           card.addEventListener(
             "touchstart",
             (e) => {
@@ -2294,7 +2294,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
             { passive: true },
           );
 
-          // --- CLICK EVENT (PC) ---
+          //? --- CLICK EVENT (PC) ---
           card.addEventListener("mousedown", async (e) => {
             if (
               e.target.closest("button") ||
@@ -2319,7 +2319,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
         });
       }
 
-      // --- FUNCIÓN AUXILIAR DE ACTUALIZACIÓN (Para no repetir código) ---
+      //* --- FUNCIÓN AUXILIAR DE ACTUALIZACIÓN (Para no repetir código) ---
       async function updateMangaProgress(card, id, delta) {
         const data = mangasCache[id];
         const old = Number(data.last) || 0;
@@ -2333,7 +2333,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
         if (delta > 0) notifyTutorial(12);
         else notifyTutorial(13);
 
-        /* ===== CHECK FINISH ===== */
+        //* ===== CHECK FINISH ===== */
         if (total > 0 && newValue === total && old !== total) {
           selectedToFinish = id;
           showFinishModal();
@@ -2341,7 +2341,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
             `¿Marcar "${data.title}" como terminado?`;
         }
 
-        /* ===== UPDATE FIREBASE ===== */
+        //* ===== UPDATE FIREBASE ===== */
         await updateDoc(doc(db, "users", currentUser.uid, "mangas", id), {
           last: String(newValue),
         });
@@ -2374,7 +2374,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     }
   }
 
-  /* -------- FINISH MODAL HANDLERS -------- */
+  //* -------- FINISH MODAL HANDLERS -------- */
   const finishModal = document.getElementById("finish-modal");
   const finishConfirm = document.getElementById("finish-confirm");
   const finishCancel = document.getElementById("finish-cancel");
@@ -2421,7 +2421,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     }
   });
 
-  /* -------- FORM OPEN/CLOSE/SAVE -------- */
+  //* -------- FORM OPEN/CLOSE/SAVE -------- */
   function closeForm() {
     modal && modal.classList.remove("open");
     editId = null;
@@ -2430,12 +2430,12 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     }
   }
 
-  /* --- IMPORTANT: listeners for Add buttons (fix for the issue) --- */
+  //* --- IMPORTANT: listeners for Add buttons (fix for the issue) --- */
   modal?.addEventListener("click", (e) => {
     if (e.target === modal) closeForm();
   });
 
-  /* -------- TIME BOX -------- */
+  //* -------- TIME BOX -------- */
   function updateTimeBoxVisibility() {
     if (!timeBox) return;
     if (window.timeBoxEnabled) {
@@ -2493,7 +2493,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     return totalMinutes;
   }
 
-  /* -------- BUTTONS: Finished / Come Back / mobile home -------- */
+  //* -------- BUTTONS: Finished / Come Back / mobile home -------- */
   async function goHome() {
     currentView = "home";
     zmResults && (zmResults.innerHTML = "");
@@ -2778,7 +2778,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
   btnHomeMobile?.addEventListener("click", goHome);
   btnFriendsMobile?.addEventListener("click", goFriends);
 
-  /* -------- INITIAL LOCAL THEME & TIMEBOX ON PAGE LOAD -------- */
+  //* -------- INITIAL LOCAL THEME & TIMEBOX ON PAGE LOAD -------- */
   window.addEventListener("load", () => {
     const local = localStorage.getItem("mt_theme") || "dark";
     applyTheme(local, false);
@@ -2788,7 +2788,7 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
     updateTimeBoxVisibility();
   });
 
-  /* prevent settings menu from closing while interacting */
+  //* prevent settings menu from closing while interacting */
   settingsMenu?.addEventListener("click", (e) => e.stopPropagation());
 
   const originalTitle = document.title;
@@ -2905,4 +2905,5 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
   });
 
   document.addEventListener("contextmenu", (e) => e.preventDefault());
-}); // DOMContentLoaded end
+}); 
+//! DOMContentLoaded end
