@@ -581,7 +581,7 @@ c-182 88 -256 89 -438 1 l-102 -50 -141 69 c-149 74 -185 82 -244 56z"/>
 
   function zonatmoLink(title) {
     const slug = toAnimeflvSlug(title);
-    return;
+    return `https://woldroj.github.io/Manga-Tracker/`;
   }
 
   function animeflvLink(title) {
