@@ -110,7 +110,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnHomeMobile = document.getElementById("mobile-home");
   const btnFriendsMobile = document.getElementById("mobile-friends");
 
-  //? API JIKAN
+  //? API
   const zmQueryInput = document.getElementById("zm-query");
   const zmSearchBtn = document.getElementById("zm-search-btn");
   const zmResults = document.getElementById("zm-results");
@@ -478,105 +478,74 @@ document.addEventListener("DOMContentLoaded", () => {
     searchLoader.classList.add("hidden");
   }
 
-  async function searchJikan(query, type = "manga") {
-    const endpoint =
-      type === "anime"
-        ? `https://api.jikan.moe/v4/anime?q=${encodeURIComponent(query)}&limit=24`
-        : `https://api.jikan.moe/v4/manga?q=${encodeURIComponent(query)}&limit=24`;
+  async function searchAniList(query, type = "manga") {
+    const mediaType = type.toUpperCase(); // 'ANIME' o 'MANGA'
 
-    let res;
+    // Consulta GraphQL para solicitar exactamente los datos requeridos
+    const gqlQuery = `
+    query ($search: String, $type: MediaType) {
+      Page(perPage: 24) {
+        media(search: $search, type: $type) {
+          id
+          title {
+            romaji
+            english
+          }
+          coverImage {
+            large
+          }
+          episodes
+          chapters
+          status
+        }
+      }
+    }`;
+
     try {
-      res = await fetch(endpoint);
-    } catch (e) {
+      const res = await fetch('https://graphql.anilist.co', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+          query: gqlQuery,
+          variables: { search: query, type: mediaType }
+        })
+      });
+
+      if (!res.ok) throw new Error(`Error HTTP: ${res.status}`);
+
+      const json = await res.json();
+      const list = json.data?.Page?.media || [];
+
+      // Mapeamos los datos para mantener el mismo formato exacto que esperaba tu UI
+      return list.map((item) => ({
+        id: item.id,
+        title: item.title.english || item.title.romaji,
+        img: item.coverImage?.large || "",
+        chapters: type === "anime" ? (item.episodes ?? 0) : (item.chapters ?? 0),
+        status: item.status || "Desconocido",
+        type
+      }));
+
+    } catch (err) {
+      console.error("Error al consultar AniList API:", err);
       showAlert();
       zmResults.innerHTML = `
         <div style="grid-column: 1 / -1; margin-top: 20%; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; text-align: center; color: var(--accent);">
-            <svg version="1.0" xmlns="http://www.w3.org/2000/svg"
- width="100pt" height="100pt" viewBox="0 0 100 100"
- preserveAspectRatio="xMidYMid meet">
-
-<g transform="translate(0.000000,512.000000) scale(0.100000,-0.100000)"
-fill="currentColor" stroke="none">
-<path d="M403 4461 c-99 -34 -170 -99 -216 -198 l-22 -48 0 -1655 0 -1655 27
--57 c34 -73 103 -142 176 -176 l57 -27 2135 0 2135 0 67 33 c77 37 128 90 167
-172 l26 55 0 1655 0 1655 -27 57 c-34 73 -103 142 -176 176 l-57 27 -2120 2
-c-2020 2 -2122 2 -2172 -16z m4225 -313 c9 -9 12 -76 12 -240 l0 -228 -539 0
--539 0 -158 78 -159 77 -1382 3 -1383 2 0 148 c0 102 4 152 12 160 17 17 4119
-17 4136 0z m-1340 -692 c204 -102 154 -96 794 -96 l558 0 0 -1188 c0 -911 -3
--1191 -12 -1200 -17 -17 -4119 -17 -4136 0 -9 9 -12 307 -12 1280 l0 1268
-1340 0 1340 0 128 -64z"/>
-<path d="M1375 2866 c-41 -18 -83 -69 -91 -111 -13 -71 2 -104 89 -192 l81
--83 -81 -83 c-87 -89 -102 -121 -88 -194 9 -49 69 -109 118 -118 73 -14 105 1
-194 88 l83 81 83 -81 c89 -87 121 -102 194 -88 49 9 109 69 118 118 14 73 -1
-105 -88 194 l-81 83 81 83 c87 89 102 121 88 194 -9 49 -69 109 -118 118 -73
-14 -105 -1 -194 -88 l-83 -81 -78 76 c-99 99 -150 118 -227 84z"/>
-<path d="M3135 2866 c-41 -18 -83 -69 -91 -111 -13 -71 2 -104 89 -192 l81
--83 -81 -83 c-87 -89 -102 -121 -88 -194 9 -49 69 -109 118 -118 73 -14 105 1
-194 88 l83 81 83 -81 c89 -87 121 -102 194 -88 49 9 109 69 118 118 14 73 -1
-105 -88 194 l-81 83 81 83 c87 89 102 121 88 194 -9 49 -69 109 -118 118 -73
-14 -105 -1 -194 -88 l-83 -81 -78 76 c-99 99 -150 118 -227 84z"/>
-<path d="M1855 1746 c-94 -41 -124 -168 -58 -247 34 -40 300 -173 380 -189 81
--17 155 -2 281 59 l102 50 103 -50 c125 -61 199 -76 280 -59 80 16 346 149
-380 189 86 103 9 261 -126 261 -23 0 -84 -25 -176 -70 l-141 -69 -100 49
-c-182 88 -256 89 -438 1 l-102 -50 -141 69 c-149 74 -185 82 -244 56z"/>
-</g>
-</svg>
-            <p style="color: var(--error); font-weight: bold; margin-left: 10px;">Error de conexión con Jikan</p>
+            <svg version="1.0" xmlns="http://www.w3.org/2000/svg" width="100pt" height="100pt" viewBox="0 0 512.000000 512.000000" preserveAspectRatio="xMidYMid meet">
+              <g transform="translate(0.000000,512.000000) scale(0.100000,-0.100000)" fill="currentColor" stroke="none">
+              <path d="M403 4461 c-99 -34 -170 -99 -216 -198 l-22 -48 0 -1655 0 -1655 27 -57 c34 -73 103 -142 176 -176 l57 -27 2135 0 2135 0 67 33 c77 37 128 90 167 172 l26 55 0 1655 0 1655 -27 57 c-34 73 -103 142 -176 176 l-57 27 -2120 2 c-2020 2 -2122 2 -2172 -16z m4225 -313 c9 -9 12 -76 12 -240 l0 -228 -539 0 -539 0 -158 78 -159 77 -1382 3 -1383 2 0 148 c0 102 4 152 12 160 17 17 4119 17 4136 0z m-1340 -692 c204 -102 154 -96 794 -96 l558 0 0 -1188 c0 -911 -3 -1191 -12 -1200 -17 -17 -4119 -17 -4136 0 -9 9 -12 307 -12 1280 l0 1268 1340 0 1340 0 128 -64z"/>
+              <path d="M1375 2866 c-41 -18 -83 -69 -91 -111 -13 -71 2 -104 89 -192 l81 -83 -81 -83 c-87 -89 -102 -121 -88 -194 9 -49 69 -109 118 -118 73 -14 105 1 194 88 l83 81 83 -81 c89 -87 121 -102 194 -88 49 9 109 69 118 118 14 73 -1 105 -88 194 l-81 83 81 83 c87 89 102 121 88 194 -9 49 -69 109 -118 118 -73 14 -105 -1 -194 -88 l-83 -81 -78 76 c-99 99 -150 118 -227 84z"/>
+              <path d="M3135 2866 c-41 -18 -83 -69 -91 -111 -13 -71 2 -104 89 -192 l81 -83 -81 -83 c-87 -89 -102 -121 -88 -194 9 -49 69 -109 118 -118 73 -14 105 1 194 88 l83 81 83 -81 c89 -87 121 -102 194 -88 49 9 109 69 118 118 14 73 -1 105 -88 194 l-81 83 81 83 c87 89 102 121 88 194 -9 49 -69 109 -118 118 -73 14 -105 -1 -194 -88 l-83 -81 -78 76 c-99 99 -150 118 -227 84z"/>
+              <path d="M1855 1746 c-94 -41 -124 -168 -58 -247 34 -40 300 -173 380 -189 81 -17 155 -2 281 59 l102 50 103 -50 c125 -61 199 -76 280 -59 80 16 346 149 380 189 86 103 9 261 -126 261 -23 0 -84 -25 -176 -70 l-141 -69 -100 49 c-182 88 -256 89 -438 1 l-102 -50 -141 69 c-149 74 -185 82 -244 56z"/>
+              </g>
+            </svg>
+            <p style="color: var(--error); font-weight: bold; margin-left: 10px;">Error de conexión con AniList</p>
         </div>`;
       return [];
     }
-
-    if (!res.ok) {
-      if (res.status === 504) {
-        showAlert();
-      }
-      zmResults.innerHTML = `
-        <div style="grid-column: 1 / -1; margin-top: 20%; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; text-align: center; color: var(--accent);">
-            <svg version="1.0" xmlns="http://www.w3.org/2000/svg"
- width="100pt" height="100pt" viewBox="0 0 512.000000 512.000000"
- preserveAspectRatio="xMidYMid meet">
-
-<g transform="translate(0.000000,512.000000) scale(0.100000,-0.100000)"
-fill="currentColor" stroke="none">
-<path d="M403 4461 c-99 -34 -170 -99 -216 -198 l-22 -48 0 -1655 0 -1655 27
--57 c34 -73 103 -142 176 -176 l57 -27 2135 0 2135 0 67 33 c77 37 128 90 167
-172 l26 55 0 1655 0 1655 -27 57 c-34 73 -103 142 -176 176 l-57 27 -2120 2
-c-2020 2 -2122 2 -2172 -16z m4225 -313 c9 -9 12 -76 12 -240 l0 -228 -539 0
--539 0 -158 78 -159 77 -1382 3 -1383 2 0 148 c0 102 4 152 12 160 17 17 4119
-17 4136 0z m-1340 -692 c204 -102 154 -96 794 -96 l558 0 0 -1188 c0 -911 -3
--1191 -12 -1200 -17 -17 -4119 -17 -4136 0 -9 9 -12 307 -12 1280 l0 1268
-1340 0 1340 0 128 -64z"/>
-<path d="M1375 2866 c-41 -18 -83 -69 -91 -111 -13 -71 2 -104 89 -192 l81
--83 -81 -83 c-87 -89 -102 -121 -88 -194 9 -49 69 -109 118 -118 73 -14 105 1
-194 88 l83 81 83 -81 c89 -87 121 -102 194 -88 49 9 109 69 118 118 14 73 -1
-105 -88 194 l-81 83 81 83 c87 89 102 121 88 194 -9 49 -69 109 -118 118 -73
-14 -105 -1 -194 -88 l-83 -81 -78 76 c-99 99 -150 118 -227 84z"/>
-<path d="M3135 2866 c-41 -18 -83 -69 -91 -111 -13 -71 2 -104 89 -192 l81
--83 -81 -83 c-87 -89 -102 -121 -88 -194 9 -49 69 -109 118 -118 73 -14 105 1
-194 88 l83 81 83 -81 c89 -87 121 -102 194 -88 49 9 109 69 118 118 14 73 -1
-105 -88 194 l-81 83 81 83 c87 89 102 121 88 194 -9 49 -69 109 -118 118 -73
-14 -105 -1 -194 -88 l-83 -81 -78 76 c-99 99 -150 118 -227 84z"/>
-<path d="M1855 1746 c-94 -41 -124 -168 -58 -247 34 -40 300 -173 380 -189 81
--17 155 -2 281 59 l102 50 103 -50 c125 -61 199 -76 280 -59 80 16 346 149
-380 189 86 103 9 261 -126 261 -23 0 -84 -25 -176 -70 l-141 -69 -100 49
-c-182 88 -256 89 -438 1 l-102 -50 -141 69 c-149 74 -185 82 -244 56z"/>
-</g>
-</svg>
-            <p style="color: var(--error); font-weight: bold; margin-left: 10px;">Jikan está saturado, prueba en unos segundos</p>
-        </div>`;
-      return [];
-    }
-
-    const json = await res.json();
-
-    return (json.data || []).map((item) => ({
-      id: item.mal_id,
-      title: item.title,
-      img: item.images?.jpg?.image_url || "",
-      chapters: type === "anime" ? (item.episodes ?? 0) : (item.chapters ?? 0),
-      status: item.status || "Desconocido",
-      type,
-    }));
   }
 
   function zonatmoLink(title) {
@@ -782,7 +751,9 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
       zmResults.innerHTML = "";
 
       await loadUserJikanIds();
-      const results = await searchJikan(q, type);
+      
+      // 💡 Llamada actualizada a AniList
+      const results = await searchAniList(q, type);
 
       results.sort((a, b) => {
         let av = orderBy === "chapters" ? a.chapters || 0 : a.title;
