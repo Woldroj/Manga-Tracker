@@ -550,12 +550,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function zonatmoLink(title) {
     const slug = toAnimeflvSlug(title);
-    return `https://woldroj.github.io/Manga-Tracker/`;
+    return `https://shademanga.com`;
   }
 
   function animeflvLink(title) {
     const slug = toAnimeflvSlug(title);
-    return `https://m.animeflv.net/anime/${slug}`;
+    return `https://shademanga.com/anime`;
   }
 
   function renderJikanResults(results) {
