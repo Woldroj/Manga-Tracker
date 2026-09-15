@@ -789,7 +789,7 @@ input:checked + .slider::before {
     flex-direction: column;
   }
   #btn-add {
-    display: none !important;
+    display: inline-block !important;
   }
   #mobile-gear {
     width: 40px;

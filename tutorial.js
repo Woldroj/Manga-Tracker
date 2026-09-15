@@ -235,6 +235,18 @@ const tutorial = {
     // 2. Lógica de estados y acciones (Tus IFs originales)
     if (step.id === 4.5)
       document.getElementById("filter-panel")?.classList.remove("hidden");
+    if (step.id === 14) {
+      const gridCard = document.querySelector("#grid .card, #grid");
+      if (gridCard) {
+        const handleAltClick = (e) => {
+          if (e.altKey || e.type === "change" || e.type === "input") {
+            gridCard.removeEventListener("click", handleAltClick);
+            this.nextStep();
+          }
+        };
+        gridCard.addEventListener("click", handleAltClick, { once: true });
+      }
+    }
     if (step.id === 29.5) setTimeout(() => this.nextStep(), 3000);
 
     if (step.id === 30) {
@@ -343,22 +355,12 @@ const tutorial = {
   },
 
   applyHighlight(targetId) {
-    document
-      .querySelectorAll(".highlighted")
-      .forEach((el) => el.classList.remove("highlighted"));
-    if (!targetId) return;
-
     let el = null;
-
-    // Si buscamos una card específica o un elemento dentro de ella
     if (targetId === "grid") {
-      // Busca la primera card que exista en el DOM
       el = document.querySelector(".card");
     } else if (targetId === "progress-wrapper") {
-      // Busca el primer contenedor de progreso dentro de la primera card
       el = document.querySelector(".card .progress-wrapper");
     } else if (targetId === "add-jikan") {
-      // Nota: Como tu botón de añadir viene de una API externa, asegúrate de que tiene esta clase
       el = document.querySelector(".add-jikan");
     } else if (targetId === "visibility-btn") {
       el = document.querySelector(".card .visibility-btn");
@@ -367,9 +369,15 @@ const tutorial = {
     } else if (targetId === "search-result-area") {
       el = document.querySelector(".search-card-result .res-btn");
     } else {
-      // Para IDs fijos como 'zm-search', 'filter-btn', etc.
       el = document.getElementById(targetId);
     }
+
+    // Si el elemento ya tiene la clase, evitamos quitarla y reañadirla repetidamente
+    if (el && el.classList.contains("highlighted")) return;
+
+    document
+      .querySelectorAll(".highlighted")
+      .forEach((item) => item.classList.remove("highlighted"));
 
     if (el) {
       el.classList.add("highlighted");

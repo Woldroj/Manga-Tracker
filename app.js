@@ -635,8 +635,8 @@ c147 -147 174 -165 228 -151 16 4 85 64 175 153 l147 146 87 -87 88 -87 -153
       <div class="actions">
         ${
           m.type === "manga"
-            ? `<a class="link" href="${zonatmoLink(m.title)}" target="_blank">ZonaTMO</a>`
-            : `<a class="link" href="${animeflvLink(m.title)}" target="_blank">AnimeFLV</a>`
+            ? `<a class="link" href="${zonatmoLink(m.title)}" target="_blank">Mangas</a>`
+            : `<a class="link" href="${animeflvLink(m.title)}" target="_blank">Animes</a>`
         }
         <button class="small add-jikan" ${alreadyAdded ? "disabled" : ""}>${alreadyAdded ? "✔ Añadido" : "Añadir"}</button>
       </div>
